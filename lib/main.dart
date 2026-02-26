@@ -2,9 +2,23 @@ import 'package:flutter/material.dart';
 import 'profile.dart'; 
 import 'lists.dart'; 
 import 'app_colors.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+ try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+  } catch (e) {
+    print("Firebase เชื่อมต่อไม่สำเร็จ: $e");
+  }
+
+  // runApp(const MyApp());
+  runApp(const MaterialApp(home: MyApp())); // กำหนดหน้าหลัก
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LisT Demo',
+      title: 'LisT',
       // theme: ThemeData(
       //   // This is the theme of your application.
       //   //
