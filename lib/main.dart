@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'profile.dart'; 
-import 'lists.dart'; 
-import 'app_colors.dart'; 
+import 'profile.dart';
+import 'lists.dart';
+import 'app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'Notes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
- try {
+
+  try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
   } catch (e) {
     print("Firebase เชื่อมต่อไม่สำเร็จ: $e");
   }
@@ -49,11 +49,16 @@ class MyApp extends StatelessWidget {
       //   // colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       // ),
       // home: const MyHomePage(title: 'Demo Home Page'),
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.purple,
-      primary: Colors.deepPurple,    
-    ),hoverColor: Colors.orange.withOpacity(0.1)),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          primary: const Color(0xFFFF6B00),
+          seedColor: const Color(0xFFFF6B00),
+          //  seedColor: const Color(0xFFFF9E00),
+        ),
+        hoverColor: Colors.orange.withOpacity(0.1),
+      ),
       home: const MainNavigation(),
     );
   }
@@ -64,6 +69,7 @@ class MainNavigation extends StatefulWidget {
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
+
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
@@ -71,6 +77,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     const ProfilePage(),
     const MyListsPage(),
+    const NotesPage(),
   ];
 
   @override
@@ -82,7 +89,10 @@ class _MainNavigationState extends State<MainNavigation> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: AppColors.primary),
-              child: Text('เมนู', style: TextStyle(color: Colors.white, fontSize: 24)),
+              child: Text(
+                'เมนู',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.person),
@@ -97,6 +107,14 @@ class _MainNavigationState extends State<MainNavigation> {
               title: const Text('ลิสต์'),
               onTap: () {
                 setState(() => _selectedIndex = 1);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.note),
+              title: const Text('โน้ต'),
+              onTap: () {
+                setState(() => _selectedIndex = 2);
                 Navigator.pop(context);
               },
             ),
@@ -184,18 +202,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-      )
-      // ,floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
+      ),
     );
   }
 }
 
 extension ThemeGetter on BuildContext {
   Color get primaryColor => Theme.of(this).colorScheme.primary;
-  
+
   Color get secondaryColor => Theme.of(this).colorScheme.secondary;
 }

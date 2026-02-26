@@ -4,9 +4,11 @@ import 'list_create.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:list_app/list_detail.dart'; // <--- ต้องมีบรรทัดนี้
+import 'package:list_app/main.dart';
 
 // class MyListsPage extends StatelessWidget {
-class MyListsPage extends StatefulWidget { //เพื่อให้อัพเดททันที
+class MyListsPage extends StatefulWidget {
+  //เพื่อให้อัพเดททันที
   const MyListsPage({super.key});
 
   // @override
@@ -30,7 +32,7 @@ class MyListsPage extends StatefulWidget { //เพื่อให้อัพ�
   //     ),
   //   );
   // }
-@override
+  @override
   State<MyListsPage> createState() => _MyListsPageState();
 }
 
@@ -97,7 +99,7 @@ class _MyListsPageState extends State<MyListsPage> {
       //           );
       //         },
       //       ),
-            body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<QuerySnapshot>(
         // เชื่อมต่อท่อข้อมูลกับ Cloud Firestore
         stream: FirebaseFirestore.instance
             .collection('lists')
@@ -115,7 +117,9 @@ class _MyListsPageState extends State<MyListsPage> {
           final docs = snapshot.data!.docs;
 
           if (docs.isEmpty) {
-            return const Center(child: Text('ยังไม่มีรายการ... ลองกดปุ่ม + ดูนะ'));
+            return const Center(
+              child: Text('ยังไม่มีรายการ... ลองกดปุ่ม + ดูนะ'),
+            );
           }
 
           return ListView.builder(
@@ -123,27 +127,37 @@ class _MyListsPageState extends State<MyListsPage> {
             itemBuilder: (context, index) {
               // ดึงข้อมูลในแต่ละแถวออกมา
               final data = docs[index].data() as Map<String, dynamic>;
-              final docId = docs[index].id; // รหัสเอกสาร (ใช้สำหรับ ลบ หรือ แก้ไข)
-print(docId);
+              final docId = docs[index].id;
+              print(docId);
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.assignment)),
+                  // leading: const CircleAvatar(child: Icon(Icons.assignment)),
+                  leading: Icon(
+                    Icons.assignment,
+                    //size: 24,
+                    color: context.primaryColor,
+                  ),
                   title: Text(data['name'] ?? 'ว่าง'),
                   subtitle: Text(
-                    data['createdAt'] != null 
-                    // ? (data['createdAt'] as Timestamp).toDate().toString() 
-                    ? DateFormat('dd/MM/yyyy HH:mm').format((data['createdAt'] as Timestamp).toDate())
-                    : '',
+                    data['createdAt'] != null
+                        // ? (data['createdAt'] as Timestamp).toDate().toString()
+                        ? DateFormat(
+                            'dd/MM/yyyy HH:mm',
+                          ).format((data['createdAt'] as Timestamp).toDate())
+                        : '',
                     style: const TextStyle(fontSize: 12),
                   ),
-                                     onTap: () {
-                                      String itemName = data['name'] ?? 'Unnamed';
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) =>  DetailPage(title: itemName, docId: docId)),
-                      );
-                                     }
+                  onTap: () {
+                    String itemName = data['name'] ?? 'Unnamed';
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DetailPage(title: itemName, docId: docId),
+                      ),
+                    );
+                  },
                   // // เพิ่มปุ่มลบ (แถมให้ครับ)
                   // trailing: IconButton(
                   //   icon: const Icon(Icons.delete, color: Colors.red),
@@ -159,22 +173,22 @@ print(docId);
       // ใน Flutter นิยมใช้ FloatingActionButton วางไว้มุมขวาล่างครับ
       floatingActionButton: FloatingActionButton(
         // onPressed: _showAddDialog,
-        backgroundColor: Colors.blue,
+        backgroundColor: context.primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
-    // 1. ไปหน้าสร้าง
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const CreateListPage()),
-    );
+          // 1. ไปหน้าสร้าง
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateListPage()),
+          );
 
-    // 2. ถ้าได้ชื่อกลับมา ให้เพิ่มลงในลิสต์
-    if (result != null && result is String) {
-      setState(() {
-        _items.add(result);
-      });
-    }
-  },
+          // 2. ถ้าได้ชื่อกลับมา ให้เพิ่มลงในลิสต์
+          if (result != null && result is String) {
+            setState(() {
+              _items.add(result);
+            });
+          }
+        },
       ),
     );
   }

@@ -46,7 +46,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '766379202701',
     projectId: 'list-fb5d7',
     authDomain: 'list-fb5d7.firebaseapp.com',
-    databaseURL: 'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'list-fb5d7.firebasestorage.app',
   );
 
@@ -55,7 +56,8 @@ class DefaultFirebaseOptions {
     appId: '1:766379202701:android:d8c5b3740e2fc065d96ac4',
     messagingSenderId: '766379202701',
     projectId: 'list-fb5d7',
-    databaseURL: 'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'list-fb5d7.firebasestorage.app',
   );
 
@@ -64,7 +66,8 @@ class DefaultFirebaseOptions {
     appId: '1:766379202701:ios:09c4903a6e2fdba8d96ac4',
     messagingSenderId: '766379202701',
     projectId: 'list-fb5d7',
-    databaseURL: 'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'list-fb5d7.firebasestorage.app',
     iosBundleId: 'com.example.listApp',
   );
@@ -74,7 +77,8 @@ class DefaultFirebaseOptions {
     appId: '1:766379202701:ios:09c4903a6e2fdba8d96ac4',
     messagingSenderId: '766379202701',
     projectId: 'list-fb5d7',
-    databaseURL: 'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'list-fb5d7.firebasestorage.app',
     iosBundleId: 'com.example.listApp',
   );
@@ -85,7 +89,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '766379202701',
     projectId: 'list-fb5d7',
     authDomain: 'list-fb5d7.firebaseapp.com',
-    databaseURL: 'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://list-fb5d7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'list-fb5d7.firebasestorage.app',
   );
 }

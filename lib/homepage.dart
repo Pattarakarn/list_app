@@ -11,7 +11,10 @@ class WelcomePage extends StatelessWidget {
         children: [
           const Icon(Icons.auto_awesome, size: 100, color: Colors.blue),
           const SizedBox(height: 20),
-          const Text('ยินดีต้อนรับสู่แอปของคุณ!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text(
+            'ยินดีต้อนรับสู่แอปของคุณ!',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
           const Text('เลือกเมนูด้านซ้ายเพื่อเริ่มต้นใช้งาน'),
         ],

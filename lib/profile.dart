@@ -7,7 +7,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-     mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
           const SizedBox(height: 20),
@@ -15,8 +15,12 @@ class ProfilePage extends StatelessWidget {
           const Text('Email: hello@flutter.com'),
           const SizedBox(height: 30),
           ElevatedButton(
-            onPressed: () { /* ใส่ logic logout ตรงนี้ */ },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade100),
+            onPressed: () {
+              /* ใส่ logic logout ตรงนี้ */
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade100,
+            ),
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
