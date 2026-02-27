@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'app_colors.dart';
+import 'package:flutter/cupertino.dart'; // 👈 เพิ่มบรรทัดนี้
 
 class CreateNotePage extends StatefulWidget {
   const CreateNotePage({super.key});
@@ -15,6 +16,22 @@ class _CreateNotePageState extends State<CreateNotePage> {
   final TextEditingController _nameController = TextEditingController();
 
   final TextEditingController _contentController = TextEditingController();
+  bool isLock = false;
+
+  // final LocalAuthentication auth = LocalAuthentication();
+
+  // // เช็กว่า Browser หรืออุปกรณ์นี้รองรับไหม
+  // final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+  // final bool isSupported = await auth.isDeviceSupported();
+
+  // if (canAuthenticateWithBiometrics || isSupported) {
+  //    // ทำการยืนยันตัวตน
+  // } else {
+  //    // กรณีรันบน Web แล้วเครื่องไม่มีที่สแกนนิ้ว/FaceID
+  //    ScaffoldMessenger.of(context).showSnackBar(
+  //      const SnackBar(content: Text('อุปกรณ์นี้ไม่รองรับการยืนยันตัวตน')),
+  //    );
+  // }
 
   Future<void> _createList() async {
     if (_nameController.text.isEmpty) return;
@@ -26,12 +43,11 @@ class _CreateNotePageState extends State<CreateNotePage> {
         'name': _nameController.text,
         'content': _contentController.text,
         'createdAt': FieldValue.serverTimestamp(),
-        'lock': false,
+        'lock': isLock,
       });
 
       if (mounted) Navigator.pop(context);
-
-      Navigator.pop(context, _controller.text);
+      // Navigator.pop(context, _nameController.text);
     } catch (e) {
       print("Error: $e");
     } finally {
@@ -48,6 +64,36 @@ class _CreateNotePageState extends State<CreateNotePage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            // Switch(
+            //   value: isLock,
+            //   activeColor: Colors.green, // สีตอนเปิด
+            //   onChanged: (bool value) {
+            //     setState(() {
+            //       isLock = value; // อัปเดตสถานะ
+            //     });
+            //   },
+            // ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                CupertinoSwitch(
+                  value: isLock,
+                  activeColor: AppColors.note,
+                  onChanged: (value) {
+                    setState(() {
+                      isLock = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            //  CupertinoListTile(
+            //   title: const Text("สถานะการล็อก"),
+            //   trailing: CupertinoSwitch(
+            //     value: isLock,
+            //     onChanged: (value) => setState(() => isLock = value),
+            //   ),
+            // )
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(

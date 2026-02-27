@@ -96,7 +96,11 @@ class _DetailPageState extends State<DetailPage> {
       await FirebaseFirestore.instance
           .collection('lists')
           .doc(widget.docId)
-          .update({'data': rows, 'header': headers});
+          .update({
+            'data': rows,
+            'header': headers,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
           .showSnackBar(
@@ -182,6 +186,8 @@ class _DetailPageState extends State<DetailPage> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
+                  // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
+    _NumericTextFormatter(), 
                 ],
                 textAlign: TextAlign.right,
                 controller:
@@ -198,6 +204,8 @@ class _DetailPageState extends State<DetailPage> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  // suffixText: "บาท",
                 ),
                 onChanged: (val) => cellData['num'] = val,
               ),
@@ -209,55 +217,58 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _showEditDialog() {
-    // final TextEditingController _editController = TextEditingController(text: _currentTitle);
+    final TextEditingController _editController = TextEditingController(
+      text: widget.title,
+    );
 
-    // showDialog(
-    //   context: context,
-    //   builder: (context) {
-    //     return AlertDialog(
-    //       title: const Text('แก้ไขชื่อหัวข้อ'),
-    //       content: TextField(
-    //         controller: _editController,
-    //         autofocus: true, // ให้คีย์บอร์ดเด้งขึ้นมาทันที
-    //         decoration: InputDecoration(
-    //           hintText: "กรอกชื่อใหม่ที่นี่",
-    //           focusedBorder: UnderlineInputBorder(
-    //             borderSide: BorderSide(color: Theme.of(context).primaryColor), // สีส้มตามธีม
-    //           ),
-    //         ),
-    //       ),
-    //       actions: [
-    //         // ปุ่มยกเลิก
-    //         TextButton(
-    //           onPressed: () => Navigator.pop(context),
-    //           child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
-    //         ),
-    //         // ปุ่มยืนยัน (สีส้ม)
-    //         ElevatedButton(
-    //           style: ElevatedButton.styleFrom(
-    //             backgroundColor: Theme.of(context).primaryColor,
-    //             foregroundColor: Colors.white,
-    //           ),
-    //           onPressed: () {
-    //             setState(() {
-    //               _currentTitle = _editController.text;
-    //             });
-    //             Navigator.pop(context);
-
-    //             // (Optional) แจ้งเตือน SnackBar ที่เราทำไว้ก่อนหน้านี้
-    //             ScaffoldMessenger.of(context).showSnackBar(
-    //               const SnackBar(
-    //                 content: Text('แก้ไขชื่อสำเร็จ!'),
-    //                 behavior: SnackBarBehavior.floating,
-    //               ),
-    //             );
-    //           },
-    //           child: const Text('บันทึก'),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('แก้ไขชื่อ'),
+          content: TextField(
+            controller: _editController,
+            autofocus: true, // ให้คีย์บอร์ดเด้งขึ้นมาทันที
+            decoration: InputDecoration(
+              hintText: widget.title,
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                ), // สีส้มตามธีม
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'ยกเลิก',
+              ), //, style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                // setState(() {
+                //   _currentTitle = _editController.text;
+                // });
+                FirebaseFirestore.instance
+                    .collection('lists')
+                    .doc(widget.docId)
+                    .update({
+                      'name': _editController.text,
+                      'updatedAt': FieldValue.serverTimestamp(),
+                    });
+                Navigator.pop(context);
+              },
+              child: const Text('บันทึก'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -548,6 +559,28 @@ class _DetailPageState extends State<DetailPage> {
               icon: const Icon(Icons.save),
               label: const Text('Save'),
             ),
+    );
+  }
+}
+
+class _NumericTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue;
+
+    // แปลงเลขเป็น format มีคอมม่า
+    String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    double value = double.parse(cleanText);
+    final formatter = NumberFormat.decimalPattern();
+    // final double? value = double.tryParse(newValue.text.replaceAll(',', ''));
+    // if (value == null) return oldValue;
+
+    // final formatter = NumberFormat("#,###"); // กำหนดรูปแบบ
+    final newText = formatter.format(value);
+
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
     );
   }
 }

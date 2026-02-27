@@ -12,11 +12,11 @@ class WelcomePage extends StatelessWidget {
           const Icon(Icons.auto_awesome, size: 100, color: Colors.blue),
           const SizedBox(height: 20),
           const Text(
-            'ยินดีต้อนรับสู่แอปของคุณ!',
+            'ยินดีต้อนรับ!',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          const Text('เลือกเมนูด้านซ้ายเพื่อเริ่มต้นใช้งาน'),
+          // const Text('เลือกเมนูด้านซ้ายเพื่อเริ่มต้นใช้งาน'),
         ],
       ),
     );

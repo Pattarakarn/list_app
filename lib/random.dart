@@ -6,14 +6,14 @@ import 'package:intl/intl.dart';
 import 'package:list_app/note_detail.dart';
 import 'app_colors.dart';
 
-class NotesPage extends StatefulWidget {
-  const NotesPage({super.key});
+class RandomP extends StatefulWidget {
+  const RandomP({super.key});
 
   @override
-  State<NotesPage> createState() => _NotesPageState();
+  State<RandomP> createState() => _RandomPState();
 }
 
-class _NotesPageState extends State<NotesPage> {
+class _RandomPState extends State<RandomP> {
   final List<String> _items = ["โปรเจกต์ที่ 1"];
 
   void _deleteItem({required String id, String? name}) {
@@ -28,13 +28,8 @@ class _NotesPageState extends State<NotesPage> {
             onPressed: () => Navigator.pop(context),
             child: const Text('ยกเลิก'),
           ),
-          // ElevatedButton(
-          TextButton(
-            onPressed: () async {
-              await FirebaseFirestore.instance
-                  .collection('notes')
-                  .doc(id)
-                  .delete();
+          ElevatedButton(
+            onPressed: () {
               Navigator.pop(context);
             },
             child: const Text('ตกลง'),
@@ -46,10 +41,11 @@ class _NotesPageState extends State<NotesPage> {
 
   @override
   Widget build(BuildContext context) {
+    return Text('random');
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('notes')
+            .collection('random')
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -72,8 +68,7 @@ class _NotesPageState extends State<NotesPage> {
               final data = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
               String itemName = data['name'] ?? 'Unnamed';
-              bool isLock = data['lock'] ?? false;
-
+              print(docId);
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 clipBehavior: Clip
@@ -112,9 +107,7 @@ class _NotesPageState extends State<NotesPage> {
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),
                     // ),
-                    trailing: isLock
-                        ? const Icon(Icons.lock, color: AppColors.primary)
-                        : null,
+                    trailing: const Icon(Icons.lock, color: AppColors.primary),
                   ),
                 ),
               );
