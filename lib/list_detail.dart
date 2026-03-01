@@ -187,7 +187,7 @@ class _DetailPageState extends State<DetailPage> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
                   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
-    _NumericTextFormatter(), 
+                  _NumericTextFormatter(),
                 ],
                 textAlign: TextAlign.right,
                 controller:
@@ -302,6 +302,7 @@ class _DetailPageState extends State<DetailPage> {
             .collection('lists')
             .doc(widget.docId)
             // .snapshots(),
+            // .where('authorId', isEqualTo: currentUserId)
             .get(),
         builder: (context, snapshot) {
           if (snapshot.hasError)
@@ -565,7 +566,10 @@ class _DetailPageState extends State<DetailPage> {
 
 class _NumericTextFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) return newValue;
 
     // แปลงเลขเป็น format มีคอมม่า

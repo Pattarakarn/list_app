@@ -76,6 +76,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                const Text('Lock '),
                 CupertinoSwitch(
                   value: isLock,
                   activeColor: AppColors.note,

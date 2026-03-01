@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'Notes.dart';
 import 'homepage.dart';
 import 'random.dart';
+// import 'health.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -199,11 +200,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
-    const WelcomePage(),
+    const LoginPage(),
     const MyListsPage(),
     const NotesPage(),
-    const WelcomePage(),
     const RandomP(),
+    // const HealthPage(),
   ];
   bool _isExpanded = true;
 
