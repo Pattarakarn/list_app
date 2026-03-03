@@ -3,19 +3,20 @@ import 'note_detail.dart';
 import 'note_create.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:list_app/note_detail.dart';
-import 'app_colors.dart';
+import 'package:list_app/features/note/note_detail.dart';
+import '../../app_colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class HealthPage extends StatefulWidget {
-  const HealthPage({super.key});
+class NotesPage extends StatefulWidget {
+  const NotesPage({super.key});
 
   @override
-  State<HealthPage> createState() => _HealthPageState();
+  State<NotesPage> createState() => _NotesPageState();
 }
 
-class _HealthPageState extends State<HealthPage> {
+class _NotesPageState extends State<NotesPage> {
   final List<String> _items = ["โปรเจกต์ที่ 1"];
-
+    final user = FirebaseAuth.instance.currentUser;
   void _deleteItem({required String id, String? name}) {
     String inputText = "";
     showDialog(
@@ -28,8 +29,13 @@ class _HealthPageState extends State<HealthPage> {
             onPressed: () => Navigator.pop(context),
             child: const Text('ยกเลิก'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          // ElevatedButton(
+          TextButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('notes')
+                  .doc(id)
+                  .delete();
               Navigator.pop(context);
             },
             child: const Text('ตกลง'),
@@ -41,12 +47,12 @@ class _HealthPageState extends State<HealthPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Text('random');
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('random')
+            .collection('notes')
             .orderBy('createdAt', descending: true)
+             .where('authorId', isEqualTo: user?.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -68,7 +74,8 @@ class _HealthPageState extends State<HealthPage> {
               final data = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
               String itemName = data['name'] ?? 'Unnamed';
-              print(docId);
+              bool isLock = data['lock'] ?? false;
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 clipBehavior: Clip
@@ -107,7 +114,9 @@ class _HealthPageState extends State<HealthPage> {
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),
                     // ),
-                    trailing: const Icon(Icons.lock, color: AppColors.primary),
+                    trailing: isLock
+                        ? const Icon(Icons.lock, color: AppColors.primary)
+                        : null,
                   ),
                 ),
               );

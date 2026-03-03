@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // class CreateListPage extends StatelessWidget {
 class CreateListPage extends StatefulWidget {
@@ -16,7 +17,11 @@ class _CreateListPageState extends State<CreateListPage> {
   bool _isLoading = false;
   final TextEditingController _nameController = TextEditingController();
 
-  //  ฟังก์ชันส่งข้อมูลไป Firebase Stateful
+final user = FirebaseAuth.instance.currentUser;
+// if (user == null) {
+//   return const Text("กรุณาล็อกอินใหม่");
+// }
+
   Future<void> _createList() async {
     if (_nameController.text.isEmpty) return;
 
@@ -26,6 +31,7 @@ class _CreateListPageState extends State<CreateListPage> {
       await FirebaseFirestore.instance.collection('lists').add({
         'name': _nameController.text,
         'createdAt': FieldValue.serverTimestamp(),
+        'authorId': user?.uid
       });
 
       // เมื่อสำเร็จ ให้ล้างช่องกรอกและปิดหน้าต่าง (ถ้าเป็น Dialog)
@@ -51,6 +57,7 @@ class _CreateListPageState extends State<CreateListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('สร้างลิสต์')),
+       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

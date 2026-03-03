@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // อย่าลืมเพิ่ม intl ใน pubspec.yaml สำหรับจัดการวันที่
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import '../../app_colors.dart';
 
 // const DetailPage({super.key});
 
@@ -184,11 +185,11 @@ class _DetailPageState extends State<DetailPage> {
               flex: 1,
               child: TextField(
                 keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
-                  // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
-                  _NumericTextFormatter(),
-                ],
+                // inputFormatters: [
+                //   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
+                //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
+                //   _NumericTextFormatter(),
+                // ],
                 textAlign: TextAlign.right,
                 controller:
                     TextEditingController(
@@ -405,7 +406,7 @@ class _DetailPageState extends State<DetailPage> {
                             setState(() {
                               headers = [
                                 ...headers,
-                                'หัวข้อ ${headers.length + 1}',
+                                '${headers.length + 1}',
                               ];
                             });
                           },
@@ -557,8 +558,11 @@ class _DetailPageState extends State<DetailPage> {
           ? null // หรือ const SizedBox.shrink() ถ้าอยากให้หายไปเลยแบบไม่มี Animation
           : FloatingActionButton.extended(
               onPressed: _saveToFirebase,
-              icon: const Icon(Icons.save),
+              icon: const Icon(Icons.cloud_upload),
               label: const Text('Save'),
+              backgroundColor:  AppColors.secondary,
+              foregroundColor:  Colors.white,
+              // backgroundColor:  Theme.of(context).secondaryColor,
             ),
     );
   }
@@ -574,6 +578,9 @@ class _NumericTextFormatter extends TextInputFormatter {
 
     // แปลงเลขเป็น format มีคอมม่า
     String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanText.isEmpty) {
+  return const TextEditingValue(text: '', selection: TextSelection.collapsed(offset: 0));
+}
     double value = double.parse(cleanText);
     final formatter = NumberFormat.decimalPattern();
     // final double? value = double.tryParse(newValue.text.replaceAll(',', ''));

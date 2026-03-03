@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'app_colors.dart';
-import 'loading.dart';
+import '../../app_colors.dart';
+import '../../loading.dart';
 
 // void main() {
 //   runApp(const MaterialApp(

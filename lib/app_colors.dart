@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color primary = Colors.orange; //Color(0xFFFF8A65)
-  static const Color secondary = Colors.deepPurple;
+  static const Color secondary =  Color(0xFF6F4E37);//.deepPurple;
   static const Color danger = Colors.red;
   static const Color note = Color(0xFFFFC107);
   static const Color rand = Color(0xFF5C6BC0);

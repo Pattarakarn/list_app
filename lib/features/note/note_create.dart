@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'app_colors.dart';
+import '../../app_colors.dart';
 import 'package:flutter/cupertino.dart'; // 👈 เพิ่มบรรทัดนี้
 
 class CreateNotePage extends StatefulWidget {
@@ -60,6 +60,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('สร้างโน้ต')),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -124,10 +125,10 @@ class _CreateNotePageState extends State<CreateNotePage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary,
+                        // backgroundColor: AppColors.primary,
+                        // foregroundColor: Theme.of(
+                        //   context,
+                        // ).colorScheme.onPrimary,
                       ),
                       onPressed: _createList,
                       child: const Text('บันทึก'),

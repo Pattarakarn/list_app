@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'profile.dart';
-import 'lists.dart';
+import 'screens/profile.dart';
+import 'features/list/main.dart';
 import 'app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'Notes.dart';
-import 'homepage.dart';
-import 'random.dart';
-// import 'health.dart';
+import 'features/note/main.dart';
+import 'screens/welcome.dart';
+import 'features/random/main.dart';
+// import 'features/health/main.dart';
+import '../utils/constant.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +22,43 @@ void main() async {
     print("Firebase เชื่อมต่อไม่สำเร็จ: $e");
   }
 
-  // runApp(const MyApp());
-  runApp(MaterialApp(home: HomeScreen())); // กำหนดหน้าหลัก
+  runApp(
+    MaterialApp(
+      title: 'LisT',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          primary: const Color(0xFFFF6B00),
+          seedColor: const Color(0xFFFF6B00),
+           secondary: const Color(0xFFFF9E00),
+        ),
+        hoverColor: Colors.orange.withOpacity(0.1),
+      ),
+
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (snapshot.hasData) {
+            return HomeScreen();
+          }
+          print('pls');
+          return const LoginPage();
+        },
+      ),
+      //         final prefs = await SharedPreferences.getInstance();
+      // final token = prefs.getString('user_token');
+      // if (token != null) {
+      //   // พาไปหน้า Home
+      // }
+    ),
+  );
 }
 
 class HomeScreen extends StatefulWidget {
@@ -35,7 +72,6 @@ class HomeScreen extends StatefulWidget {
   //     // ใช้ Stack เพื่อจัดวางเลเยอร์
   //     body: Stack(
   //       children: [
-  //         // --- 1. Background / Content Area ---
   //         // ส่วนนี้จะปล่อยให้ Scroll ได้เต็มจอ
   //         Positioned.fill(
   //           child: ListView(
@@ -51,15 +87,11 @@ class HomeScreen extends StatefulWidget {
   //                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
   //               ),
   //               const SizedBox(height: 20),
-  //               _buildNoteCard("ประชุมเช้า", "คุยเรื่องดีไซน์แอปใหม่กับทีม..."),
-  //               _buildNoteCard("ของต้องซื้อ", "ไข่ไก่, ขนมปัง, กาแฟ..."),
   //               _buildNoteCard("ไอเดีย", "อยากลองหัดเขียน Flutter ให้เก่งๆ"),
-  //               _buildNoteCard("งานด่วน", "ส่งรีพอร์ตภายในเย็นวันนี้"),
   //             ],
   //           ),
   //         ),
 
-  //         // --- 2. Top Header (ไม่มีไอคอน Logout ให้รกสายตา) ---
   //         Positioned(
   //           top: 0,
   //           left: 0,
@@ -130,7 +162,6 @@ class HomeScreen extends StatefulWidget {
   //           ),
   //         ),
 
-  //         // --- 3. Floating Bottom Navigation (ลอยด้านล่าง) ---
   //         Positioned(
   //           bottom: 30,
   //           left: 20,
@@ -152,31 +183,7 @@ class HomeScreen extends StatefulWidget {
   //             child: Row(
   //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
   //               children: [
-  //                 _navItem(
-  //                   Icons.list_alt_rounded,
-  //                   "ลิสต์",
-  //                   AppColors.primary,
-  //                   () {
-  //                     setState(() => _selectedIndex = 1);
-  //                     Navigator.pop(context);
-  //                   },
-  //                 ),
-  //                 _navItem(
-  //                   Icons.description_rounded,
-  //                   "โน้ต",
-  //                   AppColors.note,
-  //                   () {},
-  //                 ),
-  //                 _navItem(
-  //                   Icons.auto_awesome_rounded,
-  //                   "random",
-  //                   AppColors.rand,
-  //                   () => {},
-  //                 ),
-  //                 _navItem(Icons.health_and_safety, "health", [
-  //                   Color(0xFFF06292), // ชมพู
-  //                   Color(0xFFBA68C8), // ม่วงชมพู
-  //                 ], () => {}),
+  //
   //               ],
   //             ),
   //           ),
@@ -200,13 +207,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
-    const LoginPage(),
+    const ProfilePage(),
     const MyListsPage(),
     const NotesPage(),
     const RandomP(),
     // const HealthPage(),
   ];
   bool _isExpanded = true;
+    final user = FirebaseAuth.instance.currentUser;
 
   void _showLogoutDialog(BuildContext context) {
     showModalBottomSheet(
@@ -214,33 +222,38 @@ class _HomeScreenState extends State<HomeScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
+      backgroundColor: Colors.white,
       builder: (context) => Container(
         padding: const EdgeInsets.all(30),
         // margin: const EdgeInsets.only(bottom: 100),
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.8,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "ออกจากระบบ?",
+              "ตั้งค่า",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade50,
-                foregroundColor: Colors.red,
+                backgroundColor: AppColors.gray,
+                foregroundColor: Colors.blue,
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              onPressed: () {
-                // ใส่คำสั่ง Logout จริงๆ ตรงนี้
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
                 Navigator.pop(context);
+                //                 final prefs = await SharedPreferences.getInstance();
+                // await prefs.setString('user_token', 'ค่า_token_ที่ได้จาก_backend');
+                // await prefs.remove('user_token');
+                // แล้วสั่ง Navigator.pushReplacement ไปหน้า Login
               },
-              child: const Text("ยืนยันการออกจากระบบ"),
+              child: const Text("ออกจากระบบ"),
             ),
           ],
         ),
@@ -300,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   : Icon(icon, color: color, size: 26), // สีปกติ
 
               const SizedBox(height: 4),
-              // --- ส่วนที่ 2: ข้อความ (อยู่นอก ShaderMask เสมอ) ---
+
               Text(
                 label,
                 style: TextStyle(
@@ -341,30 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Widget> _buildFloatingItems() {
-    // ข้อมูลเมนู (ดัดแปลงตามของคุณ)
-    final List<Map<String, dynamic>> menuItems = [
-      // {'icon': Icons.home, 'label': 'หลัก', 'color': Colors.blue, 'index': 0},
-      {
-        'icon': Icons.list,
-        'label': 'ลิสต์',
-        'color': AppColors.primary,
-        'index': 1,
-      },
-      // list_alt_rounded
-      {
-        'icon': Icons.note,
-        'label': 'โน้ต',
-        'color': AppColors.note,
-        'index': 2,
-      },
-      // description_rounded
-      {
-        'icon': Icons.auto_awesome,
-        'label': 'random',
-        'color': [Color(0xFF00E5FF), Color(0xFF2979FF)],
-        'index': 3,
-      },
-    ];
+    final List<Map<String, dynamic>> menuItems = AppMenus.mainNavItems;
 
     // กรณีที่เลือกหน้า 1 ขึ้นไป และยังไม่ได้กดขยาย
     if (_selectedIndex >= 1 && !_isExpanded) {
@@ -405,7 +395,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text('LisT app')),
       backgroundColor: const Color(0xFFF3F7F9),
 
       body: Stack(
@@ -418,13 +407,13 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _pages[_selectedIndex],
             ),
           ),
-
+          // Visibility(  visible: index != 0,
+if (_selectedIndex != 0)
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: Container(
-              // padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
               padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -446,8 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Icon(Icons.person_rounded, color: AppColors.blue),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      "คุณ ✨",
+                     Text(
+                      user?.displayName ?? '-',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -457,6 +446,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: const Icon(
                         Icons.more_vert_rounded,
+                        // Icons.settings,//_suggest,
+                        // Icons.manage_accounts,
                         color: Colors.black54,
                       ),
                       onPressed: () {
@@ -538,30 +529,6 @@ class _HomeScreenState extends State<HomeScreen> {
           //     child: Row(
           //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           //       children: [
-          //         _navItem(
-          //           Icons.list_alt_rounded,
-          //           "ลิสต์",
-          //           AppColors.primary,
-          //           () {
-          //             setState(() => _selectedIndex = 1);
-          //           },
-          //         ),
-          //         _navItem(
-          //           Icons.description_rounded,
-          //           "โน้ต",
-          //           AppColors.note,
-          //           () {setState(() => _selectedIndex = 2);},
-          //         ),
-          //         _navItem(
-          //           Icons.auto_awesome_rounded,
-          //           "random",
-          //           AppColors.rand,
-          //           () => {setState(() => _selectedIndex = 3)},
-          //         ),
-          //         _navItem(Icons.health_and_safety, "health", [
-          //           Color(0xFFF06292), // ชมพู
-          //           Color(0xFFBA68C8), // ม่วงชมพู
-          //         ], () => {setState(() => _selectedIndex = 4)}),
           //       ],
           //     ),
           //   ),
@@ -572,191 +539,89 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LisT',
-      // theme: ThemeData(
-      //   // This is the theme of your application.
-      //   //
-      //   // TRY THIS: Try running your application with "flutter run". You'll see
-      //   // the application has a purple toolbar. Then, without quitting the app,
-      //   // try changing the seedColor in the colorScheme below to Colors.green
-      //   // and then invoke "hot reload" (save your changes or press the "hot
-      //   // reload" button in a Flutter-supported IDE, or press "r" if you used
-      //   // the command line to start the app).
-      //   //
-      //   // Notice that the counter didn't reset back to zero; the application
-      //   // state is not lost during the reload. To reset the state, use hot
-      //   // restart instead.
-      //   //
-      //   // This works for code too, not just values: Most code changes can be
-      //   // tested with just a hot reload.
-      //   colorScheme: .fromSeed(seedColor: Colors.orange),
-      //   // colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      // ),
-      // home: const MyHomePage(title: 'Demo Home Page'),
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          primary: const Color(0xFFFF6B00),
-          seedColor: const Color(0xFFFF6B00),
-          //  seedColor: const Color(0xFFFF9E00),
-        ),
-        hoverColor: Colors.orange.withOpacity(0.1),
-      ),
-      home: const MainNavigation(),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'LisT',
+//       // home: const MyHomePage(title: 'Demo Home Page'),
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//         useMaterial3: true,
+//         colorScheme: ColorScheme.fromSeed(
+//           primary: const Color(0xFFFF6B00),
+//           seedColor: const Color(0xFFFF6B00),
+//           //  seedColor: const Color(0xFFFF9E00),
+//         ),
+//         hoverColor: Colors.orange.withOpacity(0.1),
+//       ),
+//       home: const MainNavigation(),
+//     );
+//   }
+// }
 
-class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
-  @override
-  State<MainNavigation> createState() => _MainNavigationState();
-}
+// class MainNavigation extends StatefulWidget {
+//   const MainNavigation({super.key});
+//   @override
+//   State<MainNavigation> createState() => _MainNavigationState();
+// }
 
-class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
+// class _MainNavigationState extends State<MainNavigation> {
+//   int _selectedIndex = 0;
 
-  // รายการหน้าต่างๆ
-  final List<Widget> _pages = [
-    const ProfilePage(),
-    const MyListsPage(),
-    const NotesPage(),
-  ];
+//   final List<Widget> _pages = [
+//     const ProfilePage(),
+//     const MyListsPage(),
+//     const NotesPage(),
+//   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('LisT app')),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.primary),
-              child: Text(
-                'เมนู',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('โปรไฟล์'),
-              onTap: () {
-                setState(() => _selectedIndex = 0);
-                Navigator.pop(context); // ปิดเมนูข้าง
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.list),
-              title: const Text('ลิสต์'),
-              onTap: () {
-                setState(() => _selectedIndex = 1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.note),
-              title: const Text('โน้ต'),
-              onTap: () {
-                setState(() => _selectedIndex = 2);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-      body: _pages[_selectedIndex],
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('LisT app')),
+//       drawer: Drawer(
+//         child: ListView(
+//           children: [
+//             const DrawerHeader(
+//               decoration: BoxDecoration(color: AppColors.primary),
+//               child: Text(
+//                 'เมนู',
+//                 style: TextStyle(color: Colors.white, fontSize: 24),
+//               ),
+//             ),
+//             ListTile(
+//               leading: const Icon(Icons.person),
+//               title: const Text('โปรไฟล์'),
+//               onTap: () {
+//                 setState(() => _selectedIndex = 0);
+//                 Navigator.pop(context); // ปิดเมนูข้าง
+//               },
+//             ),
+//             ListTile(
+//               leading: const Icon(Icons.list),
+//               title: const Text('ลิสต์'),
+//               onTap: () {
+//                 setState(() => _selectedIndex = 1);
+//                 Navigator.pop(context);
+//               },
+//             ),
+//             ListTile(
+//               leading: const Icon(Icons.note),
+//               title: const Text('โน้ต'),
+//               onTap: () {
+//                 setState(() => _selectedIndex = 2);
+//                 Navigator.pop(context);
+//               },
+//             ),
+//           ],
+//         ),
+//       ),
+//       body: _pages[_selectedIndex],
+//     );
+//   }
+// }
 
 extension ThemeGetter on BuildContext {
   Color get primaryColor => Theme.of(this).colorScheme.primary;

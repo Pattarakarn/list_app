@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // สำหรับจัดการวันที่
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'app_colors.dart';
+import '../../app_colors.dart';
 
 class DetailPage extends StatefulWidget {
   final String title;

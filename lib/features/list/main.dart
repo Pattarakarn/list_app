@@ -3,10 +3,10 @@ import 'list_detail.dart';
 import 'list_create.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:list_app/list_detail.dart'; // <--- ต้องมีบรรทัดนี้
+import 'package:list_app/features/list/list_detail.dart'; // <--- ต้องมีบรรทัดนี้
 import 'package:list_app/main.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// class MyListsPage extends StatelessWidget {
 class MyListsPage extends StatefulWidget {
   //เพื่อให้อัพเดททันที
   const MyListsPage({super.key});
@@ -37,10 +37,7 @@ class MyListsPage extends StatefulWidget {
 }
 
 class _MyListsPageState extends State<MyListsPage> {
-  // สร้างตัวแปรเก็บรายชื่อลิสต์ (เริ่มต้นด้วยลิสต์ว่าง)
-  final List<String> _items = ["โปรเจกต์ที่ 1"];
 
-  // ฟังก์ชันสำหรับเปิดหน้าต่างกรอกชื่อลิสต์ใหม่
   void _showAddDialog() {
     String inputText = "";
     showDialog(
@@ -60,9 +57,9 @@ class _MyListsPageState extends State<MyListsPage> {
           ElevatedButton(
             onPressed: () {
               if (inputText.isNotEmpty) {
-                setState(() {
-                  _items.add(inputText); // เพิ่มข้อมูลลงในตัวแปร
-                });
+                // setState(() {
+                //   _items.add(inputText); // เพิ่มข้อมูลลงในตัวแปร
+                // });
                 Navigator.pop(context);
               }
             },
@@ -75,38 +72,27 @@ class _MyListsPageState extends State<MyListsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+if (user == null) {
+  return const Text("กรุณาล็อกอินใหม่");
+}
     return Scaffold(
-      // ส่วนเนื้อหาหลัก
-      // body: _items.isEmpty
-      //     ? const Center(child: Text('ยังไม่มีรายการ กดปุ่ม + เพื่อเพิ่ม'))
-      //     : ListView.builder(
-      //         itemCount: _items.length,
-      //         itemBuilder: (context, index) {
-      //           return Card(
-      //             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      //             child: ListTile(
-      //               // leading: const CircleAvatar(child: Text('${index + 1}')),
-      //               title: Text(_items[index]),
-      //               subtitle: const Text('กดเพื่อดูรายละเอียดตาราง'),
-      //               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      //               onTap: () {
+        // backgroundColor: Colors.red,
+
       //                 Navigator.push(
       //                   context,
       //                   MaterialPageRoute(builder: (context) =>  DetailPage(title: '${_items[index]}')),
       //                 );
-      //               },
-      //             ),
-      //           );
-      //         },
-      //       ),
       body: StreamBuilder<QuerySnapshot>(
-        // เชื่อมต่อท่อข้อมูลกับ Cloud Firestore
         stream: FirebaseFirestore.instance
             .collection('lists')
+            .where('authorId', isEqualTo: user.uid)
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
+           print("Firestore Error: ${snapshot.error}");
             return const Center(child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'));
           }
 
@@ -181,12 +167,11 @@ class _MyListsPageState extends State<MyListsPage> {
             context,
             MaterialPageRoute(builder: (context) => const CreateListPage()),
           );
-
           // 2. ถ้าได้ชื่อกลับมา ให้เพิ่มลงในลิสต์
           if (result != null && result is String) {
-            setState(() {
-              _items.add(result);
-            });
+            // setState(() {
+            //   _items.add(result);
+            // });
           }
         },
       ),
