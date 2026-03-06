@@ -31,7 +31,7 @@ void main() async {
         colorScheme: ColorScheme.fromSeed(
           primary: const Color(0xFFFF6B00),
           seedColor: const Color(0xFFFF6B00),
-           secondary: const Color(0xFFFF9E00),
+          secondary: const Color(0xFFFF9E00),
         ),
         hoverColor: Colors.orange.withOpacity(0.1),
       ),
@@ -211,10 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
     const MyListsPage(),
     const NotesPage(),
     const RandomP(),
+    const RandomP(),
     // const HealthPage(),
   ];
   bool _isExpanded = true;
-    final user = FirebaseAuth.instance.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
 
   void _showLogoutDialog(BuildContext context) {
     showModalBottomSheet(
@@ -248,6 +249,11 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
                 Navigator.pop(context);
+                await GoogleSignIn().signOut();
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
                 //                 final prefs = await SharedPreferences.getInstance();
                 // await prefs.setString('user_token', 'ค่า_token_ที่ได้จาก_backend');
                 // await prefs.remove('user_token');
@@ -408,78 +414,94 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           // Visibility(  visible: index != 0,
-if (_selectedIndex != 0)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFFF3F7F9),
-                    const Color(0xFFF3F7F9).withOpacity(0.0),
-                  ],
-                ),
-              ),
-              child: GestureDetector(
-                // onTap: () => _showLogoutDialog(context),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.person_rounded, color: AppColors.blue),
-                    ),
-                    const SizedBox(width: 12),
-                     Text(
-                      user?.displayName ?? '-',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.more_vert_rounded,
-                        // Icons.settings,//_suggest,
-                        // Icons.manage_accounts,
-                        color: Colors.black54,
-                      ),
-                      onPressed: () {
-                        _showLogoutDialog(context);
-                      },
-                    ),
-                    // PopupMenuButton<String>(
-                    //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
-                    //   onSelected: (value) {
-                    //     if (value == 'logout') {
-
-                    //     }
-                    //   },
-                    //   itemBuilder: (context) => [
-                    //     const PopupMenuItem(
-                    //       value: 'logout',
-                    //       child: Row(
-                    //         children: [
-                    //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                    //           SizedBox(width: 10),
-                    //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
-                    //         ],
-                    //       ),
-                    //     ),
-                    //   ],
+          if (_selectedIndex != 0)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
+                color: Colors.grey[200],
+                // decoration: BoxDecoration(
+                //   gradient: LinearGradient(
+                //     begin: Alignment.topCenter,
+                //     end: Alignment.bottomCenter,
+                //     colors: [
+                //       const Color(0xFFF3F7F9),
+                //       const Color(0xFFF3F7F9).withOpacity(0.0),
+                //     ],
+                //   ),
+                // ),
+                child: GestureDetector(
+                  onTap: () => {
+                    setState(() => _selectedIndex = 0),
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => const ProfilePage(),
+                    //   ),
                     // ),
-                  ],
+                  },
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person_rounded,
+                          // color: AppColors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        (((user?.email?.length ?? 0) > 4
+                                    ? user?.email?.substring(0, 4)
+                                    : user?.email) ??
+                                '') +
+                            "@",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.more_vert_rounded,
+                          // Icons.settings,//_suggest,
+                          // Icons.manage_accounts,
+                          color: Colors.black54,
+                        ),
+                        onPressed: () {
+                          _showLogoutDialog(context);
+                        },
+                      ),
+                      // PopupMenuButton<String>(
+                      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
+                      //   onSelected: (value) {
+                      //     if (value == 'logout') {
+
+                      //     }
+                      //   },
+                      //   itemBuilder: (context) => [
+                      //     const PopupMenuItem(
+                      //       value: 'logout',
+                      //       child: Row(
+                      //         children: [
+                      //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                      //           SizedBox(width: 10),
+                      //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
           Positioned(
             bottom: 20, // ให้ลอยจากขอบล่าง 20

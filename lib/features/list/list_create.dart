@@ -17,10 +17,10 @@ class _CreateListPageState extends State<CreateListPage> {
   bool _isLoading = false;
   final TextEditingController _nameController = TextEditingController();
 
-final user = FirebaseAuth.instance.currentUser;
-// if (user == null) {
-//   return const Text("กรุณาล็อกอินใหม่");
-// }
+  final user = FirebaseAuth.instance.currentUser;
+  // if (user == null) {
+  //   return const Text("กรุณาล็อกอินใหม่");
+  // }
 
   Future<void> _createList() async {
     if (_nameController.text.isEmpty) return;
@@ -31,7 +31,7 @@ final user = FirebaseAuth.instance.currentUser;
       await FirebaseFirestore.instance.collection('lists').add({
         'name': _nameController.text,
         'createdAt': FieldValue.serverTimestamp(),
-        'authorId': user?.uid
+        'authorId': user?.uid,
       });
 
       // เมื่อสำเร็จ ให้ล้างช่องกรอกและปิดหน้าต่าง (ถ้าเป็น Dialog)
@@ -57,7 +57,7 @@ final user = FirebaseAuth.instance.currentUser;
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('สร้างลิสต์')),
-       backgroundColor: Colors.white,
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

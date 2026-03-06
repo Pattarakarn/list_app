@@ -16,7 +16,7 @@ class NotesPage extends StatefulWidget {
 
 class _NotesPageState extends State<NotesPage> {
   final List<String> _items = ["โปรเจกต์ที่ 1"];
-    final user = FirebaseAuth.instance.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
   void _deleteItem({required String id, String? name}) {
     String inputText = "";
     showDialog(
@@ -52,7 +52,7 @@ class _NotesPageState extends State<NotesPage> {
         stream: FirebaseFirestore.instance
             .collection('notes')
             .orderBy('createdAt', descending: true)
-             .where('authorId', isEqualTo: user?.uid)
+            .where('authorId', isEqualTo: user?.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -78,11 +78,12 @@ class _NotesPageState extends State<NotesPage> {
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                color: Colors.white,
                 clipBehavior: Clip
                     .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
                 child: InkWell(
                   onTap: () {}, // ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
-                  hoverColor: AppColors.note.withOpacity(0.2),
+                  hoverColor: AppColors.note.withOpacity(0.1),
                   child: ListTile(
                     // leading: const CircleAvatar(child: Icon(Icons.delete)),
                     leading: IconButton(

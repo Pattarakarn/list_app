@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'note_detail.dart';
-import 'note_create.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
-import 'package:list_app/note_detail.dart';
+import 'dart:math';
 import '../../app_colors.dart';
+import '../../loading.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -14,123 +11,257 @@ class HealthPage extends StatefulWidget {
 }
 
 class _HealthPageState extends State<HealthPage> {
-  final List<String> _items = ["โปรเจกต์ที่ 1"];
+  final TextEditingController _controller = TextEditingController();
+  final List<String> _items = [];
 
-  void _deleteItem({required String id, String? name}) {
-    String inputText = "";
+  void _showRandomProcess() async {
+    // String winner = _items[random.nextInt(_items.length)];
+
     showDialog(
       context: context,
+      barrierDismissible: false, // ห้ามกดปิดจนกว่าจะสุ่มเสร็จ
       builder: (context) => AlertDialog(
-        title: const Text('ยืนยันการลบ'),
-        content: const Text('คุณต้องการลบรายการโน้ตนี้หรือไม่'),
+        backgroundColor:
+            Colors.transparent, // ทำให้พื้นหลังใสเพื่อโชว์แค่ Animation
+        elevation: 0,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ใช้ CircularProgressIndicator หรือ Lottie Animation ตรงนี้
+            BouncingDots(),
+            // const SizedBox(height: 20),
+            // const Text(
+            //   "กำลังสุ่ม...",
+            //   style: TextStyle(
+            //     color: Colors.white,
+            //     fontSize: 20,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
+          ],
+        ),
+      ),
+    );
+
+    // 2. หน่วงเวลาไว้ 2 วินาที (ให้ User ได้ลุ้น)
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 3. ปิด Dialog "กำลังสุ่ม"
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    // 4. คำนวณผลลัพธ์
+    final random = Random();
+    int randomIndex = random.nextInt(_items.length);
+    String winner = _items[randomIndex];
+
+    // 5. แสดง Dialog ผลลัพธ์จริง (ใช้โค้ดเดิมที่เราคุยกัน)
+    _showRandomResult(winner, randomIndex);
+  }
+
+  void _showRandomResult(winner, randomIndex) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // บังคับให้กดปุ่มเพื่อปิดเท่านั้น
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Center(child: Text("ผลการสุ่ม 🎉")),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // const Icon(Icons.stars, color: Colors.orange, size: 80),
+            const SizedBox(height: 15), //20),
+            Text(
+              '${winner}',
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: AppColors.rand, //Colors.deepPurple,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly, // จัดวางปุ่มให้สมดุล
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('ตกลง'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Row(
+              children: [
+                // ปุ่มปิด
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      // setState(() {
+                      //   _items.removeAt(randomIndex);
+                      // });
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text("ปิด"),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                if (_items.length > 1) // ถ้าเหลือของให้สุ่มต่อได้
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _items.removeAt(randomIndex); // ลบตัวเก่าออกก่อน
+                        });
+                        Navigator.pop(context); // ปิด Dialog เก่า
+                        _showRandomProcess(); // เปิดอันใหม่ (สุ่มต่อทันที)
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
+                      child: Text(
+                        "สุ่มต่อ (${_items.length - 1} รายการ)",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
+  // void _addItem() {
+  //   if (_controller.text.trim().isNotEmpty) {
+  //     setState(() {
+  //       _items.add(_controller.text.trim());
+  //       _controller.clear();
+  //     });
+  //   }
+  // }
+  final FocusNode _focusNode = FocusNode();
+  void _addItem() {
+    if (_controller.text.trim().isNotEmpty) {
+      setState(() {
+        _items.add(_controller.text.trim());
+        _controller.clear(); // ล้างช่องพิมพ์
+      });
+
+      // 2. สั่งให้โฟกัสกลับมาที่ช่องเดิมทันที
+      _focusNode.requestFocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Text('random');
-    // return Scaffold(
-    //   body: StreamBuilder<QuerySnapshot>(
-    //     stream: FirebaseFirestore.instance
-    //         .collection('random')
-    //         .orderBy('createdAt', descending: true)
-    //         .snapshots(),
-    //     builder: (context, snapshot) {
-    //       if (snapshot.hasError) {
-    //         return const Center(child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'));
-    //       }
+    bool canRandom = _items.length >= 2;
 
-    //       if (snapshot.connectionState == ConnectionState.waiting) {
-    //         return const Center(child: CircularProgressIndicator());
-    //       }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("สุ่มอะไรดี?"),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            // ส่วนช่องกรอกข้อมูล
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    decoration: InputDecoration(
+                      hintText: "พิมพ์รายการ",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    textInputAction: TextInputAction
+                        .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
+                    onSubmitted: (value) {
+                      _addItem(); // เมื่อกด Enter ให้เรียกฟังก์ชันเพิ่มรายการทันที
+                    },
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton.filled(
+                  onPressed: _addItem,
+                  icon: const Icon(Icons.add),
+                  style: IconButton.styleFrom(backgroundColor: AppColors.rand),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
 
-    //       final docs = snapshot.data!.docs;
+            // ส่วนแสดงรายการที่เพิ่มแล้ว
+            Expanded(
+              child: _items.isEmpty
+                  ? const Center(child: Text("")) //ลองเพิ่มรายการดูก่อนนะ 😊
+                  : ListView.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(child: Text("${index + 1}")),
+                            title: Text(_items[index]),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _items.removeAt(index)),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
 
-    //       if (docs.isEmpty) {
-    //         return Text('');
-    //       }
-    //       return ListView.builder(
-    //         itemCount: docs.length,
-    //         itemBuilder: (context, index) {
-    //           final data = docs[index].data() as Map<String, dynamic>;
-    //           final docId = docs[index].id;
-    //           String itemName = data['name'] ?? 'Unnamed';
-    //           print(docId);
-    //           return Card(
-    //             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    //             clipBehavior: Clip
-    //                 .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
-    //             child: InkWell(
-    //               onTap: () {}, // ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
-    //               hoverColor: AppColors.note.withOpacity(0.2),
-    //               child: ListTile(
-    //                 // leading: const CircleAvatar(child: Icon(Icons.delete)),
-    //                 leading: IconButton(
-    //                   icon: const Icon(Icons.close),
-    //                   onPressed: () => _deleteItem(id: docId, name: itemName),
-    //                   hoverColor: AppColors.danger,
-    //                   highlightColor: AppColors.danger.withOpacity(0.2),
-    //                   color: Colors.white,
-    //                   // mouseCursor: SystemMouseCursors.click,
-    //                   iconSize: 18,
-    //                 ),
-
-    //                 title: Text(data['name'] ?? 'ไม่มีชื่อ'),
-    //                 subtitle: Text(
-    //                   DateFormat(
-    //                     'dd/MM/yyyy HH:mm',
-    //                   ).format((data['createdAt'] as Timestamp).toDate()),
-    //                   style: const TextStyle(fontSize: 12),
-    //                 ),
-    //                 onTap: () {
-    //                   Navigator.push(
-    //                     context,
-    //                     MaterialPageRoute(
-    //                       builder: (context) =>
-    //                           DetailPage(title: itemName, docId: docId),
-    //                     ),
-    //                   );
-    //                 },
-    //                 // trailing: IconButton(
-    //                 //   // icon: const Icon(Icons.delete, color: Colors.red),
-    //                 // ),
-    //                 trailing: const Icon(Icons.lock, color: AppColors.primary),
-    //               ),
-    //             ),
-    //           );
-    //         },
-    //       );
-    //     },
-    //   ),
-    //   floatingActionButton: FloatingActionButton(
-    //     backgroundColor: Colors.yellow,
-    //     child: const Icon(Icons.add, color: Colors.white),
-    //     onPressed: () async {
-    //       final result = await Navigator.push(
-    //         context,
-    //         MaterialPageRoute(builder: (context) => const CreateNotePage()),
-    //       );
-
-    //       if (result != null && result is String) {
-    //         setState(() {
-    //           _items.add(result);
-    //         });
-    //       }
-    //     },
-    //   ),
-    // );
+            // ปุ่มสุ่ม (ที่จะเปลี่ยนสีและกดได้เมื่อเงื่อนไขครบ)
+            const SizedBox(height: 20),
+            SizedBox(
+              // width: double.infinity,
+              width: MediaQuery.of(context).size.width * 0.45,
+              height: 60,
+              child: ElevatedButton.icon(
+                onPressed: canRandom ? _showRandomProcess : null,
+                icon: const Icon(Icons.shuffle, color: Colors.white),
+                label: Text(
+                  'Random!',
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: canRandom ? AppColors.rand : Colors.grey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: canRandom ? 8 : 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

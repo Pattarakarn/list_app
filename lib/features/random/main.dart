@@ -172,12 +172,12 @@ class _RandomPState extends State<RandomP> {
     bool canRandom = _items.length >= 2;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("สุ่มอะไรดี?"),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
+      // appBar: AppBar(
+      //   title: const Text("รายการที่ต้องการสุ่ม"),
+      //   backgroundColor: Colors.deepPurple,
+      //   foregroundColor: Colors.white,
+      //   centerTitle: true,
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -190,12 +190,19 @@ class _RandomPState extends State<RandomP> {
                     controller: _controller,
                     focusNode: _focusNode,
                     decoration: InputDecoration(
-                      hintText: "พิมพ์รายการ",
+                      hintText: "พิมพ์รายการที่ต้องการสุ่ม",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: Colors.white,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: AppColors.rand,
+                          width: 2.0,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                     textInputAction: TextInputAction
                         .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
@@ -205,10 +212,25 @@ class _RandomPState extends State<RandomP> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: _addItem,
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(backgroundColor: AppColors.rand),
+                Ink(
+                  decoration: const ShapeDecoration(
+                    shape: CircleBorder(),
+                    gradient: LinearGradient(
+                      // colors: [Colors.blue, Colors.purple],
+                      colors: [Color(0xFF2979FF), Color(0xFF00E5FF)],
+                      begin: Alignment.bottomLeft,
+                      end: Alignment.topRight,
+                    ),
+                  ),
+                  // child: IconButton.filled(
+                  child: IconButton(
+                    onPressed: _addItem,
+                    icon: const Icon(Icons.add),
+                    // style: IconButton.styleFrom(
+                    //   backgroundColor: AppColors.rand,
+                    // ),
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -227,8 +249,12 @@ class _RandomPState extends State<RandomP> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          // color: Colors.grey[500],
                           child: ListTile(
-                            leading: CircleAvatar(child: Text("${index + 1}")),
+                            leading: CircleAvatar(
+                              child: Text("${index + 1}"),
+                              backgroundColor: Colors.white, //grey[100],
+                            ),
                             title: Text(_items[index]),
                             trailing: IconButton(
                               icon: const Icon(

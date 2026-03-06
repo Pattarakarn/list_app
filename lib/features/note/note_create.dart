@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../app_colors.dart';
 import 'package:flutter/cupertino.dart'; // 👈 เพิ่มบรรทัดนี้
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateNotePage extends StatefulWidget {
   const CreateNotePage({super.key});
@@ -17,7 +18,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
 
   final TextEditingController _contentController = TextEditingController();
   bool isLock = false;
-
+  final user = FirebaseAuth.instance.currentUser;
   // final LocalAuthentication auth = LocalAuthentication();
 
   // // เช็กว่า Browser หรืออุปกรณ์นี้รองรับไหม
@@ -44,6 +45,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
         'content': _contentController.text,
         'createdAt': FieldValue.serverTimestamp(),
         'lock': isLock,
+        'authorId': user?.uid,
       });
 
       if (mounted) Navigator.pop(context);

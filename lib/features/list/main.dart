@@ -37,7 +37,6 @@ class MyListsPage extends StatefulWidget {
 }
 
 class _MyListsPageState extends State<MyListsPage> {
-
   void _showAddDialog() {
     String inputText = "";
     showDialog(
@@ -74,11 +73,11 @@ class _MyListsPageState extends State<MyListsPage> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-if (user == null) {
-  return const Text("กรุณาล็อกอินใหม่");
-}
+    if (user == null) {
+      return const Text("กรุณาล็อกอินใหม่");
+    }
     return Scaffold(
-        // backgroundColor: Colors.red,
+      // backgroundColor: Colors.red,
 
       //                 Navigator.push(
       //                   context,
@@ -92,7 +91,7 @@ if (user == null) {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-           print("Firestore Error: ${snapshot.error}");
+            print("Firestore Error: ${snapshot.error}");
             return const Center(child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'));
           }
 
@@ -114,7 +113,6 @@ if (user == null) {
               // ดึงข้อมูลในแต่ละแถวออกมา
               final data = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
-              print(docId);
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: ListTile(

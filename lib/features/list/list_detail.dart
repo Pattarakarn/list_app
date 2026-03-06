@@ -47,6 +47,7 @@ class _DetailPageState extends State<DetailPage> {
   List<String> headers = ['หัวข้อ'];
   // (จะทำงานครั้งเดียวตอนเปิดหน้านี้ขึ้นมา)
   bool _isSuccess = false;
+  bool _isHideBox = false;
   @override
   void initState() {
     super.initState();
@@ -343,6 +344,7 @@ class _DetailPageState extends State<DetailPage> {
                       const DataColumn(
                         label: Expanded(child: Center(child: Text('วันที่'))),
                       ),
+
                       // ...List.generate(dynamicColumnsCount, (index) =>
                       //   DataColumn(label: Text('ช่องที่ ${index + 1}'))
                       // ),
@@ -351,51 +353,65 @@ class _DetailPageState extends State<DetailPage> {
                       ...List.generate(
                         headers.length,
                         (index) => DataColumn(
-                          label: Expanded(
-                            child: Center(
-                              child: Container(
-                                width:
-                                    100, // ต้องกำหนดความกว้างให้ช่อง Input ในหัวตารางด้วย
-                                child: TextField(
-                                  textAlign: TextAlign.center,
-                                  key: ValueKey('header_$index'),
-                                  controller:
-                                      TextEditingController(
-                                          text: headers[index],
-                                        )
-                                        ..selection =
-                                            TextSelection.fromPosition(
-                                              TextPosition(
-                                                offset: headers[index].length,
-                                              ),
-                                            ),
-                                  //           controller: TextEditingController(text: headers[index] ?? '')
-                                  // ..selection = TextSelection.collapsed(offset: headers[index].length),
-                                  decoration: InputDecoration(
-                                    hintText: '${index + 1}',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.shade300,
-                                      ), // กำหนดสีที่นี่
+                          label:
+                              //  Row(children: [
+                              Expanded(
+                                child: Center(
+                                  child: Container(
+                                    width:
+                                        120, // ต้องกำหนดความกว้างให้ช่อง Input ในหัวตารางด้วย
+                                    child: TextField(
+                                      textAlign: TextAlign.center,
+                                      key: ValueKey('header_$index'),
+                                      controller:
+                                          TextEditingController(
+                                              text: headers[index],
+                                            )
+                                            ..selection =
+                                                TextSelection.fromPosition(
+                                                  TextPosition(
+                                                    offset:
+                                                        headers[index].length,
+                                                  ),
+                                                ),
+                                      //           controller: TextEditingController(text: headers[index] ?? '')
+                                      // ..selection = TextSelection.collapsed(offset: headers[index].length),
+                                      decoration: InputDecoration(
+                                        hintText: '${index + 1}',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        // isDense: true, // ทำให้ช่องเล็กลงพอดีกับหัวตาราง
+                                        // suffixIcon: IconButton(
+                                        //   icon: const Icon(
+                                        //     Icons.clear,
+                                        //   ), // หรือ Icons.visibility สำหรับรหัสผ่าน
+                                        //   onPressed: () {
+                                        //     print('ลบคอลัมน์!');
+                                        //   },
+                                        // ),
+                                      ),
+                                      //  onChanged: (val) => rows[index] = {val: {text: rows[index]?['text'] ??'', num: rows[index]?['num'] ?? ''}},
+                                      // onChanged: (val) => rows[index] = {val: {...rows[index]}},
+                                      onChanged: (val) => headers[index] = val,
+                                      //     onChanged: (val) {
+                                      //  var data = rows[index + 1] ?? {text: '', num: ''};
+                                      //  print(index);
+                                      //  print(data);
+                                      //       // setState(() => {
+                                      //       //     rows[index + 1] = {val: {...data}}
+                                      //       // });
+                                      //     }
                                     ),
-                                    // isDense: true, // ทำให้ช่องเล็กลงพอดีกับหัวตาราง
                                   ),
-                                  //  onChanged: (val) => rows[index] = {val: {text: rows[index]?['text'] ??'', num: rows[index]?['num'] ?? ''}},
-                                  // onChanged: (val) => rows[index] = {val: {...rows[index]}},
-                                  onChanged: (val) => headers[index] = val,
-                                  //     onChanged: (val) {
-                                  //  var data = rows[index + 1] ?? {text: '', num: ''};
-                                  //  print(index);
-                                  //  print(data);
-                                  //       // setState(() => {
-                                  //       //     rows[index + 1] = {val: {...data}}
-                                  //       // });
-                                  //     }
                                 ),
                               ),
-                            ),
-                          ),
+                          // ], ),
                         ),
                       ),
                       DataColumn(
@@ -404,10 +420,7 @@ class _DetailPageState extends State<DetailPage> {
                           // color: context.primaryColor,
                           onPressed: () {
                             setState(() {
-                              headers = [
-                                ...headers,
-                                '${headers.length + 1}',
-                              ];
+                              headers = [...headers, '${headers.length + 1}'];
                             });
                           },
                           tooltip: 'เพิ่มคอลัมน์',
@@ -524,17 +537,46 @@ class _DetailPageState extends State<DetailPage> {
 
                 const SizedBox(height: 20),
 
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    // width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: _addRow,
-                      icon: const Icon(Icons.add),
-                      label: const Text('เพิ่มแถว'),
+                Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween, // ชิดซ้าย-ขวา อัตโนมัติ
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        // width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: _addRow,
+                          icon: const Icon(Icons.add),
+                          label: const Text('เพิ่มแถว'),
+                        ),
+                      ),
                     ),
-                  ),
+                    const Spacer(), // ดันทุกอย่างที่อยู่ข้างหลังไปชิดขวา
+                    SizedBox(
+                      // width: double.infinity,
+                      child: TextButton.icon(
+                        onPressed: _addRow,
+                        icon: const Icon(Icons.horizontal_rule),
+                        label: const Text('ซ่อนส่วนที่ไม่มีค่า'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // CheckboxListTile(
+                    //   title: const Text("ยอมรับเงื่อนไขการใช้งาน"),
+                    //   value: _isHideBox,
+                    //   onChanged: (bool? value) {
+                    //     setState(() {
+                    //       _isHideBox = value!;
+                    //     });
+                    //   },
+                    //   controlAffinity: ListTileControlAffinity
+                    //       .leading, // เอา Checkbox ไว้ข้างหน้า (ซ้ายสุด)
+                    //   contentPadding: EdgeInsets.zero, // ลดช่องว่างขอบ
+                    // ),
+                  ],
                 ),
               ],
             ),
@@ -560,8 +602,8 @@ class _DetailPageState extends State<DetailPage> {
               onPressed: _saveToFirebase,
               icon: const Icon(Icons.cloud_upload),
               label: const Text('Save'),
-              backgroundColor:  AppColors.secondary,
-              foregroundColor:  Colors.white,
+              backgroundColor: AppColors.secondary,
+              foregroundColor: Colors.white,
               // backgroundColor:  Theme.of(context).secondaryColor,
             ),
     );
@@ -579,8 +621,11 @@ class _NumericTextFormatter extends TextInputFormatter {
     // แปลงเลขเป็น format มีคอมม่า
     String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanText.isEmpty) {
-  return const TextEditingValue(text: '', selection: TextSelection.collapsed(offset: 0));
-}
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
     double value = double.parse(cleanText);
     final formatter = NumberFormat.decimalPattern();
     // final double? value = double.tryParse(newValue.text.replaceAll(',', ''));

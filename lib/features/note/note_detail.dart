@@ -90,6 +90,8 @@ class _DetailPageState extends State<DetailPage> {
                   decoration: const InputDecoration(
                     labelText: 'ชื่อ',
                     border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -101,6 +103,8 @@ class _DetailPageState extends State<DetailPage> {
                   decoration: InputDecoration(
                     hintText: 'Note here',
                     border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   controller: TextEditingController(text: content),
                 ),
