@@ -158,6 +158,10 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  void _toggleSomeValueCol() async {
+setState(() => _isHideBox = !_isHideBox);
+  }
+
   DataCell _buildDoubleInputCell(Map<String, dynamic> cellData) {
     return DataCell(
       Container(
@@ -165,12 +169,13 @@ class _DetailPageState extends State<DetailPage> {
         child: Row(
           children: [
             // ช่อง Text
+            if(!(cellData['text'].toString().isEmpty && _isHideBox))
             Expanded(
               flex: 2, // ให้พื้นที่ช่องข้อความมากกว่าหน่อย
               child: TextField(
                 controller: TextEditingController(text: cellData['text']),
                 decoration: InputDecoration(
-                  hintText: 'ข้อความ',
+                  hintText: '',
                   isDense: true,
                   //               border: OutlineInputBorder(
                   //   borderRadius: BorderRadius.circular(8),
@@ -208,6 +213,9 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   // suffixText: "บาท",
+                  hintStyle: TextStyle(
+      color: Colors.grey.withValues(alpha: 0.5), // ค่า alpha ยิ่งน้อยยิ่งจาง (0.0 - 1.0)
+    )
                 ),
                 onChanged: (val) => cellData['num'] = val,
               ),
@@ -556,7 +564,7 @@ class _DetailPageState extends State<DetailPage> {
                     SizedBox(
                       // width: double.infinity,
                       child: TextButton.icon(
-                        onPressed: _addRow,
+                        onPressed: _toggleSomeValueCol,
                         icon: const Icon(Icons.horizontal_rule),
                         label: const Text('ซ่อนส่วนที่ไม่มีค่า'),
                         style: ElevatedButton.styleFrom(

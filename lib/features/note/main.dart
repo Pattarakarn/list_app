@@ -6,12 +6,72 @@ import 'package:intl/intl.dart';
 import 'package:list_app/features/note/note_detail.dart';
 import '../../app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:local_auth/local_auth.dart';
+// import 'package:local_auth_android/local_auth_android.dart';
+// import 'package:local_auth_ios/local_auth_ios.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
 
   @override
   State<NotesPage> createState() => _NotesPageState();
+}
+
+class AuthService {
+  final LocalAuthentication auth = LocalAuthentication();
+
+  Future<void> authenticateUser(
+    BuildContext context,
+    String itemName,
+    String docId,
+  ) async {
+    try {
+      // 1. เช็กก่อนว่าเครื่องนี้รองรับการสแกนไหม และเปิดใช้งานอยู่ไหม
+      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final bool canAuthenticate =
+          canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+
+      if (!canAuthenticate) {
+        // แจ้งเตือนว่าเครื่องไม่รองรับ
+        print('can t');
+      }
+
+      // 2. เริ่มการสแกน (Pop-up ของระบบจะเด้งขึ้นมาเอง)
+      final bool didAuthenticate = await auth.authenticate(
+        localizedReason: 'กรุณาสแกนใบหน้าหรือลายนิ้วมือเพื่อเข้าดูข้อมูล',
+        // authMessages:  <AuthMessages>[
+        //   AndroidAuthMessages(
+        //     signInTitle: 'ยืนยันตัวตน',
+        //     cancelButton: 'ยกเลิก',
+        //   ),
+        //   IOSAuthMessages(cancelButton: 'ยกเลิก'),
+        // ],
+        biometricOnly: false, // วางไว้ตรงๆ แบบนี้เลย ไม่ต้องมี AuthenticationOptions
+  // stickyAuth: true,    
+  // useErrorDialogs: true,
+        // // options:  AuthenticationOptions(
+        // options: const AuthenticationOptions(
+        //   stickyAuth: true, // ให้แอปพยายามสแกนต่อถ้า User สลับแอปไปมา
+        //   biometricOnly:
+        //       false, // true = บังคับใช้แค่ Biometric เท่านั้น (ไม่เอา PIN)
+        // ),
+      );
+
+      if (didAuthenticate) {
+        // สแกนผ่านแล้ว! ทำงานที่ต้องการต่อที่นี่
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPage(title: itemName, docId: docId),
+          ),
+        );
+      } else {
+        // ผู้ใช้ยกเลิก หรือสแกนไม่ผ่าน
+      }
+    } catch (e) {
+      print("เกิดข้อผิดพลาด: $e");
+    }
+  }
 }
 
 class _NotesPageState extends State<NotesPage> {
@@ -104,13 +164,7 @@ class _NotesPageState extends State<NotesPage> {
                       style: const TextStyle(fontSize: 12),
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DetailPage(title: itemName, docId: docId),
-                        ),
-                      );
+                      AuthService().authenticateUser(context, itemName, docId);
                     },
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),

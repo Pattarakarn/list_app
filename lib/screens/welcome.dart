@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import '../../app_colors.dart';
+import 'dart:async';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +15,45 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+    StreamSubscription? _internetSubscription;
+  bool _isConnected = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 2. เริ่มฟังทันทีที่เปิดหน้านี้
+    _internetSubscription = InternetConnection().onStatusChange.listen((
+      status,
+    ) {
+      if (status == InternetStatus.connected) {
+        setState(() => _isConnected = true);
+        _showSnackBar("เชื่อมต่ออินเทอร์เน็ตแล้ว", Colors.green);
+      } else {
+        setState(() => _isConnected = false);
+        _showSnackBar("ไม่มีการเชื่อมต่ออินเทอร์เน็ต!", Colors.red);
+      }
+    });
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).clearSnackBars(); 
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _internetSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
@@ -38,14 +79,21 @@ class _LoginPageState extends State<LoginPage> {
 
   String email = "";
   String password = "";
+  String? _errorMessage ;
   Future<void> _Login() async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
+        email: email.trim().toLowerCase(),
         password: password,
       );
       print(credential);
+     setState(() {
+    _errorMessage = null; 
+  });
     } on FirebaseAuthException catch (e) {
+     setState(() {
+    _errorMessage = 'ข้อมูลไม่ถูกต้อง'; 
+  });
       print("เกิดข้อผิดพลาด: ${e.message}");
     }
   }
@@ -53,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _Signup() async {
     try {
       final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+          .createUserWithEmailAndPassword(email: email.trim().toLowerCase(), password: password);
       print(credential);
     } on FirebaseAuthException catch (e) {
       print("เกิดข้อผิดพลาด: ${e.message}");
@@ -88,14 +136,25 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 10),
                 TextField(
-                  decoration: InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: 'Email',
+                  errorText:(_errorMessage?.isEmpty ?? true) ? null : ''),
                   onChanged: (val) => email = val,
                   style: TextStyle(color: Colors.white),
+        //           validator: (value) {
+        //   if (value == null || value.isEmpty) {
+        //     return 'กรุณากรอกอีเมล';
+        //   }
+        //   if (!value.contains('@')) {
+        //     return 'รูปแบบอีเมลไม่ถูกต้อง';
+        //   }
+        //   return null; // ผ่าน!
+        // },
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: TextField(
-                    decoration: InputDecoration(labelText: 'Password'),
+                    decoration: InputDecoration(labelText: 'Password',
+                    errorText: _errorMessage,),
                     obscureText: true,
                     onChanged: (val) => password = val,
                     style: TextStyle(color: Colors.white),

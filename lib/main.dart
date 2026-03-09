@@ -7,9 +7,12 @@ import 'firebase_options.dart';
 import 'features/note/main.dart';
 import 'screens/welcome.dart';
 import 'features/random/main.dart';
-// import 'features/health/main.dart';
+import 'features/health/main.dart';
 import '../utils/constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:async';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -211,11 +214,11 @@ class _HomeScreenState extends State<HomeScreen> {
     const MyListsPage(),
     const NotesPage(),
     const RandomP(),
-    const RandomP(),
-    // const HealthPage(),
+    const HealthPage(),
   ];
   bool _isExpanded = true;
   final user = FirebaseAuth.instance.currentUser;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   void _showLogoutDialog(BuildContext context) {
     showModalBottomSheet(
@@ -398,164 +401,208 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
+  StreamSubscription? _internetSubscription;
+  bool _isConnected = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 2. เริ่มฟังทันทีที่เปิดหน้านี้
+    _internetSubscription = InternetConnection().onStatusChange.listen((
+      status,
+    ) {
+      if (status == InternetStatus.connected) {
+        setState(() => _isConnected = true);
+        // _showSnackBar("เชื่อมต่ออินเทอร์เน็ตแล้ว", Colors.green);
+      } else {
+        setState(() => _isConnected = false);
+        _showSnackBar("ไม่มีการเชื่อมต่ออินเทอร์เน็ต!", Colors.grey);
+      }
+    });
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).clearSnackBars(); // ลบอันเก่าออกก่อนเด้งอันใหม่
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // 3. สำคัญมาก! ต้องปิดการฟังเมื่อปิดหน้าจอ เพื่อไม่ให้เปลือง Memory
+    _internetSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F7F9),
 
-      body: Stack(
-        children: [
-          Positioned.fill(
-            top: 50,
-            // bottom: 78,
-            child: SafeArea(
-              // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
-              child: _pages[_selectedIndex],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              top: 50,
+              // bottom: 78,
+              child: SafeArea(
+                // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
+                child: _pages[_selectedIndex],
+              ),
             ),
-          ),
-          // Visibility(  visible: index != 0,
-          if (_selectedIndex != 0)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
-                color: Colors.grey[200],
-                // decoration: BoxDecoration(
-                //   gradient: LinearGradient(
-                //     begin: Alignment.topCenter,
-                //     end: Alignment.bottomCenter,
-                //     colors: [
-                //       const Color(0xFFF3F7F9),
-                //       const Color(0xFFF3F7F9).withOpacity(0.0),
-                //     ],
-                //   ),
-                // ),
-                child: GestureDetector(
-                  onTap: () => {
-                    setState(() => _selectedIndex = 0),
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const ProfilePage(),
-                    //   ),
-                    // ),
-                  },
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person_rounded,
-                          // color: AppColors.blue,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        (((user?.email?.length ?? 0) > 4
-                                    ? user?.email?.substring(0, 4)
-                                    : user?.email) ??
-                                '') +
-                            "@",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.more_vert_rounded,
-                          // Icons.settings,//_suggest,
-                          // Icons.manage_accounts,
-                          color: Colors.black54,
-                        ),
-                        onPressed: () {
-                          _showLogoutDialog(context);
-                        },
-                      ),
-                      // PopupMenuButton<String>(
-                      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
-                      //   onSelected: (value) {
-                      //     if (value == 'logout') {
-
-                      //     }
-                      //   },
-                      //   itemBuilder: (context) => [
-                      //     const PopupMenuItem(
-                      //       value: 'logout',
-                      //       child: Row(
-                      //         children: [
-                      //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                      //           SizedBox(width: 10),
-                      //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ],
+            // Visibility(  visible: index != 0,
+            if (_selectedIndex != 0)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
+                  color: Colors.grey[200],
+                  // decoration: BoxDecoration(
+                  //   gradient: LinearGradient(
+                  //     begin: Alignment.topCenter,
+                  //     end: Alignment.bottomCenter,
+                  //     colors: [
+                  //       const Color(0xFFF3F7F9),
+                  //       const Color(0xFFF3F7F9).withOpacity(0.0),
+                  //     ],
+                  //   ),
+                  // ),
+                  child: GestureDetector(
+                    onTap: () => {
+                      setState(() => _selectedIndex = 0),
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const ProfilePage(),
+                      //   ),
                       // ),
+                    },
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person_rounded,
+                            // color: AppColors.blue,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          (((user?.email?.length ?? 0) > 4
+                                      ? user?.email?.substring(0, 4)
+                                      : user?.email) ??
+                                  '') +
+                              "@",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.more_vert_rounded,
+                            // Icons.settings,//_suggest,
+                            // Icons.manage_accounts,
+                            color: Colors.black54,
+                          ),
+                          onPressed: () {
+                            _showLogoutDialog(context);
+                          },
+                        ),
+                        // PopupMenuButton<String>(
+                        //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
+                        //   onSelected: (value) {
+                        //     if (value == 'logout') {
+
+                        //     }
+                        //   },
+                        //   itemBuilder: (context) => [
+                        //     const PopupMenuItem(
+                        //       value: 'logout',
+                        //       child: Row(
+                        //         children: [
+                        //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                        //           SizedBox(width: 10),
+                        //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            Positioned(
+              bottom: 20, // ให้ลอยจากขอบล่าง 20
+              left: 20,
+              right: 20,
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(35),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 10),
                     ],
                   ),
-                ),
-              ),
-            ),
 
-          Positioned(
-            bottom: 20, // ให้ลอยจากขอบล่าง 20
-            left: 20,
-            right: 20,
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(35),
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-                ),
-
-                child: Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: _isExpanded
-                        ? MainAxisSize.max
-                        : MainAxisSize.min,
-                    children: _buildFloatingItems(),
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: _isExpanded
+                          ? MainAxisSize.max
+                          : MainAxisSize.min,
+                      children: _buildFloatingItems(),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          // Positioned(
-          //   bottom: 20,
-          //   left: 20,
-          //   right: 20,
-          //   child: Container(
-          //     height: 70,
-          //     decoration: BoxDecoration(
-          //       // color: Colors.white.withOpacity(0.95),
-          //       color: AppColors.primary.withOpacity(0.05),
-          //       borderRadius: BorderRadius.circular(35),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: Colors.black.withOpacity(0.05),
-          //           blurRadius: 20,
-          //           offset: const Offset(0, 10),
-          //         ),
-          //       ],
-          //     ),
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //       children: [
-          //       ],
-          //     ),
-          //   ),
-          // ),
-        ],
+            // Positioned(
+            //   bottom: 20,
+            //   left: 20,
+            //   right: 20,
+            //   child: Container(
+            //     height: 70,
+            //     decoration: BoxDecoration(
+            //       // color: Colors.white.withOpacity(0.95),
+            //       color: AppColors.primary.withOpacity(0.05),
+            //       borderRadius: BorderRadius.circular(35),
+            //       boxShadow: [
+            //         BoxShadow(
+            //           color: Colors.black.withOpacity(0.05),
+            //           blurRadius: 20,
+            //           offset: const Offset(0, 10),
+            //         ),
+            //       ],
+            //     ),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //       children: [
+            //       ],
+            //     ),
+            //   ),
+            // ),
+          ],
+        ),
       ),
     );
   }

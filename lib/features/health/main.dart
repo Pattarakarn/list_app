@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import '../../app_colors.dart';
-import '../../loading.dart';
+import 'package:intl/intl.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -11,254 +9,236 @@ class HealthPage extends StatefulWidget {
 }
 
 class _HealthPageState extends State<HealthPage> {
-  final TextEditingController _controller = TextEditingController();
-  final List<String> _items = [];
+  DateTime selectedDate = DateTime.now();
+  int? selectedLevel; // 0: น้อยมาก, 1: น้อย, 2: ปานกลาง, 3: มาก
+  
+  // สีตามระดับความมากน้อย (4 ระดับ)
+  final List<Color> flowColors = [
+    Colors.pink[100]!,
+    Colors.pink[300]!,
+    Colors.red[400]!,
+    Colors.red[900]!,
+  ];
 
-  void _showRandomProcess() async {
-    // String winner = _items[random.nextInt(_items.length)];
-
-    showDialog(
-      context: context,
-      barrierDismissible: false, // ห้ามกดปิดจนกว่าจะสุ่มเสร็จ
-      builder: (context) => AlertDialog(
-        backgroundColor:
-            Colors.transparent, // ทำให้พื้นหลังใสเพื่อโชว์แค่ Animation
-        elevation: 0,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // appBar: AppBar(title: const Text("บันทึกรอบเดือน"), backgroundColor: Colors.pink[50]),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ใช้ CircularProgressIndicator หรือ Lottie Animation ตรงนี้
-            BouncingDots(),
-            // const SizedBox(height: 20),
-            // const Text(
-            //   "กำลังสุ่ม...",
-            //   style: TextStyle(
-            //     color: Colors.white,
-            //     fontSize: 20,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            // ),
+            // 1. ส่วนแสดงประจำเดือนล่าสุด
+            _buildHeaderCard(),
+            const SizedBox(height: 24),
+
+            // เอาวันนี้อยู่ตรงกลาง ใส่ไอคอนรูปยิ้มดีกว่า ส่วนbloodเป็นอันเล็ก
+            const Text("สัปดาห์นี้", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            _buildWeeklyBloodSelector(),
+            const SizedBox(height: 24),
+
+            // 3. ส่วนเลือกวันที่ต้องการดูข้อมูล
+            _buildDatePickerSection(),
+            const SizedBox(height: 24),
+
+            // 4. รายการอาการล่าสุด
+            const Text("อาการล่าสุด", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            _buildSymptomList(),
           ],
         ),
       ),
+      
+      // 5. ปุ่มเพิ่มอาการ
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddSymptomPopup(),
+        label: const Text("เพิ่มอาการ"),
+        icon: const Icon(Icons.add),
+        backgroundColor: Colors.pink,
+      ),
     );
-
-    // 2. หน่วงเวลาไว้ 2 วินาที (ให้ User ได้ลุ้น)
-    await Future.delayed(const Duration(seconds: 2));
-
-    // 3. ปิด Dialog "กำลังสุ่ม"
-    if (!mounted) return;
-    Navigator.pop(context);
-
-    // 4. คำนวณผลลัพธ์
-    final random = Random();
-    int randomIndex = random.nextInt(_items.length);
-    String winner = _items[randomIndex];
-
-    // 5. แสดง Dialog ผลลัพธ์จริง (ใช้โค้ดเดิมที่เราคุยกัน)
-    _showRandomResult(winner, randomIndex);
   }
 
-  void _showRandomResult(winner, randomIndex) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // บังคับให้กดปุ่มเพื่อปิดเท่านั้น
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Center(child: Text("ผลการสุ่ม 🎉")),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // const Icon(Icons.stars, color: Colors.orange, size: 80),
-            const SizedBox(height: 15), //20),
-            Text(
-              '${winner}',
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: AppColors.rand, //Colors.deepPurple,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
-        actionsAlignment: MainAxisAlignment.spaceEvenly, // จัดวางปุ่มให้สมดุล
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Row(
-              children: [
-                // ปุ่มปิด
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // setState(() {
-                      //   _items.removeAt(randomIndex);
-                      // });
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text("ปิด"),
-                  ),
-                ),
-
-                const SizedBox(width: 10),
-
-                if (_items.length > 1) // ถ้าเหลือของให้สุ่มต่อได้
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _items.removeAt(randomIndex); // ลบตัวเก่าออกก่อน
-                        });
-                        Navigator.pop(context); // ปิด Dialog เก่า
-                        _showRandomProcess(); // เปิดอันใหม่ (สุ่มต่อทันที)
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                      ),
-                      child: Text(
-                        "สุ่มต่อ (${_items.length - 1} รายการ)",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+  // --- Widget ย่อยๆ ---
+  Widget _buildHeaderCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.pink[50],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          const Text("ประจำเดือนล่าสุดมาเมื่อ", style: TextStyle(color: Colors.pink)),
+          Text(
+            "12 กุมภาพันธ์ 2026 (กี่วัน)", 
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.pink[900]),
           ),
         ],
       ),
     );
   }
 
-  // void _addItem() {
-  //   if (_controller.text.trim().isNotEmpty) {
-  //     setState(() {
-  //       _items.add(_controller.text.trim());
-  //       _controller.clear();
-  //     });
-  //   }
-  // }
-  final FocusNode _focusNode = FocusNode();
-  void _addItem() {
-    if (_controller.text.trim().isNotEmpty) {
-      setState(() {
-        _items.add(_controller.text.trim());
-        _controller.clear(); // ล้างช่องพิมพ์
-      });
-
-      // 2. สั่งให้โฟกัสกลับมาที่ช่องเดิมทันที
-      _focusNode.requestFocus();
-    }
+  Widget _buildWeeklyBloodSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(7, (index) {
+        bool isSelected = selectedLevel != null && index == 3; // สมมติลองเลือกอันนึง
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedLevel = (selectedLevel ?? 0 + 1) % 4; // คลิ๊กเพื่อเปลี่ยนระดับสี (Demo)
+            });
+          },
+          child: Column(
+            children: [
+              Text(["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"][index]),
+              const SizedBox(height: 8),
+              Icon(
+                Icons.water_drop,
+                size: 40,
+                // เปลี่ยนสีตามระดับที่เลือก (Demo: ใช้สีตามระดับที่เราตั้งไว้)
+                color: index == 3 ? flowColors[selectedLevel ?? 0] : Colors.grey[300],
+              ),
+            ],
+          ),
+        );
+      }),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    bool canRandom = _items.length >= 2;
+  Widget _buildDatePickerSection() {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: const Text("ดูข้อมูลย้อนหลัง"),
+      subtitle: Text(DateFormat('dd MMMM yyyy').format(selectedDate)),
+      trailing: const Icon(Icons.calendar_month, color: Colors.pink),
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: selectedDate,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+        );
+        if (date != null) setState(() => selectedDate = date);
+      },
+    );
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("สุ่มอะไรดี?"),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+  Widget _buildSymptomList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 1,
+      itemBuilder: (context, index) {
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.sentiment_dissatisfied, color: Colors.orange),
+            title: Text(index == 0 ? "ปวดท้องน้อย" : "คัดหน้าอก"),
+            subtitle: const Text("ระดับปานกลาง - 14:00 น."),
+          ),
+        );
+      },
+    );
+  }
+// feeling good-bad
+// ไม่ได้ใส่ เป็นรูป *
+ void _showBloodLevelSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // ส่วนช่องกรอกข้อมูล
+            const Text("เลือกระดับปริมาณเลือด", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
             Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    decoration: InputDecoration(
-                      hintText: "พิมพ์รายการ",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                    ),
-                    textInputAction: TextInputAction
-                        .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
-                    onSubmitted: (value) {
-                      _addItem(); // เมื่อกด Enter ให้เรียกฟังก์ชันเพิ่มรายการทันที
-                    },
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(4, (i) {
+                return InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: Column(
+                    children: [
+                      Icon(Icons.water_drop, color: flowColors[i], size: 50),
+                      Text("ระดับ ${i + 1}"),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: _addItem,
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(backgroundColor: AppColors.rand),
-                ),
-              ],
+                );
+              }),
             ),
             const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // ส่วนแสดงรายการที่เพิ่มแล้ว
-            Expanded(
-              child: _items.isEmpty
-                  ? const Center(child: Text("")) //ลองเพิ่มรายการดูก่อนนะ 😊
-                  : ListView.builder(
-                      itemCount: _items.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(child: Text("${index + 1}")),
-                            title: Text(_items[index]),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              onPressed: () =>
-                                  setState(() => _items.removeAt(index)),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-
-            // ปุ่มสุ่ม (ที่จะเปลี่ยนสีและกดได้เมื่อเงื่อนไขครบ)
+  // --- ส่วนปุ่มเพิ่มอาการ (เปลี่ยนเป็น Popup Dialog) ---
+  void _showAddSymptomPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("บันทึกอาการ"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            TextField(decoration: InputDecoration(labelText: "อาการที่พบ")),
+            SizedBox(height: 10),
+            TextField(decoration: InputDecoration(labelText: "รายละเอียดเพิ่มเติม")),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("ยกเลิก")),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+            child: const Text("บันทึก"),
+          ),
+        ],
+      ),
+    );
+  }
+    // TableCalendar(
+    //           firstDay: DateTime.utc(2024, 1, 1),
+    //           lastDay: DateTime.utc(2030, 12, 31),
+    //           focusedDay: _focusedDay,
+    //           selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+    //           eventLoader: (day) => _events[DateTime.utc(day.year, day.month, day.day)] ?? [],
+    //           onDaySelected: (selectedDay, focusedDay) {
+    //             setState(() {
+    //               _selectedDay = selectedDay;
+    //               _focusedDay = focusedDay;
+    //             });
+    //           },
+    //           calendarStyle: const CalendarStyle(
+    //             markerDecoration: BoxDecoration(color: Colors.pink, shape: BoxShape.circle),
+    //             selectedDecoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+    //             todayDecoration: BoxDecoration(color: Colors.pinkAccent, shape: BoxShape.circle),
+    //           ),
+    //         ),
+  void _showAddSymptomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("เพิ่มรายละเอียดอาการ", style: TextStyle(fontSize: 20)),
+            const TextField(decoration: InputDecoration(labelText: "อาการ")),
+            const TextField(decoration: InputDecoration(labelText: "รายละเอียดอื่นๆ")),
             const SizedBox(height: 20),
-            SizedBox(
-              // width: double.infinity,
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: 60,
-              child: ElevatedButton.icon(
-                onPressed: canRandom ? _showRandomProcess : null,
-                icon: const Icon(Icons.shuffle, color: Colors.white),
-                label: Text(
-                  'Random!',
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: canRandom ? AppColors.rand : Colors.grey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: canRandom ? 8 : 0,
-                ),
-              ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("บันทึก"),
             ),
+             SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
           ],
         ),
       ),
