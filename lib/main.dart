@@ -29,7 +29,7 @@ void main() async {
     MaterialApp(
       title: 'LisT',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           primary: const Color(0xFFFF6B00),
@@ -37,8 +37,15 @@ void main() async {
           secondary: const Color(0xFFFF9E00),
         ),
         hoverColor: Colors.orange.withOpacity(0.1),
-      ),
 
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+      ),
+      themeMode: ThemeMode.system,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -68,143 +75,6 @@ class HomeScreen extends StatefulWidget {
   // const MainNavigation({super.key});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: const Color(0xFFF3F7F9),
-  //     // ใช้ Stack เพื่อจัดวางเลเยอร์
-  //     body: Stack(
-  //       children: [
-  //         // ส่วนนี้จะปล่อยให้ Scroll ได้เต็มจอ
-  //         Positioned.fill(
-  //           child: ListView(
-  //             padding: const EdgeInsets.fromLTRB(
-  //               24,
-  //               120,
-  //               24,
-  //               120,
-  //             ), // เผื่อที่ให้ Header และ Nav
-  //             children: [
-  //               const Text(
-  //                 "โน้ตล่าสุด",
-  //                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-  //               ),
-  //               const SizedBox(height: 20),
-  //               _buildNoteCard("ไอเดีย", "อยากลองหัดเขียน Flutter ให้เก่งๆ"),
-  //             ],
-  //           ),
-  //         ),
-
-  //         Positioned(
-  //           top: 0,
-  //           left: 0,
-  //           right: 0,
-  //           child: Container(
-  //             padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
-  //             decoration: BoxDecoration(
-  //               gradient: LinearGradient(
-  //                 begin: Alignment.topCenter,
-  //                 end: Alignment.bottomCenter,
-  //                 colors: [
-  //                   const Color(0xFFF3F7F9),
-  //                   const Color(0xFFF3F7F9).withOpacity(0.0),
-  //                 ],
-  //               ),
-  //             ),
-  //             child: GestureDetector(
-  //               // onTap: () => _showLogoutDialog(context),
-  //               child: Row(
-  //                 children: [
-  //                   CircleAvatar(
-  //                     radius: 22,
-  //                     backgroundColor: Colors.white,
-  //                     child: Icon(Icons.person_rounded, color: AppColors.blue),
-  //                   ),
-  //                   const SizedBox(width: 12),
-  //                   const Text(
-  //                     "คุณ ✨",
-  //                     style: TextStyle(
-  //                       fontSize: 20,
-  //                       fontWeight: FontWeight.bold,
-  //                     ),
-  //                   ),
-  //                   const Spacer(),
-  //                   IconButton(
-  //                     icon: const Icon(
-  //                       Icons.more_vert_rounded,
-  //                       color: Colors.black54,
-  //                     ),
-  //                     onPressed: () {
-  //                       _showLogoutDialog(context);
-  //                     },
-  //                   ),
-  //                   // PopupMenuButton<String>(
-  //                   //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-  //                   //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
-  //                   //   onSelected: (value) {
-  //                   //     if (value == 'logout') {
-
-  //                   //     }
-  //                   //   },
-  //                   //   itemBuilder: (context) => [
-  //                   //     const PopupMenuItem(
-  //                   //       value: 'logout',
-  //                   //       child: Row(
-  //                   //         children: [
-  //                   //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-  //                   //           SizedBox(width: 10),
-  //                   //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
-  //                   //         ],
-  //                   //       ),
-  //                   //     ),
-  //                   //   ],
-  //                   // ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-
-  //         Positioned(
-  //           bottom: 30,
-  //           left: 20,
-  //           right: 20,
-  //           child: Container(
-  //             height: 70,
-  //             decoration: BoxDecoration(
-  //               // color: Colors.white.withOpacity(0.95),
-  //               color: AppColors.primary.withOpacity(0.05),
-  //               borderRadius: BorderRadius.circular(35),
-  //               boxShadow: [
-  //                 BoxShadow(
-  //                   color: Colors.black.withOpacity(0.05),
-  //                   blurRadius: 20,
-  //                   offset: const Offset(0, 10),
-  //                 ),
-  //               ],
-  //             ),
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //               children: [
-  //
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _navItem(IconData icon, String label, Color color) {
-  //   return Column(
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: [
-  //       Icon(icon, color: color, size: 26),
-  //       Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
-  //     ],
-  //   );
-  // }
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -219,56 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isExpanded = true;
   final user = FirebaseAuth.instance.currentUser;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  void _showLogoutDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-      ),
-      backgroundColor: Colors.white,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(30),
-        // margin: const EdgeInsets.only(bottom: 100),
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "ตั้งค่า",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gray,
-                foregroundColor: Colors.blue,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pop(context);
-                await GoogleSignIn().signOut();
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-                //                 final prefs = await SharedPreferences.getInstance();
-                // await prefs.setString('user_token', 'ค่า_token_ที่ได้จาก_backend');
-                // await prefs.remove('user_token');
-                // แล้วสั่ง Navigator.pushReplacement ไปหน้า Login
-              },
-              child: const Text("ออกจากระบบ"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _navItem(
     IconData icon,
@@ -436,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    // 3. สำคัญมาก! ต้องปิดการฟังเมื่อปิดหน้าจอ เพื่อไม่ให้เปลือง Memory
+    // !ปิดการฟังเมื่อปิดหน้าจอ เพื่อไม่ให้เปลือง Memory
     _internetSubscription?.cancel();
     super.dispose();
   }
@@ -509,17 +329,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const Spacer(),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.more_vert_rounded,
-                            // Icons.settings,//_suggest,
-                            // Icons.manage_accounts,
-                            color: Colors.black54,
-                          ),
-                          onPressed: () {
-                            _showLogoutDialog(context);
-                          },
-                        ),
+                        // IconButton(
+                        //   icon: const Icon(
+                        //     Icons.more_vert_rounded,
+                        //     // Icons.settings,//_suggest,
+                        //     // Icons.manage_accounts,
+                        //     color: Colors.black54,
+                        //   ),
+                        //   onPressed: () {
+                        //     _showLogoutDialog(context);
+                        //   },
+                        // ),
+
                         // PopupMenuButton<String>(
                         //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
@@ -576,121 +397,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Positioned(
-            //   bottom: 20,
-            //   left: 20,
-            //   right: 20,
-            //   child: Container(
-            //     height: 70,
-            //     decoration: BoxDecoration(
-            //       // color: Colors.white.withOpacity(0.95),
-            //       color: AppColors.primary.withOpacity(0.05),
-            //       borderRadius: BorderRadius.circular(35),
-            //       boxShadow: [
-            //         BoxShadow(
-            //           color: Colors.black.withOpacity(0.05),
-            //           blurRadius: 20,
-            //           offset: const Offset(0, 10),
-            //         ),
-            //       ],
-            //     ),
-            //     child: Row(
-            //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //       children: [
-            //       ],
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
     );
   }
 }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'LisT',
-//       // home: const MyHomePage(title: 'Demo Home Page'),
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         useMaterial3: true,
-//         colorScheme: ColorScheme.fromSeed(
-//           primary: const Color(0xFFFF6B00),
-//           seedColor: const Color(0xFFFF6B00),
-//           //  seedColor: const Color(0xFFFF9E00),
-//         ),
-//         hoverColor: Colors.orange.withOpacity(0.1),
-//       ),
-//       home: const MainNavigation(),
-//     );
-//   }
-// }
-
-// class MainNavigation extends StatefulWidget {
-//   const MainNavigation({super.key});
-//   @override
-//   State<MainNavigation> createState() => _MainNavigationState();
-// }
-
-// class _MainNavigationState extends State<MainNavigation> {
-//   int _selectedIndex = 0;
-
-//   final List<Widget> _pages = [
-//     const ProfilePage(),
-//     const MyListsPage(),
-//     const NotesPage(),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('LisT app')),
-//       drawer: Drawer(
-//         child: ListView(
-//           children: [
-//             const DrawerHeader(
-//               decoration: BoxDecoration(color: AppColors.primary),
-//               child: Text(
-//                 'เมนู',
-//                 style: TextStyle(color: Colors.white, fontSize: 24),
-//               ),
-//             ),
-//             ListTile(
-//               leading: const Icon(Icons.person),
-//               title: const Text('โปรไฟล์'),
-//               onTap: () {
-//                 setState(() => _selectedIndex = 0);
-//                 Navigator.pop(context); // ปิดเมนูข้าง
-//               },
-//             ),
-//             ListTile(
-//               leading: const Icon(Icons.list),
-//               title: const Text('ลิสต์'),
-//               onTap: () {
-//                 setState(() => _selectedIndex = 1);
-//                 Navigator.pop(context);
-//               },
-//             ),
-//             ListTile(
-//               leading: const Icon(Icons.note),
-//               title: const Text('โน้ต'),
-//               onTap: () {
-//                 setState(() => _selectedIndex = 2);
-//                 Navigator.pop(context);
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//       body: _pages[_selectedIndex],
-//     );
-//   }
-// }
 
 extension ThemeGetter on BuildContext {
   Color get primaryColor => Theme.of(this).colorScheme.primary;

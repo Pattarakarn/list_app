@@ -42,3 +42,19 @@ class AppMenus {
   // MenuItem(label: 'random', icon: Icons.auto_awesome, color: [Color(0xFF00E5FF), Color(0xFF2979FF)],index: 3,),
   // ];
 }
+
+// enum OptionType {
+//   table("ตาราง", "Table"),
+//   checklist("checklist", "Checklist"),
+
+//   final String label;
+//   final String value;
+//   // final IconData icon;
+//   const MenuCategory(this.label, this.value);
+// }
+class Options {
+  static List<Map<String, String>> TypeList = [
+    {"label": "ตาราง", "value": "Table"},
+    {"label": "checklist", "value": "Checklist"},
+  ];
+}

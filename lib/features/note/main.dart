@@ -46,9 +46,10 @@ class AuthService {
         //   ),
         //   IOSAuthMessages(cancelButton: 'ยกเลิก'),
         // ],
-        biometricOnly: false, // วางไว้ตรงๆ แบบนี้เลย ไม่ต้องมี AuthenticationOptions
-  // stickyAuth: true,    
-  // useErrorDialogs: true,
+        biometricOnly:
+            false, // วางไว้ตรงๆ แบบนี้เลย ไม่ต้องมี AuthenticationOptions
+        // stickyAuth: true,
+        // useErrorDialogs: true,
         // // options:  AuthenticationOptions(
         // options: const AuthenticationOptions(
         //   stickyAuth: true, // ให้แอปพยายามสแกนต่อถ้า User สลับแอปไปมา
@@ -142,7 +143,7 @@ class _NotesPageState extends State<NotesPage> {
                 clipBehavior: Clip
                     .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
                 child: InkWell(
-                  onTap: () {}, // ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
+                  // !ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
                   hoverColor: AppColors.note.withOpacity(0.1),
                   child: ListTile(
                     // leading: const CircleAvatar(child: Icon(Icons.delete)),
@@ -165,6 +166,13 @@ class _NotesPageState extends State<NotesPage> {
                     ),
                     onTap: () {
                       AuthService().authenticateUser(context, itemName, docId);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetailPage(title: itemName, docId: docId),
+                        ),
+                      );
                     },
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),

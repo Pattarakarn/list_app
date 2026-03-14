@@ -1,34 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // อย่าลืมเพิ่ม intl ใน pubspec.yaml สำหรับจัดการวันที่
+import 'package:intl/intl.dart'; // !เพิ่ม intl ใน pubspec.yaml สำหรับจัดการวันที่
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import '../../app_colors.dart';
+import '../../../utils/constant.dart';
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 
-// const DetailPage({super.key});
-
-// @override
-// Widget build(BuildContext context) {
-//   return Scaffold(
-//     appBar: AppBar(title: const Text('รายละเอียด')),
-//     body: SingleChildScrollView(
-//       scrollDirection: Axis.horizontal,
-//       child: DataTable(
-//         columns: const [
-//           DataColumn(label: Text('วันที่')),
-//           DataColumn(label: Text('ข้อมูล')),
-//           DataColumn(label: Text('หมายเหตุ')),
-//         ],
-//         rows: List.generate(3, (index) => DataRow(
-//           cells: [
-//             DataCell(Text('2024-05-0${index + 1}')),
-//             DataCell(Text('ข้อมูล $index')),
-//             DataCell(Text('โน้ต $index')),
-//           ],
-//         )),
-//       ),
-//     ),
-//   );
-// }
 class DetailPage extends StatefulWidget {
   final String title;
   final String docId; // รับค่า ID มาจากหน้าลิสต์
@@ -43,11 +20,19 @@ class _DetailPageState extends State<DetailPage> {
   // เก็บข้อมูลแถวในตาราง
   List<Map<String, dynamic>> rows = [];
   bool isInitialized = false;
-  int dynamicColumnsCount = 3; // ค่าเริ่มต้น 3 คอลัมน์ (สูงสุด 8)
+
   List<String> headers = ['หัวข้อ'];
-  // (จะทำงานครั้งเดียวตอนเปิดหน้านี้ขึ้นมา)
+
   bool _isSuccess = false;
   bool _isHideBox = false;
+
+  final TextEditingController _selectController = TextEditingController(
+    text: "Table",
+  );
+  final TextEditingController _checkController = TextEditingController(
+    text: "false",
+  );
+
   @override
   void initState() {
     super.initState();
@@ -74,11 +59,6 @@ class _DetailPageState extends State<DetailPage> {
       };
       newRow.addAll(dynamicCells);
       setState(() {
-        // rows.add({
-        //   'date': DateFormat('dd/MM/yyyy').format(pickedDate),
-        //   'data': List.generate(dynamicColumnsCount, (index) => ""), // สร้างช่องว่างตามจำนวนคอลัมน์
-        //   'note': ""
-        // });
         rows.add({...newRow});
         //   rows.add({
         //   'date': DateFormat('dd/MM/yyyy').format(pickedDate),
@@ -93,6 +73,9 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  final formatter = NumberFormat(
+    "#,###.##",
+  ); // .## คือแสดงทศนิยมเฉพาะเมื่อมีค่า
   void _saveToFirebase() async {
     try {
       await FirebaseFirestore.instance
@@ -113,35 +96,7 @@ class _DetailPageState extends State<DetailPage> {
               behavior: SnackBarBehavior
                   .floating, // ต้องใส่ตัวนี้ถึงจะกำหนด width ได้
               width: MediaQuery.of(context).size.width * 0.5,
-              //         padding: const EdgeInsets.symmetric(horizontal: 10),
-              // content: Row(
-              //   children: [
-              //     Icon(Icons.check_circle, color: Colors.green, size: 20),
-              //     SizedBox(width: 8),
-              //     Text('บันทึกแล้ว'),
-              //   ],
-              // ),
 
-              // margin: const EdgeInsets.only(
-              //   bottom: 16,
-              //   left: 10,
-              //   right: 120, // ๆ เพื่อไม่ให้มันไปทับกับปุ่ม Save
-              // ),
-              // content: Align(
-              //   alignment: Alignment.centerLeft,
-              //   child: Container(
-              //     padding: const EdgeInsets.all(12),
-              //     width: 200,
-              //     decoration: BoxDecoration(
-              //       color: Colors.green,
-              //       borderRadius: BorderRadius.circular(8),
-              //     ),
-              //     child: const Text(
-              //       'บันทึกสำเร็จ!',
-              //       style: TextStyle(color: Colors.white),
-              //     ),
-              //   ),
-              // ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -159,7 +114,7 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _toggleSomeValueCol() async {
-setState(() => _isHideBox = !_isHideBox);
+    setState(() => _isHideBox = !_isHideBox);
   }
 
   DataCell _buildDoubleInputCell(Map<String, dynamic> cellData) {
@@ -169,37 +124,45 @@ setState(() => _isHideBox = !_isHideBox);
         child: Row(
           children: [
             // ช่อง Text
-            if(!(cellData['text'].toString().isEmpty && _isHideBox))
-            Expanded(
-              flex: 2, // ให้พื้นที่ช่องข้อความมากกว่าหน่อย
-              child: TextField(
-                controller: TextEditingController(text: cellData['text']),
-                decoration: InputDecoration(
-                  hintText: '',
-                  isDense: true,
-                  //               border: OutlineInputBorder(
-                  //   borderRadius: BorderRadius.circular(8),
-                  //   borderSide: BorderSide(color: Colors.grey.shade300), // กำหนดสีที่นี่
-                  // ),
+            if (!(cellData['text'].toString().isEmpty && _isHideBox))
+              Expanded(
+                flex: 2, // ให้พื้นที่ช่องข้อความมากกว่าหน่อย
+                child: TextField(
+                  controller: TextEditingController(text: cellData['text']),
+                  decoration: InputDecoration(
+                    hintText: '',
+                    isDense: true,
+                    //               border: OutlineInputBorder(
+                    //   borderRadius: BorderRadius.circular(8),
+                    //   borderSide: BorderSide(color: Colors.grey.shade300), // กำหนดสีที่นี่
+                    // ),
+                  ),
+                  onChanged: (val) => cellData['text'] = val,
                 ),
-                onChanged: (val) => cellData['text'] = val,
               ),
-            ),
             const SizedBox(width: 5), // ระยะห่างระหว่าง 2 ช่องย่อย
             // ช่อง Number
             Expanded(
               flex: 1,
               child: TextField(
                 keyboardType: TextInputType.number,
-                // inputFormatters: [
-                //   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
-                //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
-                //   _NumericTextFormatter(),
-                // ],
+                inputFormatters: [
+                  //   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
+                  //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
+                  //   _NumericTextFormatter(),
+                  CurrencyTextInputFormatter.currency(
+                    locale: 'ko',
+                    symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
+                    decimalDigits: 0,
+                  ),
+                ],
                 textAlign: TextAlign.right,
                 controller:
                     TextEditingController(
                         text: cellData['num']?.toString() ?? '0',
+                        // text: (cellData['num'] is num && cellData['num'] > 0)
+                        //     ? formatter.format(cellData['num'])
+                        //     : (cellData['num']?.toString() ?? '0'),
                       )
                       ..selection = TextSelection.collapsed(
                         offset: (cellData['num']?.toString() ?? '0').length,
@@ -214,8 +177,10 @@ setState(() => _isHideBox = !_isHideBox);
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   // suffixText: "บาท",
                   hintStyle: TextStyle(
-      color: Colors.grey.withValues(alpha: 0.5), // ค่า alpha ยิ่งน้อยยิ่งจาง (0.0 - 1.0)
-    )
+                    color: Colors.grey.withValues(
+                      alpha: 0.5,
+                    ), // ค่า alpha ยิ่งน้อยยิ่งจาง (0.0 - 1.0)
+                  ),
                 ),
                 onChanged: (val) => cellData['num'] = val,
               ),
@@ -281,11 +246,96 @@ setState(() => _isHideBox = !_isHideBox);
     );
   }
 
+  void _showModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(30),
+        // margin: const EdgeInsets.only(bottom: 100),
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              // width: double.infinity,
+              child: TextButton.icon(
+                onPressed: _toggleSomeValueCol,
+                icon: const Icon(Icons.horizontal_rule),
+                label: Text(
+                  _isHideBox ? 'แสดงช่องทั้งหมด' : 'แสดงเฉพาะที่มีค่า',
+                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Row(
+              children: [
+                // const Text("ประเภท"),
+                Expanded(flex: 3, child: const Text("ประเภท")),
+                const SizedBox(width: 10),
+                Expanded(flex: 1, child: const Text("Required Date")),
+              ],
+            ),
+            const SizedBox(width: 10),
+            Row(
+              children: [
+                // const Text("ประเภท"),
+                Expanded(
+                  flex: 3,
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      border: OutlineInputBorder(),
+                    ),
+                    value: _selectController.text,
+                    items: Options.TypeList.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item['value'],
+                        child: Text(item['label']!),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectController.text =
+                            newValue!; // อัปเดตค่าเข้า Controller
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 1,
+                  child: CheckboxListTile(
+                    // title: const Text("Required Date"),
+                    value: _checkController.text == "true",
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _checkController.text = value.toString();
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity
+                        .leading, // เอาติ๊กถูกไว้ด้านหน้า
+                    contentPadding: EdgeInsets.zero, // ลดพื้นที่ว่างด้านข้าง
+                  ),
+                ),
+              ],
+              // const Text("สลับแกน x-y"),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title: Text(widget.title),
         title: Row(
           children: [
             Text(widget.title),
@@ -296,15 +346,15 @@ setState(() => _isHideBox = !_isHideBox);
             ),
           ],
         ),
-        // actions: [
-        //   // ปุ่มเพิ่มคอลัมน์ (จำกัดที่ 8)
-        //   IconButton(
-        //     icon: const Icon(Icons.view_column),
-        //     onPressed: dynamicColumnsCount < 8
-        //       ? () => setState(() => dynamicColumnsCount++)
-        //       : null,
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: () {
+              _showModal(context);
+            },
+          ),
+          const SizedBox(width: 8), // เว้นระยะห่างจากขอบขวาเล็กน้อย
+        ],
       ),
       // body: StreamBuilder<DocumentSnapshot>(stream:
       body: FutureBuilder(
@@ -353,11 +403,6 @@ setState(() => _isHideBox = !_isHideBox);
                         label: Expanded(child: Center(child: Text('วันที่'))),
                       ),
 
-                      // ...List.generate(dynamicColumnsCount, (index) =>
-                      //   DataColumn(label: Text('ช่องที่ ${index + 1}'))
-                      // ),
-                      // สร้างคอลัมน์แบบ Dynamic
-                      // ...List.generate(dynamicColumnsCount, (index) =>
                       ...List.generate(
                         headers.length,
                         (index) => DataColumn(
@@ -422,6 +467,7 @@ setState(() => _isHideBox = !_isHideBox);
                           // ], ),
                         ),
                       ),
+                      // headers.length > 0 ? null :
                       DataColumn(
                         label: IconButton(
                           icon: const Icon(Icons.add), // add_circle
@@ -497,16 +543,7 @@ setState(() => _isHideBox = !_isHideBox);
                               ),
                             ),
                           ),
-                          // ...List.generate(dynamicColumnsCount, (index) =>
-                          //   DataCell(TextField(
-                          //     decoration: const InputDecoration(hintText: 'ข้อความ/เลข'),
-                          //     onChanged: (val) => rowData['data'][index] = val,
-                          //   ))
-                          // ),
-                          // // สร้างช่องกรอกข้อมูลกลาง (ข้อความ + เลข)
-                          // _buildDoubleInputCell(rowData['col1']),
-                          // _buildDoubleInputCell(rowData['col2']),
-                          // _buildDoubleInputCell(rowData['col3']),
+
                           ...List.generate(headers.length, (index) {
                             String colKey =
                                 'col${index + 1}'; // สร้าง key เช่น col1, col2, ...
@@ -561,29 +598,6 @@ setState(() => _isHideBox = !_isHideBox);
                       ),
                     ),
                     const Spacer(), // ดันทุกอย่างที่อยู่ข้างหลังไปชิดขวา
-                    SizedBox(
-                      // width: double.infinity,
-                      child: TextButton.icon(
-                        onPressed: _toggleSomeValueCol,
-                        icon: const Icon(Icons.horizontal_rule),
-                        label: const Text('ซ่อนส่วนที่ไม่มีค่า'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                    // CheckboxListTile(
-                    //   title: const Text("ยอมรับเงื่อนไขการใช้งาน"),
-                    //   value: _isHideBox,
-                    //   onChanged: (bool? value) {
-                    //     setState(() {
-                    //       _isHideBox = value!;
-                    //     });
-                    //   },
-                    //   controlAffinity: ListTileControlAffinity
-                    //       .leading, // เอา Checkbox ไว้ข้างหน้า (ซ้ายสุด)
-                    //   contentPadding: EdgeInsets.zero, // ลดช่องว่างขอบ
-                    // ),
                   ],
                 ),
               ],

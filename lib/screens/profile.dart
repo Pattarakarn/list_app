@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../app_colors.dart';
+import 'calculator.dart';
+import 'setting.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -35,7 +37,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ); // merge: true คือการอัปเดตเฉพาะฟิลด์ที่ส่งไป ไม่ลบอันเก่า
     }
 
-    // void _showEditNameDialog(String? currentName) {
     void _showEditNameDialog() {
       final controller = TextEditingController(text: userData['displayName']);
       String? _selectedGender = userData['sex'];
@@ -47,8 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
           content: SingleChildScrollView(
             // กันหน้าจอล้น
             child: Column(
-              mainAxisSize:
-                  MainAxisSize.min, // ให้ Column สูงเท่ากับเนื้อหาข้างใน
+              mainAxisSize: MainAxisSize.min, // ให้ สูงเท่ากับเนื้อหาข้างใน
               children: [
                 TextField(
                   controller: controller,
@@ -134,180 +134,211 @@ class _ProfilePageState extends State<ProfilePage> {
         print(userData);
 
         return Scaffold(
-          body: Column(
-            mainAxisSize:
-                MainAxisSize.min, // สำคัญ! บอกให้ Column สูงแค่เท่าที่จำเป็น
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        // color:  (user?.isEmailVerified )? AppColors.pink : AppColors.blue,
-                        color: (userData['sex'] == "หญิง")
-                            ? AppColors.pink
-                            : AppColors.blue,
-                      ),
-                      backgroundImage: NetworkImage(user.photoURL ?? ''),
-                    ),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF0F172A)
+              : Colors.white,
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingPage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 8), // เว้นระยะห่างจากขอบขวาเล็กน้อย
+            ],
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              // !ป้องกันจอเล็กแล้วเลื่อนไม่ได้
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
 
-                    const SizedBox(width: 20),
-                    // 2. ข้อมูลด้านขวา (ใช้ Expanded เพื่อให้กินพื้นที่ที่เหลือและไม่ดันจอ)
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                userData['displayName'] ?? '✨',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit, size: 20),
-                                onPressed: () {
-                                  _showEditNameDialog();
-                                },
-                              ),
-                            ],
-                          ),
-
-                          Text(
-                            user.email as String,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
+                  Center(
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 46, // ขนาดรวมเส้นขอบ (รัศมีรูป 50 + ขอบ 4)
+                          backgroundColor: (userData['sex'] == "หญิง")
+                              ? AppColors.pink
+                              : AppColors.blue,
+                          child: CircleAvatar(
+                            radius: 44,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              // color:  (user?.isEmailVerified )? AppColors.pink : AppColors.blue,
                             ),
+                            backgroundImage: NetworkImage(user.photoURL ?? ''),
                           ),
-                          // Text(userData?['displayName'] ?? ''),
-                          // Text(userData?['email']),
-                          // isEmailVerified
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          userData['displayName'] ?? '✨',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          user.email as String,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // --- หัวข้อ Tools (ชิดซ้าย) ---
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Tools',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // --- รายการเครื่องมือ (List Items) ---
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF334155).withOpacity(0.7)
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(
+                              Icons.calculate,
+                              color: Colors.blue,
+                            ),
+                            title: const Text('เครื่องคิดเลข'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CalculatorPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.local_gas_station,
+                              color: Colors.orange,
+                            ),
+                            title: const Text('คำนวณการใช้น้ำมัน'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              /* ลิงก์ไปหน้าคำนวณน้ำมัน */
+                            },
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
+        // return Scaffold(
+        //   body:  Column(
+        //     mainAxisSize:MainAxisSize.min, // ! Columnสูงแค่เท่าที่จำเป็น
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: [
+        //       Container(
+        //         padding: const EdgeInsets.all(16),
+        //         decoration: BoxDecoration(
+        //           boxShadow: [
+        //             BoxShadow(
+        //               color: Colors.black.withOpacity(0.05),
+        //               blurRadius: 10,
+        //             ),
+        //           ],
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             CircleAvatar(
+        //               radius: 40,
+        //               backgroundColor: Colors.white,
+        //               child: Icon(
+        //                 Icons.person,
+        //                 size: 50,
+        //                 // color:  (user?.isEmailVerified )? AppColors.pink : AppColors.blue,
+        //                 color: (userData['sex'] == "หญิง")
+        //                     ? AppColors.pink
+        //                     : AppColors.blue,
+        //               ),
+        //               backgroundImage: NetworkImage(user.photoURL ?? ''),
+        //             ),
+
+        //             const SizedBox(width: 20),
+        //             // 2. ข้อมูลด้านขวา (ใช้ Expanded เพื่อให้กินพื้นที่ที่เหลือและไม่ดันจอ)
+        //             Expanded(
+        //               child: Column(
+        //                 crossAxisAlignment: CrossAxisAlignment.start,
+        //                 children: [
+        //                   Row(
+        //                     children: [
+        //                       Text(
+        //                         userData['displayName'] ?? '✨',
+        //                         style: const TextStyle(
+        //                           fontSize: 20,
+        //                           fontWeight: FontWeight.bold,
+        //                         ),
+        //                       ),
+        //                       IconButton(
+        //                         icon: const Icon(Icons.edit, size: 20),
+        //                         onPressed: () {
+        //                           _showEditNameDialog();
+        //                         },
+        //                       ),
+        //                     ],
+        //                   ),
+
+        //                   Text(
+        //                     user.email as String,
+        //                     style: TextStyle(
+        //                       color: Colors.grey[600],
+        //                       fontSize: 14,
+        //                     ),
+        //                   ),
+        //                   // Text(userData?['displayName'] ?? ''),
+        //                   // Text(userData?['email']),
+        //                   // isEmailVerified
+        //                 ],
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // );
       },
     );
-    // // ต้องทำอันนี้ก่อน
-    // // if (user != null) {
-    // //     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-    // //       'first_name': firstName,
-    // //       'last_name': lastName,
-    // //       'gender': gender,
-    // //       'updated_at': DateTime.now(),
-    // //     }, SetOptions(merge: true)); // merge: true คือการอัปเดตเฉพาะฟิลด์ที่ส่งไป ไม่ลบอันเก่า
-    // //   }
-    //     return StreamBuilder<DocumentSnapshot>(
-    //       stream: FirebaseFirestore.instance
-    //           .collection('users')
-    //           .doc(user?.uid)
-    //           .snapshots(),
-    //       builder: (context, snapshot) {
-    //         if (snapshot.hasData) {
-    //           var data = snapshot.data!.data() as Map<String, dynamic>?;
-    //           // เติม ? หลัง Map เพื่อบอกว่ามันอาจจะเป็น null ได้
-    //           final userData = data ?? {'displayName': '', 'email': 'example.com'};
-    //           print(user?.uid);
-
-    //           // Padding(padding: const EdgeInsets.symmetric(vertical: 20.0),
-    //           return Column(
-    //             mainAxisSize:  MainAxisSize.min,
-    //             crossAxisAlignment: CrossAxisAlignment.start,
-    //             children: [
-    //               // --- ส่วน Header Profile ---
-    //               Container(
-    //                 padding: const EdgeInsets.all(
-    //                   16,
-    //                 ),
-    //                 decoration: BoxDecoration(
-    //                   // color: Colors.white,
-    //                   boxShadow: [
-    //                     BoxShadow(
-    //                       color: Colors.black.withOpacity(0.05),
-    //                       blurRadius: 10,
-    //                     ),
-    //                   ],
-    //                 ),
-    //                 child: Row(
-    //                   children: [
-    //                     CircleAvatar(
-    //                       radius: 40,
-    //                       backgroundColor: Colors.white,
-    //                       child: const Icon(
-    //                         Icons.person,
-    //                         size: 50,
-    //                         color: Colors.purple,
-    //                       ),
-    //                       // backgroundImage: NetworkImage(userData?['photoURL'] ?? ''),
-    //                     ),
-    //                     const SizedBox(width: 20),
-    //                     Expanded(
-    //                       child: Column(
-    //                         crossAxisAlignment: CrossAxisAlignment.start,
-    //                         children: [
-    //                           Row(
-    //                             children: [
-    //                               Text(
-    //                                 userData?['displayName'] ?? 'ยังไม่ได้ตั้งชื่อ',
-    //                                 style: const TextStyle(
-    //                                   fontSize: 20,
-    //                                   fontWeight: FontWeight.bold,
-    //                                 ),
-    //                               ),
-    //                               IconButton(
-    //                                 icon: const Icon(Icons.edit, size: 20),
-    //                                 onPressed: () {
-    //                                   _showEditNameDialog(userData['displayName']);
-    //                                 },
-    //                               ),
-    //                             ],
-    //                           ),
-    //                           // Text("ชื่อ: ${userData?['first_name']}"),
-    //                           // Text("นามสกุล: ${userData?['last_name']}"),
-    //                           // Text("เพศ: ${userData?['gender']}"),
-    //                           Text(
-    //                             userData?['email'],
-    //                             style: TextStyle(
-    //                               color: Colors.grey[600],
-    //                               fontSize: 14,
-    //                             ),
-    //                           ),
-    //                           // Text(userData?['displayName'] ?? ''),
-    //                           // Text(userData?['email']),
-    //                           // isEmailVerified
-    //                         ],
-    //                       ),
-    //                     ),
-    //                   ],
-    //                 ),
-    //               ),
-    //             ],
-    //           );
-    //         }
-    //         return CircularProgressIndicator();
-    //       },
-    //     );
   }
 }

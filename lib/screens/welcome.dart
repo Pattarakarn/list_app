@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../app_colors.dart';
 import 'dart:async';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:flutter/gestures.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-    StreamSubscription? _internetSubscription;
+  StreamSubscription? _internetSubscription;
   bool _isConnected = true;
 
   @override
@@ -37,9 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(
-      context,
-    ).clearSnackBars(); 
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -79,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String email = "";
   String password = "";
-  String? _errorMessage ;
+  String? _errorMessage;
   Future<void> _Login() async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -87,13 +86,13 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
       print(credential);
-     setState(() {
-    _errorMessage = null; 
-  });
+      setState(() {
+        _errorMessage = null;
+      });
     } on FirebaseAuthException catch (e) {
-     setState(() {
-    _errorMessage = 'ข้อมูลไม่ถูกต้อง'; 
-  });
+      setState(() {
+        _errorMessage = 'ข้อมูลไม่ถูกต้อง';
+      });
       print("เกิดข้อผิดพลาด: ${e.message}");
     }
   }
@@ -101,7 +100,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _Signup() async {
     try {
       final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email.trim().toLowerCase(), password: password);
+          .createUserWithEmailAndPassword(
+            email: email.trim().toLowerCase(),
+            password: password,
+          );
       print(credential);
     } on FirebaseAuthException catch (e) {
       print("เกิดข้อผิดพลาด: ${e.message}");
@@ -110,116 +112,188 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
+    Color backgroundColor = isLightMode
+        ? Colors.white
+        : Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
       // ต้องเริ่มด้วย Scaffold เสมอ
-      // appBar: AppBar(title: const Text('เข้าสู่ระบบ')),
-      backgroundColor: Colors.black87,
+      backgroundColor: backgroundColor, //Colors.black87,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 16.0,
           ), // เว้นขอบข้าง 16
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 250),
+          // child: ConstrainedBox(
+          child: Container(
+            decoration: BoxDecoration(
+              color: isLightMode
+                  ? Theme.of(context).scaffoldBackgroundColor
+                  : const Color(0xFF1E293B).withOpacity(0.7),
+              border: Border.all(
+                color: isLightMode
+                    ? Colors.black.withOpacity(0.5)
+                    : Colors.white24,
+                width: 1.0,
+              ),
+
+              borderRadius: BorderRadius.circular(12),
+            ),
+
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(maxWidth: 280),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // const Icon(Icons.auto_awesome, size: 100, color: Colors.blue),
-                // const SizedBox(height: 20),
-                const Text(
-                  'ยินดีต้อนรับ!',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
+                Image.asset(
+                  'assets/logo.jpg',
+                  width: 50,
+                  height: 50,
+                  // fit: BoxFit.contain
                 ),
+                // const Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: Text(
+                //     'EMAIL',
+                //     style: TextStyle(
+                //       fontWeight: FontWeight.bold,
+                //       color: Color(0xFF94A3B8),
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 10),
                 TextField(
-                  decoration: InputDecoration(labelText: 'Email',
-                  errorText:(_errorMessage?.isEmpty ?? true) ? null : ''),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    errorText: (_errorMessage?.isEmpty ?? true) ? null : '',
+                  ),
                   onChanged: (val) => email = val,
-                  style: TextStyle(color: Colors.white),
-        //           validator: (value) {
-        //   if (value == null || value.isEmpty) {
-        //     return 'กรุณากรอกอีเมล';
-        //   }
-        //   if (!value.contains('@')) {
-        //     return 'รูปแบบอีเมลไม่ถูกต้อง';
-        //   }
-        //   return null; // ผ่าน!
-        // },
+                  // style: TextStyle(color: Colors.white),
+                  //           validator: (value) {
+                  //   if (value == null || value.isEmpty) {
+                  //     return 'กรุณากรอกอีเมล';
+                  //   }
+                  //   if (!value.contains('@')) {
+                  //     return 'รูปแบบอีเมลไม่ถูกต้อง';
+                  //   }
+                  //   return null; // ผ่าน!
+                  // },
                 ),
+                // const Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: Text(
+                //     'PASSWORD',
+                //     style: TextStyle(fontWeight: FontWeight.bold),
+                //   ),
+                // ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: TextField(
-                    decoration: InputDecoration(labelText: 'Password',
-                    errorText: _errorMessage,),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      errorText: _errorMessage,
+                    ),
                     obscureText: true,
                     onChanged: (val) => password = val,
-                    style: TextStyle(color: Colors.white),
+                    // style: TextStyle(color: Colors.white),
                   ),
                 ),
-
+                // Forgot?
                 ElevatedButton(
                   onPressed: () {
                     _Login();
                   },
-                  child: Text('Login to LisT'),
+                  child: Text(
+                    'Login to LisT',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(
                       0xFFFF6B00,
                     ), //AppColors.primary,
                     foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ), // ปรับเลขนี้ตามความต้องการ (ยิ่งมากยิ่งกลม)
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1)), // เส้นซ้าย
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        "หรือ",
-                        style: TextStyle(color: Colors.white),
+                // Row(
+                //   children: [
+                //     Expanded(child: Divider(thickness: 1)), // เส้นซ้าย
+                //     Padding(
+                //       padding: EdgeInsets.symmetric(horizontal: 10),
+                //       child: Text(
+                //         "หรือ",
+                //         style: TextStyle(color: Colors.white),
+                //       ),
+                //     ),
+                //     Expanded(child: Divider(thickness: 1)), // เส้นขวา
+                //   ],
+                // ),
+                // Padding(
+                //   padding: const EdgeInsets.all(16.0), // ห่างทุกด้าน
+                //   // child: OutlinedButton(
+                //   child: ElevatedButton(
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: Colors.white,
+                //     ),
+                //     // child: ShaderMask(
+                //     // shaderCallback: (bounds) => const LinearGradient(
+                //     //   colors: [
+                //     //     Color(0xFF4285F4), // Blue
+                //     //     Color(0xFFEA4335), // Red
+                //     //     Color(0xFFFBBC05), // Yellow
+                //     //     Color(0xFF34A853), // Green
+                //     //   ],
+                //     //   begin: Alignment.topLeft,
+                //     //   end: Alignment.bottomRight,
+                //     // ).createShader(bounds),
+                //     child: Text("Login with Google"),
+                //     // ),
+                //     onPressed: () async {
+                //       UserCredential? user = await signInWithGoogle();
+                //       if (user != null) {
+                //         print("Login สำเร็จ: ${user.user?.displayName}");
+                //         // เมื่อ authen แล้ว ข้อมูลนี้จะถูกส่งไปพร้อมสิทธิ์ของ user คนนั้นทันที
+                //         // FirebaseFirestore.instance.collection('users').doc(uid).update({
+                //         //   'last_login': DateTime.now(),
+                //         // });
+                //         // เปลี่ยนหน้าไป Home
+                //       }
+                //     },
+                //   ),
+                // ),
+                SizedBox(height: 20),
+                RichText(
+                  text: TextSpan(
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      // fontSize: 16,
+                    ),
+                    children: [
+                      const TextSpan(text: "Don't have an account? "),
+                      TextSpan(
+                        text: 'Sign Up',
+                        style: const TextStyle(
+                          color: Color(0xFF5733),
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            print('ไปที่หน้า Sign Up');
+                            // ใส่คำสั่ง Navigator.push หรือโค้ดเปลี่ยนหน้าตรงนี้
+                          },
                       ),
-                    ),
-                    Expanded(child: Divider(thickness: 1)), // เส้นขวา
-                  ],
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(16.0), // ห่างทุกด้าน
-                  // child: OutlinedButton(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                    ),
-                    // child: ShaderMask(
-                    // shaderCallback: (bounds) => const LinearGradient(
-                    //   colors: [
-                    //     Color(0xFF4285F4), // Blue
-                    //     Color(0xFFEA4335), // Red
-                    //     Color(0xFFFBBC05), // Yellow
-                    //     Color(0xFF34A853), // Green
-                    //   ],
-                    //   begin: Alignment.topLeft,
-                    //   end: Alignment.bottomRight,
-                    // ).createShader(bounds),
-                    child: Text("Login with Google"),
-                    // ),
-                    onPressed: () async {
-                      UserCredential? user = await signInWithGoogle();
-                      if (user != null) {
-                        print("Login สำเร็จ: ${user.user?.displayName}");
-                        // เมื่อ authen แล้ว ข้อมูลนี้จะถูกส่งไปพร้อมสิทธิ์ของ user คนนั้นทันที
-                        // FirebaseFirestore.instance.collection('users').doc(uid).update({
-                        //   'last_login': DateTime.now(),
-                        // });
-                        // เปลี่ยนหน้าไป Home
-                      }
-                    },
+                    ],
                   ),
                 ),
               ],

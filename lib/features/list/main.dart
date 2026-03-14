@@ -6,32 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:list_app/features/list/list_detail.dart'; // <--- ต้องมีบรรทัดนี้
 import 'package:list_app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MyListsPage extends StatefulWidget {
-  //เพื่อให้อัพเดททันที
   const MyListsPage({super.key});
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     body: ListView.builder(
-  //       itemCount: 5,
-  //       itemBuilder: (context, index) {
-  //         return ListTile(
-  //           leading: const Icon(Icons.assignment),
-  //           title: Text('รายการที่ ${index + 1}'),
-  //           onTap: () {
-  //             Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailPage()));
-  //           },
-  //         );
-  //       },
-  //     ),
-  //     floatingActionButton: FloatingActionButton(
-  //       onPressed: () {},
-  //       child: const Icon(Icons.add),
-  //     ),
-  //   );
-  // }
   @override
   State<MyListsPage> createState() => _MyListsPageState();
 }
@@ -77,12 +56,6 @@ class _MyListsPageState extends State<MyListsPage> {
       return const Text("กรุณาล็อกอินใหม่");
     }
     return Scaffold(
-      // backgroundColor: Colors.red,
-
-      //                 Navigator.push(
-      //                   context,
-      //                   MaterialPageRoute(builder: (context) =>  DetailPage(title: '${_items[index]}')),
-      //                 );
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('lists')
@@ -117,10 +90,16 @@ class _MyListsPageState extends State<MyListsPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: ListTile(
                   // leading: const CircleAvatar(child: Icon(Icons.assignment)),
-                  leading: Icon(
-                    Icons.assignment,
-                    //size: 24,
-                    color: context.primaryColor,
+                  // leading: Icon(
+                  //   Icons.assignment,
+                  //   //size: 24,
+                  //   color: context.primaryColor,
+                  // ),
+                  leading: SvgPicture.asset(
+                    'assets/icons/table.svg',
+                    width: 24,
+                    height: 24,
+                    // colorFilter: ColorFilter.mode(Colors.blue, BoxType.srcIn), // เปลี่ยนสีได้ด้วย!
                   ),
                   title: Text(data['name'] ?? 'ว่าง'),
                   subtitle: Text(

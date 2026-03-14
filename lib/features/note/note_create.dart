@@ -82,7 +82,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
                 const Text('Lock '),
                 CupertinoSwitch(
                   value: isLock,
-                  activeColor: AppColors.note,
+                  activeColor: AppColors.primary,
                   onChanged: (value) {
                     setState(() {
                       isLock = value;
@@ -127,10 +127,10 @@ class _CreateNotePageState extends State<CreateNotePage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
-                        // backgroundColor: AppColors.primary,
-                        // foregroundColor: Theme.of(
-                        //   context,
-                        // ).colorScheme.onPrimary,
+                        backgroundColor: AppColors.note,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
                       ),
                       onPressed: _createList,
                       child: const Text('บันทึก'),
