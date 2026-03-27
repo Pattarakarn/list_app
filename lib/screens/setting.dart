@@ -19,6 +19,10 @@ class _SettingPageState extends State<SettingPage> {
     final user = FirebaseAuth.instance.currentUser;
     final GoogleSignIn _googleSignIn = GoogleSignIn();
     if (user == null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
       return const Text("กรุณาล็อกอินใหม่");
     }
     return Scaffold(

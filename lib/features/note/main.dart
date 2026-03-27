@@ -166,13 +166,6 @@ class _NotesPageState extends State<NotesPage> {
                     ),
                     onTap: () {
                       AuthService().authenticateUser(context, itemName, docId);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DetailPage(title: itemName, docId: docId),
-                        ),
-                      );
                     },
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),

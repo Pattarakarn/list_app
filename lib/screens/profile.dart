@@ -125,13 +125,23 @@ class _ProfilePageState extends State<ProfilePage> {
           .doc(user?.uid)
           .snapshots(),
       builder: (context, snapshot) {
+        final doc = snapshot.data;
+
+        if (snapshot.hasError)
+          return const Center(child: Text('เกิดข้อผิดพลาด'));
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        //       if (doc == null || !doc.exists) {
+        //   return const Text("Document does not exist");
+        // }
         if (snapshot.hasData) {
           // var data = snapshot.data!.data() as Map<String, dynamic>?;
           // เติม ? หลัง Map เพื่อบอกว่ามันอาจจะเป็น null ได้
           // final userData = data ?? {'displayName': '', 'email': 'example.com'};
-          userData = snapshot.data!.data() as Map<String, dynamic>;
+          userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
         }
-        print(userData);
 
         return Scaffold(
           backgroundColor: Theme.of(context).brightness == Brightness.dark

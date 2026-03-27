@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// class CreateListPage extends StatelessWidget {
 class CreateListPage extends StatefulWidget {
   const CreateListPage({super.key});
 
@@ -10,8 +9,6 @@ class CreateListPage extends StatefulWidget {
   State<CreateListPage> createState() => _CreateListPageState();
 }
 
-// @override
-// Widget build(BuildContext context) {
 class _CreateListPageState extends State<CreateListPage> {
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = false;
@@ -33,34 +30,24 @@ class _CreateListPageState extends State<CreateListPage> {
     if (_nameController.text.isEmpty) return;
 
     setState(() => _isLoading = true);
-    print(_checkController.text);
-    print(_selectController.text);
-    // try {
-    //   await FirebaseFirestore.instance.collection('lists').add({
-    //     'name': _nameController.text,
-    //     'createdAt': FieldValue.serverTimestamp(),
-    //     'authorId': user?.uid,
-    //     // type:
-    //     //required_date:
-    //   });
+    try {
+      await FirebaseFirestore.instance.collection('lists').add({
+        'name': _nameController.text,
+        'createdAt': FieldValue.serverTimestamp(),
+        'authorId': user?.uid,
+        'type': _selectController.text,
+        'required_date': _checkController.text as bool,
+      });
 
-    //   // เมื่อสำเร็จ ให้ล้างช่องกรอกและปิดหน้าต่าง (ถ้าเป็น Dialog)
-    //   _nameController.clear();
-    //   if (mounted) Navigator.pop(context, _nameController.text);
-    // } catch (e) {
-    //   print("Error: $e");
-    // } finally {
-    //   setState(() => _isLoading = false);
-    // }
+      // เมื่อสำเร็จ ให้ล้างช่องกรอกและปิดหน้าต่าง (ถ้าเป็น Dialog)
+      _nameController.clear();
+      if (mounted) Navigator.pop(context, _nameController.text);
+    } catch (e) {
+      print("Error: $e");
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
-
-  // Future<void> _createList(BuildContext context) async {
-  //   await FirebaseFirestore.instance.collection('lists').add({
-  //     'name': _nameController.text,
-  //   });
-  //   // ใช้ Navigator ผ่าน context ที่รับมา (แต่จะเช็ก mounted ลำบากกว่า)
-  //   Navigator.pop(context);
-  // }
 
   final List<Map<String, String>> optionType = [
     {"label": "ตาราง", "value": "Table"},
@@ -106,8 +93,7 @@ class _CreateListPageState extends State<CreateListPage> {
                     }).toList(),
                     onChanged: (newValue) {
                       setState(() {
-                        _selectController.text =
-                            newValue!; // อัปเดตค่าเข้า Controller
+                        _selectController.text = newValue!;
                       });
                     },
                   ),
