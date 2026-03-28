@@ -12,7 +12,7 @@ class CalculatorPage extends StatefulWidget {
 
 class _CalculatorPageState extends State<CalculatorPage> {
   String _input = "0";
-  String _result = "";
+  String _result = "0";
 
   void _onPressed(String text) {
     setState(() {
@@ -88,7 +88,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
       // backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         // title: const Text("General"),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFF3F7F9),
         // actions: [
         //   PopupMenuButton<String>(
         //     onSelected: (value) {
@@ -150,7 +150,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       ),
                     ),
                     Text(
-                      _result,
+                    NumberFormat("#,###").format(_result).toString(),
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
                         fontSize: 24,
@@ -190,7 +190,6 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   Widget _buildButton(String text, bool isLightMode) {
-    // เช็กว่าเป็นตัวเลขหรือไม่
     bool isNumber = double.tryParse(text) != null || text == ".";
 
     Color btnBg;
@@ -213,7 +212,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
           child: Text(
             text,
             style: TextStyle(
-              color: text == "C" ? Colors.redAccent : Colors.black,
+              color: text == "C" ? Colors.redAccent : isNumber && isLightMode ? Colors.white : Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.bold,
             ),

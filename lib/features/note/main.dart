@@ -139,7 +139,6 @@ class _NotesPageState extends State<NotesPage> {
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                color: Colors.white,
                 clipBehavior: Clip
                     .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
                 child: InkWell(
@@ -165,7 +164,21 @@ class _NotesPageState extends State<NotesPage> {
                       style: const TextStyle(fontSize: 12),
                     ),
                     onTap: () {
-                      AuthService().authenticateUser(context, itemName, docId);
+                      if (isLock) {
+                        AuthService().authenticateUser(
+                          context,
+                          itemName,
+                          docId,
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DetailPage(title: itemName, docId: docId),
+                          ),
+                        );
+                      }
                     },
                     // trailing: IconButton(
                     //   // icon: const Icon(Icons.delete, color: Colors.red),

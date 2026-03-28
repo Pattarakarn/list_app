@@ -24,60 +24,58 @@ class CheckList extends StatelessWidget {
     //   String dateKey = DateFormat('dd/MM/yyyy').format(item.completedDate!);
     //   completedGroups.putIfAbsent(dateKey, () => []).add(data);
     // }
-     final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  void _addItem() {
-    if (_controller.text.trim().isNotEmpty) {
-      // setState(() {
-      //   _items.add(_controller.text.trim());
-      //   _controller.clear(); 
-      // });
+    final TextEditingController _controller = TextEditingController();
+    final FocusNode _focusNode = FocusNode();
+    void _addItem() {
+      if (_controller.text.trim().isNotEmpty) {
+        // setState(() {
+        //   _items.add(_controller.text.trim());
+        //   _controller.clear();
+        // });
 
-      _focusNode.requestFocus();
+        _focusNode.requestFocus();
+      }
     }
-  }
 
     return Scaffold(
       body: ListView(
         children: [
-        
-  Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        decoration: InputDecoration(
-                          hintText: "Text List!",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              // color: AppColors.rand,
-                              width: 2.0,
-                            ),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        textInputAction: TextInputAction
-                            .done, 
-                        onSubmitted: (value) {
-                          _addItem(); 
-                        },
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  decoration: InputDecoration(
+                    hintText: "Text List!",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        // color: AppColors.rand,
+                        width: 2.0,
                       ),
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    const SizedBox(width: 10),
-                   ElevatedButton.icon(
-                      onPressed: () => {},
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add'),
-                    ),
-                  ],
-  ),
-    const SizedBox(height: 20),
+                  ),
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) {
+                    _addItem();
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: () => {},
+                icon: const Icon(Icons.add),
+                label: const Text('Add'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           ...pendingItems.map(
             (item) => Card(
               color: Theme.of(context).cardColor,
@@ -98,8 +96,8 @@ class CheckList extends StatelessWidget {
               ),
             ),
           ),
-          // const Divider(height: 40),
 
+          // const Divider(height: 40),
           ...completedGroups.entries.map((group) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

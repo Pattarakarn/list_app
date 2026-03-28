@@ -94,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData icon,
     String label,
     dynamic color,
-    // VoidCallback onTap,
     int index,
+    VoidCallback onTap,
   ) {
     bool _isHovered = false;
     Color baseColor = color is List<Color> ? color[0] : color;
@@ -108,18 +108,16 @@ class _HomeScreenState extends State<HomeScreen> {
       onHover: (hovering) {
         /* จัดการตอน hover */
       },
-      borderRadius: BorderRadius.circular(15), // ให้ขอบสีอ่อนโค้งมนสวยๆ
+      borderRadius: BorderRadius.circular(15), 
       child: Padding(
-        // เพิ่ม Padding หน่อยเพื่อให้พื้นที่กดไม่ติดไอคอนเกินไป
         padding: const EdgeInsets.all(8.0),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            // ✅ ถ้า Hover ให้เป็นสีอ่อนของไอคอน (Opacity 10-15%) ถ้าไม่ Hover ให้เป็นสีใส
             color: _isHovered
-                ? baseColor.withOpacity(0.15)
+                ? Colors.grey
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(15),
           ),
@@ -194,8 +192,10 @@ class _HomeScreenState extends State<HomeScreen> {
           current['label'],
           current['color'],
           current['index'],
+          () {
+        setState(() => _isExpanded = !_isExpanded);
+      },
         ),
-        // ปุ่มลูกศรสำหรับกดขยาย
         IconButton(
           icon: const Icon(
             Icons.arrow_forward_ios,
@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return [
       ...menuItems.map(
         (item) =>
-            _navItem(item['icon'], item['label'], item['color'], item['index']),
+            _navItem(item['icon'], item['label'], item['color'], item['index'], () => {}),
       ),
       // if (_isExpanded) // ถ้าขยายอยู่ ให้มีปุ่มกดหดกลับ
       //   IconButton(
@@ -264,13 +264,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7F9),
+      backgroundColor: AppColors.gray,
 
       body: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
-              top: 50,
+              top: _selectedIndex == 0 ? 0 : 50,
               // bottom: 78,
               child: SafeArea(
                 // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
@@ -395,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                
               ),
             ),
           ],

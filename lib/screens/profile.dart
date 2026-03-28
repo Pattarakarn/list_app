@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../app_colors.dart';
 import 'calculator.dart';
 import 'setting.dart';
+import 'fuel.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -207,8 +208,20 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
 
                   const SizedBox(height: 40),
-
-                  // --- หัวข้อ Tools (ชิดซ้าย) ---
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 20),
+                  //   child: Align(
+                  //     alignment: Alignment.centerLeft,
+                  //     child: const Text(
+                  //       'Personal',
+                  //       style: TextStyle(
+                  //         fontSize: 18,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // // สมุดเบาใจ
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Align(
@@ -262,7 +275,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             title: const Text('คำนวณการใช้น้ำมัน'),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
-                              /* ลิงก์ไปหน้าคำนวณน้ำมัน */
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FuelScreen(),
+                                ),
+                              );
                             },
                           ),
                         ],

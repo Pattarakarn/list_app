@@ -62,7 +62,6 @@ class _CreateNotePageState extends State<CreateNotePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('สร้างโน้ต')),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

@@ -57,4 +57,12 @@ class Options {
     {"label": "ตาราง", "value": "Table"},
     {"label": "checklist", "value": "Checklist"},
   ];
+
+  static List<String> ListGas = [
+    'แก๊สโซฮอล์ 91',
+    'แก๊สโซฮอล์ 95',
+    'E20',
+    'เบนซิน',
+    'ดีเซล',
+  ];
 }

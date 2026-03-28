@@ -87,6 +87,9 @@ class _DetailPageState extends State<DetailPage> {
             'data': rows,
             'header': headers,
             'updatedAt': FieldValue.serverTimestamp(),
+            'type': _type,
+            'hideEmpty': _isHideBox,
+            'required_date': _requireDate,
           });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
@@ -217,22 +220,24 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _showModal(BuildContext context) {
+    String type = _type;
+    bool hideEmpty = _isHideBox;
+    bool requireDate = _requireDate;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      backgroundColor: Colors.white,
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Container(
               padding: const EdgeInsets.all(24),
+              height: MediaQuery.of(context).size.height * 0.90,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // ให้ความสูงพอดีกับเนื้อหา
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ขีดเล็กๆ ด้านบนบอกว่าเลื่อนลงได้
                   Center(
                     child: Container(
                       width: 40,
@@ -254,19 +259,18 @@ class _DetailPageState extends State<DetailPage> {
                       _buildCustomToggle(
                         label: "Table",
                         icon: Icons.table_restaurant,
-                        isSelected: _type == 'Table',
-                        onTap: () => setModalState(() => _type = 'Table'),
+                        isSelected: type == 'Table',
+                        onTap: () => setModalState(() => type = 'Table'),
                       ),
                       const SizedBox(width: 12),
                       _buildCustomToggle(
                         label: "Checklist",
                         icon: Icons.checklist,
-                        isSelected: _type == 'Checklist',
-                        onTap: () => setModalState(() => _type = 'Checklist'),
+                        isSelected: type == 'Checklist',
+                        onTap: () => setModalState(() => type = 'Checklist'),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -285,7 +289,7 @@ class _DetailPageState extends State<DetailPage> {
                         ],
                       ),
                       Switch.adaptive(
-                        value: _requireDate,
+                        value: hideEmpty,
                         onChanged: (val) {
                           // _toggleSomeValueCol,
                         },
@@ -309,10 +313,10 @@ class _DetailPageState extends State<DetailPage> {
                         ],
                       ),
                       Switch.adaptive(
-                        value: _requireDate,
+                        value: requireDate,
                         // activeColor: AppColors.secondary,
                         onChanged: (val) {
-                          setModalState(() => _requireDate = val);
+                          setModalState(() => requireDate = val);
                         },
                       ),
                     ],
@@ -397,6 +401,25 @@ class _DetailPageState extends State<DetailPage> {
 
                   // const Text(""),
                   // สลับแกนx-y
+                  CheckboxListTile(
+                    title: Transform.translate(
+                      offset: Offset(
+                        -16,
+                        0,
+                      ), 
+                      child: Text("Show remark"),
+                    ),
+                    value: true, //_isVisible,
+                    onChanged: (bool? value) {
+                      // setState(() {
+                      //   _isVisible = value ?? false; // อัปเดตสถานะเมื่อกด
+                      // });
+                    },
+                    controlAffinity: ListTileControlAffinity
+                        .leading, 
+                  
+                    //  visualDensity:  VisualDensity(horizontal: -4.0, vertical: 0),
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -408,10 +431,9 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                       ),
                       onPressed: () => {
-                        //    setState(() {
-                        //   _selectController.text =
-                        //       newValue!;
-                        // });
+                        setState(() {
+                          _type = type;
+                        }),
                         Navigator.pop(context),
                       },
                       child: const Text("Apply"),
@@ -442,7 +464,7 @@ class _DetailPageState extends State<DetailPage> {
             Text(widget.title),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.edit, size: 18),
+              icon: const Icon(Icons.edit, size: 18, color: AppColors.gray),
               onPressed: () => _showEditDialog(), // ฟังก์ชันเปิดหน้าต่างแก้ชื่อ
             ),
           ],

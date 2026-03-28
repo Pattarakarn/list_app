@@ -58,7 +58,6 @@ class _CreateListPageState extends State<CreateListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('สร้างลิสต์')),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

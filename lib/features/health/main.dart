@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../app_colors.dart';
+import 'part/lists.dart';
+import 'part/calendar.dart';
+import 'part/last-period.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -51,127 +54,56 @@ class _HealthPageState extends State<HealthPage> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime startOfWeek = _getStartOfWeek();
-    List<String> dayLabels = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
+    double headerHeight = MediaQuery.of(context).size.height * 0.31; // 30vh
+
     return Scaffold(
-      // appBar: AppBar(title: const Text("บันทึกรอบเดือน"), backgroundColor: Colors.pink[50]),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. ส่วนแสดงประจำเดือนล่าสุด
-            _buildHeaderCard(),
-            const SizedBox(height: 24),
+      // backgroundColor: Colors.grey[50],
+      body: Stack(
+        children: [
+          Container(
+            height: headerHeight,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
 
-            // เอาวันนี้อยู่ตรงกลาง ใส่ไอคอนรูปยิ้มดีกว่า ส่วนbloodเป็นอันเล็ก
-            const Text(
-              "สัปดาห์นี้",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                colors: [
+                  const Color(0xFFFF758C),
+                  const Color(0xFFFF7EB3).withOpacity(0.5),
+                  Colors.transparent, // จางหายไปเลยที่ด้านล่าง (รอยต่อ 30vh)
+                ],
+
+                // 2. กำหนดจุดที่สีจะเริ่มจาง (Stops)
+                stops: const [0.0, 0.6, 1.0],
+                // 0.0 คือบนสุดสีชัด | 0.6 คือเริ่มจางที่ 60% | 1.0 คือใสสนิทที่ขอบล่างพอดี
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(7, (index) {
-                DateTime date = startOfWeek.add(Duration(days: index));
-                bool hasData =
-                    false; // TODO: เชื่อมกับข้อมูลของคุณเพื่อเปลี่ยนสีไอคอน
+          ),
 
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: InkWell(
-                      onTap: () =>
-                          print("กดวันที่ ${date.day}"), // ฟังชันเมื่อกด
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: _getDayColor(date.weekday),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            // Text(
-                            //   dayLabels[index],
-                            //   style: const TextStyle(
-                            //     fontWeight: FontWeight.bold,
-                            //     fontSize: 12,
-                            //   ),
-                            // ),
-                            Text(
-                              "${date.day}",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Icon(
-                              Icons.sentiment_satisfied_alt,
-                              color: hasData
-                                  ? _getDayColor(date.weekday)
-                                  : Colors.grey[400],
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+          // 2. ส่วนเนื้อหา Body
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 15),
+                  // --- ส่วนที่ 1: Period Tracker ---
+                  const PeriodSummaryCard(),
+
+                  const SizedBox(height: 10),
+                  // --- ส่วนที่ 2: Mood Calendar (Week/Month) ---
+                  const MoodCalendarWidget(),
+
+                  const SizedBox(height: 25),
+                  // --- ส่วนที่ 3: Recent Symptoms ---
+                  const SymptomHistoryList(),
+
+                  const SizedBox(height: 100), // เผื่อระยะล่าง
+                ],
+              ),
             ),
-            // _buildWeeklyBloodSelector(),
-            const SizedBox(height: 24),
-
-            // 3. ส่วนเลือกวันที่ต้องการดูข้อมูล
-            _buildDatePickerSection(),
-            const SizedBox(height: 24),
-
-            // TableCalendar(
-            //   firstDay: DateTime.utc(2024, 1, 1),
-            //   lastDay: DateTime.utc(2030, 12, 31),
-            //   focusedDay: DateTime.utc(2026, 3, 4),
-            //   // selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            //   // eventLoader: (day) => _events[DateTime.utc(day.year, day.month, day.day)] ?? [],
-            //   // onDaySelected: (selectedDay, focusedDay) {
-            //   //   setState(() {
-            //   //     _selectedDay = selectedDay;
-            //   //     _focusedDay = focusedDay;
-            //   //   });
-            //   // },
-            //   calendarStyle: const CalendarStyle(
-            //     markerDecoration: BoxDecoration(
-            //       color: Colors.pink,
-            //       shape: BoxShape.circle,
-            //     ),
-            //     selectedDecoration: BoxDecoration(
-            //       color: Colors.red,
-            //       shape: BoxShape.circle,
-            //     ),
-            //     todayDecoration: BoxDecoration(
-            //       color: Colors.pinkAccent,
-            //       shape: BoxShape.circle,
-            //     ),
-            //   ),
-            // ),
-
-            // 4. รายการอาการล่าสุด
-            const Text(
-              "อาการล่าสุด",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            _buildSymptomList(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
