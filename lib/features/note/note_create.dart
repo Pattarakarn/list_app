@@ -107,7 +107,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
             const SizedBox(height: 10),
             // textarea
             TextField(
-              maxLines: 5,
+              maxLines: 10,
               minLines: 3,
               keyboardType: TextInputType.multiline,
               decoration: InputDecoration(

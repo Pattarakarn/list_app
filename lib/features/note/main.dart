@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
 // import 'package:local_auth_android/local_auth_android.dart';
 // import 'package:local_auth_ios/local_auth_ios.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -137,55 +138,68 @@ class _NotesPageState extends State<NotesPage> {
               String itemName = data['name'] ?? 'Unnamed';
               bool isLock = data['lock'] ?? false;
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                clipBehavior: Clip
-                    .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
-                child: InkWell(
-                  // !ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
-                  hoverColor: AppColors.note.withOpacity(0.1),
-                  child: ListTile(
-                    // leading: const CircleAvatar(child: Icon(Icons.delete)),
-                    leading: IconButton(
+              return Slidable(
+                key: ValueKey(index),
+                startActionPane: ActionPane(
+                  motion: //DrawerMotion(),
+                      const ScrollMotion(), // BehindMotion
+                  extentRatio: 0.15,
+                  children: [
+                    const SizedBox(width: 10),
+                    IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () => _deleteItem(id: docId, name: itemName),
-                      hoverColor: AppColors.danger,
+                      // hoverColor: AppColors.danger,
                       highlightColor: AppColors.danger.withOpacity(0.2),
-                      color: Colors.white,
+                      color: AppColors.danger,
                       // mouseCursor: SystemMouseCursors.click,
                       iconSize: 18,
                     ),
-
-                    title: Text(data['name'] ?? 'ไม่มีชื่อ'),
-                    subtitle: Text(
-                      DateFormat(
-                        'dd/MM/yyyy HH:mm',
-                      ).format((data['createdAt'] as Timestamp).toDate()),
-                      style: const TextStyle(fontSize: 12),
+                  ],
+                ),
+                child: Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  clipBehavior: Clip
+                      .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
+                  child: InkWell(
+                    // !ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
+                    hoverColor: AppColors.note.withOpacity(0.1),
+                    child: ListTile(
+                      // leading: const CircleAvatar(child: Icon(Icons.delete)),
+                      title: Text(data['name'] ?? 'ไม่มีชื่อ'),
+                      subtitle: Text(
+                        DateFormat(
+                          'dd/MM/yyyy HH:mm',
+                        ).format((data['createdAt'] as Timestamp).toDate()),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onTap: () {
+                        if (isLock) {
+                          AuthService().authenticateUser(
+                            context,
+                            itemName,
+                            docId,
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailPage(title: itemName, docId: docId),
+                            ),
+                          );
+                        }
+                      },
+                      // trailing: IconButton(
+                      //   // icon: const Icon(Icons.delete, color: Colors.red),
+                      // ),
+                      trailing: isLock
+                          ? const Icon(Icons.lock, color: AppColors.primary)
+                          : null,
                     ),
-                    onTap: () {
-                      if (isLock) {
-                        AuthService().authenticateUser(
-                          context,
-                          itemName,
-                          docId,
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DetailPage(title: itemName, docId: docId),
-                          ),
-                        );
-                      }
-                    },
-                    // trailing: IconButton(
-                    //   // icon: const Icon(Icons.delete, color: Colors.red),
-                    // ),
-                    trailing: isLock
-                        ? const Icon(Icons.lock, color: AppColors.primary)
-                        : null,
                   ),
                 ),
               );

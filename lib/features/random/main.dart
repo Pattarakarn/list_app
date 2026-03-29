@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:list_app/features/random/list.dart';
 import 'dart:math';
 import '../../app_colors.dart';
 import '../../loading.dart';
@@ -61,21 +62,47 @@ class _RandomPState extends State<RandomP> {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 0,
+                      ),
                       itemCount: docs.length,
                       itemBuilder: (context, index) {
                         var data = docs[index].data() as Map<String, dynamic>;
-                        // print(data);
-                        return ListTile(
-                          title: Text(
-                            (data['name']) ?? 'random',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        data['id'] = docs[index].id;
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          subtitle: Text(
-                            "( ${data['items'].length.toString()} รายการ)",
-                            style: const TextStyle(
-                              color: Color(0xFF00E5FF),
-                              fontSize: 12,
+                          clipBehavior: Clip
+                              .antiAlias, // ทำให้ InkWell ไม่ทะลุขอบโค้งของ Card
+                          color: AppColors.gray,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ListPage(data: data),
+                                ),
+                              );
+                            },
+                            hoverColor: AppColors.gray,
+                            // highlightColor: สีตอนกดค้าง
+                            child: ListTile(
+                              title: Text(
+                                (data['name']) ?? 'random',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "( ${data['items'].length.toString()} รายการ)",
+                                style: const TextStyle(
+                                  color: Color(0xFF00E5FF),
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
                           ),
                         );

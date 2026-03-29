@@ -22,9 +22,7 @@ class _CreateListPageState extends State<CreateListPage> {
   final TextEditingController _selectController = TextEditingController(
     text: "Table",
   );
-  final TextEditingController _checkController = TextEditingController(
-    text: "false",
-  );
+  bool _checkController = false;
 
   Future<void> _createList() async {
     if (_nameController.text.isEmpty) return;
@@ -36,7 +34,7 @@ class _CreateListPageState extends State<CreateListPage> {
         'createdAt': FieldValue.serverTimestamp(),
         'authorId': user?.uid,
         'type': _selectController.text,
-        'required_date': _checkController.text as bool,
+        'required_date': _checkController,
       });
 
       // เมื่อสำเร็จ ให้ล้างช่องกรอกและปิดหน้าต่าง (ถ้าเป็น Dialog)
@@ -102,10 +100,10 @@ class _CreateListPageState extends State<CreateListPage> {
                   flex: 1,
                   child: CheckboxListTile(
                     title: const Text("Required Date"),
-                    value: _checkController.text == "true",
+                    value: _checkController,
                     onChanged: (bool? value) {
                       setState(() {
-                        _checkController.text = value.toString();
+                        _checkController = value as bool;
                       });
                     },
                     controlAffinity: ListTileControlAffinity

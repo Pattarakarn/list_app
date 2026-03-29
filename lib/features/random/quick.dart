@@ -301,7 +301,7 @@ class _RandomQuickState extends State<RandomQuick> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                     _items.isNotEmpty ? _createList() : null;
+                      _items.isNotEmpty ? _createList() : null;
                     },
                     icon: const Icon(Icons.bookmark_add),
                     label: const Text("บันทึก"),

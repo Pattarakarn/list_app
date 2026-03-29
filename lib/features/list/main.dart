@@ -89,11 +89,11 @@ class _MyListsPageState extends State<MyListsPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 color: Theme.of(context).scaffoldBackgroundColor, //cardColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12), // ความมนของมุม
+                  borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary, // ใช้สี Primary ของแอป
+                    color: data['type'] == 'Checklist'
+                        ? context.primaryColor
+                        : Theme.of(context).colorScheme.secondary,
                     width: 2, // ความหนาของเส้นขอบ
                   ),
                 ),

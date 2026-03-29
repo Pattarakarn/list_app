@@ -20,23 +20,6 @@ class _ProfilePageState extends State<ProfilePage> {
     // String? _selectedGender;
     if (user == null) return Center(child: Text("กรุณาล็อกอินใหม่"));
     Map<String, dynamic> userData = {};
-    Future<void> updateProfile(
-      String firstName,
-      String lastName,
-      String gender,
-    ) async {
-      final user = FirebaseAuth.instance.currentUser;
-
-      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set(
-        {
-          'first_name': firstName,
-          'last_name': lastName,
-          'gender': gender,
-          'updated_at': DateTime.now(),
-        },
-        SetOptions(merge: true),
-      ); // merge: true คือการอัปเดตเฉพาะฟิลด์ที่ส่งไป ไม่ลบอันเก่า
-    }
 
     void _showEditNameDialog() {
       final controller = TextEditingController(text: userData['displayName']);
@@ -151,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
           appBar: AppBar(
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.manage_accounts),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -183,6 +166,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Icon(
                               Icons.person,
                               size: 50,
+                              color: Colors.grey,
                               // color:  (user?.isEmailVerified )? AppColors.pink : AppColors.blue,
                             ),
                             backgroundImage: NetworkImage(user.photoURL ?? ''),
@@ -208,20 +192,54 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
 
                   const SizedBox(height: 40),
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  //   child: Align(
-                  //     alignment: Alignment.centerLeft,
-                  //     child: const Text(
-                  //       'Personal',
-                  //       style: TextStyle(
-                  //         fontSize: 18,
-                  //         fontWeight: FontWeight.bold,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Personal',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
                   // // สมุดเบาใจ
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF334155).withOpacity(0.7)
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(
+                              Icons.favorite,
+                              color: Colors.pink,
+                            ),
+                            title: const Text('Last will'),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CalculatorPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          // const Divider(height: 1),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Align(
@@ -237,7 +255,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
 
                   const SizedBox(height: 10),
-
                   // --- รายการเครื่องมือ (List Items) ---
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -253,9 +270,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           ListTile(
                             leading: const Icon(
                               Icons.calculate,
-                              color: Colors.blue,
+                              color: Colors.orange,
                             ),
-                            title: const Text('เครื่องคิดเลข'),
+                            title: const Text('คำนวณ'),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
                               Navigator.push(
@@ -270,9 +287,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           ListTile(
                             leading: const Icon(
                               Icons.local_gas_station,
-                              color: Colors.orange,
+                              color: Colors.blue,
                             ),
-                            title: const Text('คำนวณการใช้น้ำมัน'),
+                            title: const Text('อัตราสิ้นเปลือง'),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
                               Navigator.push(

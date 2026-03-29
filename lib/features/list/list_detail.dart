@@ -27,6 +27,8 @@ class _DetailPageState extends State<DetailPage> {
   bool _isHideBox = false;
   String _type = 'Table';
   bool _requireDate = true;
+  bool showRemark = true;
+  bool isDateY = false;
 
   final TextEditingController _selectController = TextEditingController(
     text: "Table",
@@ -62,15 +64,6 @@ class _DetailPageState extends State<DetailPage> {
       newRow.addAll(dynamicCells);
       setState(() {
         rows.add({...newRow});
-        //   rows.add({
-        //   'date': DateFormat('dd/MM/yyyy').format(pickedDate),
-        //   // สร้าง Map ย่อยเพื่อเก็บ Text และ Number สำหรับคอลัมน์ 2, 3, 4
-        //   'col2': {'text': '', 'num': ''},
-        //   'col3': {'text': '', 'num': ''},
-        //   'col4': {'text': '', 'num': ''},
-        // ...dynamicCells,
-        //   'note': '',
-        // });
       });
     }
   }
@@ -85,11 +78,12 @@ class _DetailPageState extends State<DetailPage> {
           .doc(widget.docId)
           .update({
             'data': rows,
-            'header': headers,
+            'header': _type == "Table" ? headers : [],
             'updatedAt': FieldValue.serverTimestamp(),
             'type': _type,
             'hideEmpty': _isHideBox,
             'required_date': _requireDate,
+            'showRemark': showRemark,
           });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
@@ -223,11 +217,13 @@ class _DetailPageState extends State<DetailPage> {
     String type = _type;
     bool hideEmpty = _isHideBox;
     bool requireDate = _requireDate;
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
+      isScrollControlled: true, //
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
@@ -291,7 +287,7 @@ class _DetailPageState extends State<DetailPage> {
                       Switch.adaptive(
                         value: hideEmpty,
                         onChanged: (val) {
-                          // _toggleSomeValueCol,
+                          setModalState(() => hideEmpty = val);
                         },
                       ),
                     ],
@@ -365,7 +361,6 @@ class _DetailPageState extends State<DetailPage> {
                               ),
                               child: Stack(
                                 children: [
-                                  // ข้อความตรงกลาง (เช่น Col 1, Col 2, Col 3)
                                   Center(
                                     child: Text(
                                       "ข้อความ/ตัวเลข",
@@ -398,26 +393,30 @@ class _DetailPageState extends State<DetailPage> {
                       }),
                     ),
                   ),
-
-                  // const Text(""),
-                  // สลับแกนx-y
+                  const SizedBox(height: 10),
                   CheckboxListTile(
                     title: Transform.translate(
-                      offset: Offset(
-                        -16,
-                        0,
-                      ), 
+                      offset: Offset(-18, 0),
+                      child: Text("Rotate axis"),
+                    ),
+                    value: isDateY,
+                    onChanged: (bool? value) {
+                      setModalState(() => isDateY = !isDateY);
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  CheckboxListTile(
+                    title: Transform.translate(
+                      offset: Offset(-8, 0),
                       child: Text("Show remark"),
                     ),
-                    value: true, //_isVisible,
+                    value: showRemark,
                     onChanged: (bool? value) {
-                      // setState(() {
-                      //   _isVisible = value ?? false; // อัปเดตสถานะเมื่อกด
-                      // });
+                      // setModalState(() => showRemark = value);
+                      setModalState(() => showRemark = !showRemark);
                     },
-                    controlAffinity: ListTileControlAffinity
-                        .leading, 
-                  
+                    controlAffinity: ListTileControlAffinity.leading,
+
                     //  visualDensity:  VisualDensity(horizontal: -4.0, vertical: 0),
                   ),
                   const SizedBox(height: 24),
@@ -433,7 +432,11 @@ class _DetailPageState extends State<DetailPage> {
                       onPressed: () => {
                         setState(() {
                           _type = type;
+                          showRemark = showRemark;
+                          isDateY = isDateY;
+                          _requireDate = requireDate;
                         }),
+                        // if(isDateY)
                         Navigator.pop(context),
                       },
                       child: const Text("Apply"),
@@ -464,7 +467,7 @@ class _DetailPageState extends State<DetailPage> {
             Text(widget.title),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.edit, size: 18, color: AppColors.gray),
+              icon: const Icon(Icons.edit, size: 18, color: Colors.grey),
               onPressed: () => _showEditDialog(), // ฟังก์ชันเปิดหน้าต่างแก้ชื่อ
             ),
           ],
@@ -510,7 +513,7 @@ class _DetailPageState extends State<DetailPage> {
                   docData['header'].map((item) => (item)),
                 );
               }
-              // if(docData['required_date'])  _requireDate = docData['required_date'] ;
+              _requireDate = docData['required_date'];
             }
             isInitialized =
                 true; // ล็อคไว้ว่าโหลดมาแล้วนะ ต่อไปนี้จะจัดการเองในเครื่อง
@@ -522,13 +525,40 @@ class _DetailPageState extends State<DetailPage> {
           //     crossAxisAlignment: CrossAxisAlignment.start,
           //     children: [
           return (_type == "Checklist"
-              ? CheckList(data: rows, type: _type, requireDate: _requireDate)
+              ? CheckList(
+                  data: rows,
+                  type: _type,
+                  requireDate: _requireDate,
+                  addText: (val) {
+                    setState(() {
+                      // Map<String, dynamic> newObj = {DateFormat('yyyyMMddHHmmss').format(DateTime.now()): val};
+                      rows.add({
+                        'text': val,
+                        "isDone": false,
+                        'create_date': DateFormat(
+                          'yyyyMMddHHmmss',
+                        ).format(DateTime.now()),
+                        'due_date': null,
+                      });
+                    });
+                  },
+                  setFieldDate: (ind, type, date) {
+                    setState(() {
+                      if (type == "due") rows[ind]['due_date'] = date;
+                      if (type == "complete") {
+                        rows[ind]['complete_date'] = date;
+                        rows[ind]['isDone'] = true;
+                      }
+                    });
+                  },
+                )
               : TableList(
                   headers: headers,
                   rows: rows,
                   requireDate: _requireDate,
                   setHeaders: setHeaders,
                   setRows: (updatedRows) {
+                    print(updatedRows);
                     // setState(() {
                     //     rowData['date'] =  updatedRows;
                     // });

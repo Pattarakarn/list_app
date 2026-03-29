@@ -25,12 +25,12 @@ class _FuelScreenState extends State<FuelScreen> {
   String _selectedPeriod = '30 วัน'; // ค่าเริ่มต้น
   bool _showGraph = false; // สถานะการแสดงกราฟ
   Widget _buildDetailCard({required Map<String, dynamic> data}) {
-  //   double totalMile = (data['last_mileage'] ?? 0).toDouble();
-  // double totalLite = (data['allLites'] ?? 0).toDouble();
-  String consumption = '4323'; //(totalLite > 0) 
-      // ? (totalMile / totalLite).toStringAsFixed(2) 
-      // : "-";
-  
+    //   double totalMile = (data['last_mileage'] ?? 0).toDouble();
+    // double totalLite = (data['allLites'] ?? 0).toDouble();
+    String consumption = '4323'; //(totalLite > 0)
+    // ? (totalMile / totalLite).toStringAsFixed(2)
+    // : "-";
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
@@ -102,15 +102,10 @@ class _FuelScreenState extends State<FuelScreen> {
           //     );
           //   }).toList(),
           // ),
-
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem(
-                "km/l",
-                consumption,
-              ),
+              _buildStatItem("km/l", consumption),
               _buildStatItem("รวมจ่าย", data['total_spent'].toString()),
               // _buildStatItem("ระยะทาง", "1,720 km"),
             ],
@@ -255,7 +250,7 @@ class _FuelScreenState extends State<FuelScreen> {
                 final data = docs[index].data() as Map<String, dynamic>;
                 data['id'] = docs[index].id;
                 print(data);
-                
+
                 //     // --- ส่วนการคำนวณ ---
                 //     double kml = 0;
                 //     if (index < docs.length - 1) {
@@ -292,7 +287,6 @@ class _FuelScreenState extends State<FuelScreen> {
                           //   color: Colors.white.withOpacity(0.9),
                           //   context: context,
                           // ),
-
                           _buildSubCard(
                             index: 1,
                             isExpanded: _isExpanded,

@@ -5,6 +5,8 @@ import '../../app_colors.dart';
 import 'part/lists.dart';
 import 'part/calendar.dart';
 import 'part/last-period.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -16,6 +18,21 @@ class HealthPage extends StatefulWidget {
 class _HealthPageState extends State<HealthPage> {
   DateTime selectedDate = DateTime.now();
   int? selectedLevel; // 0: น้อยมาก, 1: น้อย, 2: ปานกลาง, 3: มาก
+  final user = FirebaseAuth.instance.currentUser;
+
+  Stream<QuerySnapshot>? _healthRecord;
+
+  // initState เพื่อกำหนดค่าเริ่มต้นให้ Stream
+  @override
+  void initState() {
+    super.initState();
+    // สร้าง Stream ครั้งเดียวตอนโหลดหน้า เพื่อลดภาระเครื่องและป้องกัน Error
+    _healthRecord = FirebaseFirestore.instance
+        .collection('health')
+        .where('authorId', isEqualTo: user?.uid)
+        // .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
 
   // สีตามระดับความมากน้อย (4 ระดับ)
   final List<Color> flowColors = [
@@ -55,56 +72,111 @@ class _HealthPageState extends State<HealthPage> {
   @override
   Widget build(BuildContext context) {
     double headerHeight = MediaQuery.of(context).size.height * 0.31; // 30vh
+    // print(user);
 
     return Scaffold(
-      // backgroundColor: Colors.grey[50],
-      body: Stack(
-        children: [
-          Container(
-            height: headerHeight,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+      backgroundColor: Theme.of(context).cardColor,
+      body: _healthRecord == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            ) // ถ้ายัง null ให้หมุนรอ
+          // : StreamBuilder<QuerySnapshot>(
+          : StreamBuilder<QuerySnapshot>(
+              stream: _healthRecord,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  print("Firestore Error: ${snapshot.error}");
+                  return const Center(
+                    child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'),
+                  );
+                }
 
-                colors: [
-                  const Color(0xFFFF758C),
-                  const Color(0xFFFF7EB3).withOpacity(0.5),
-                  Colors.transparent, // จางหายไปเลยที่ด้านล่าง (รอยต่อ 30vh)
-                ],
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                // 2. กำหนดจุดที่สีจะเริ่มจาง (Stops)
-                stops: const [0.0, 0.6, 1.0],
-                // 0.0 คือบนสุดสีชัด | 0.6 คือเริ่มจางที่ 60% | 1.0 คือใสสนิทที่ขอบล่างพอดี
-              ),
+                final List<DocumentSnapshot> documents =
+                    snapshot.data!.docs; //array
+                //     if (documents.isEmpty) return Text("ไม่มีข้อมูล");
+                //     Map<String, dynamic> data = documents[0].data() as Map<String, dynamic>;
+                // print(data);
+                final Map<DateTime, Map<String, dynamic>> _calendar = {};
+
+                for (var doc in documents) {
+                  final data = doc.data() as Map<String, dynamic>;
+
+                  // DateTime dateValue = (data['date'] as Timestamp).toDate();
+                  DateTime dateValue = (data['createdAt'] as Timestamp)
+                      .toDate();
+
+                  DateTime dayKey = DateTime.utc(
+                    dateValue.year,
+                    dateValue.month,
+                    dateValue.day,
+                  );
+
+                  _calendar[dayKey] = {
+                    'symptoms': data['symptoms'],
+                    'pain_level': data['painLevel'],
+                    'medications': data['medications'],
+                    'periodLevel': data['periodLevel'],
+                    'mental_level': data['mental_level'],
+                    // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
+                  };
+                }
+                return Scaffold(
+                  // backgroundColor: Colors.grey[50],
+                  body: Stack(
+                    children: [
+                      Container(
+                        height: headerHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+
+                            colors: [
+                              const Color(0xFFFF758C),
+                              const Color(0xFFFF7EB3).withOpacity(0.5),
+                              Colors
+                                  .transparent, // จางหายไปเลยที่ด้านล่าง (รอยต่อ 30vh)
+                            ],
+
+                            // 2. กำหนดจุดที่สีจะเริ่มจาง (Stops)
+                            stops: const [0.0, 0.6, 1.0],
+                            // 0.0 คือบนสุดสีชัด | 0.6 คือเริ่มจางที่ 60% | 1.0 คือใสสนิทที่ขอบล่างพอดี
+                          ),
+                        ),
+                      ),
+
+                      // 2. ส่วนเนื้อหา Body
+                      SafeArea(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 15),
+                              // --- ส่วนที่ 1: Period Tracker ---
+                              const PeriodSummaryCard(),
+
+                              const SizedBox(height: 10),
+
+                              // --- ส่วนที่ 2: Mood Calendar (Week/Month) ---
+                              MoodCalendarWidget(data: _calendar),
+                              const SizedBox(height: 25),
+                              // --- ส่วนที่ 3: Recent Symptoms ---
+                              const SymptomHistoryList(),
+
+                              const SizedBox(height: 100), // เผื่อระยะล่าง
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          ),
-
-          // 2. ส่วนเนื้อหา Body
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 15),
-                  // --- ส่วนที่ 1: Period Tracker ---
-                  const PeriodSummaryCard(),
-
-                  const SizedBox(height: 10),
-                  // --- ส่วนที่ 2: Mood Calendar (Week/Month) ---
-                  const MoodCalendarWidget(),
-
-                  const SizedBox(height: 25),
-                  // --- ส่วนที่ 3: Recent Symptoms ---
-                  const SymptomHistoryList(),
-
-                  const SizedBox(height: 100), // เผื่อระยะล่าง
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

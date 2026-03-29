@@ -16,7 +16,7 @@ class SymptomHistoryList extends StatelessWidget {
         ListView.builder(
           shrinkWrap: true, // สำคัญ! เพื่อให้อยู่ใน SingleChildScrollView ได้
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: 3, // สมมติ 3 รายการล่าสุด
+          itemCount: 1,
           itemBuilder: (context, index) {
             return Card(
               margin: const EdgeInsets.only(bottom: 10),
@@ -29,7 +29,10 @@ class SymptomHistoryList extends StatelessWidget {
                   child: Icon(Icons.warning_amber_rounded, color: Colors.white),
                 ),
                 title: const Text("ปวดท้องเมน"),
-                subtitle: const Text("28 มี.ค. 2026"),
+                subtitle: const Text(
+                  "28 มี.ค. 2026",
+                  style: TextStyle(fontSize: 12),
+                ),
                 trailing: const Icon(Icons.chevron_right),
               ),
             );

@@ -150,7 +150,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       ),
                     ),
                     Text(
-                    NumberFormat("#,###").format(_result).toString(),
+                      NumberFormat(
+                        "#,###",
+                      ).format(double.parse(_result)).toString(),
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
                         fontSize: 24,
@@ -212,7 +214,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
           child: Text(
             text,
             style: TextStyle(
-              color: text == "C" ? Colors.redAccent : isNumber && isLightMode ? Colors.white : Colors.black,
+              color: text == "C"
+                  ? Colors.redAccent
+                  : (isNumber && !isLightMode)
+                  ? Colors.white
+                  : Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.bold,
             ),

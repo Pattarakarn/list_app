@@ -23,6 +23,7 @@ class TableList extends StatelessWidget {
   });
 
   DataCell _buildDoubleInputCell(Map<String, dynamic> cellData) {
+    print(isHideBox);
     return DataCell(
       Container(
         width: 200, // กำหนดความกว้างรวมของคอลัมน์ย่อย

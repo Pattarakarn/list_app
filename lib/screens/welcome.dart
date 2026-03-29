@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:intl/intl.dart';
-import '../../app_colors.dart';
 import 'dart:async';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter/gestures.dart';
@@ -85,7 +83,6 @@ class _LoginPageState extends State<LoginPage> {
         email: email.trim().toLowerCase(),
         password: password,
       );
-      print(credential);
       setState(() {
         _errorMessage = null;
       });
@@ -97,6 +94,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  bool isSignUp = false;
   Future<void> _Signup() async {
     try {
       final credential = await FirebaseAuth.instance
@@ -105,8 +103,15 @@ class _LoginPageState extends State<LoginPage> {
             password: password,
           );
       print(credential);
+      setState(() {
+        _errorMessage = null;
+        password = '';
+      });
     } on FirebaseAuthException catch (e) {
-      print("เกิดข้อผิดพลาด: ${e.message}");
+      setState(() {
+        _errorMessage = e.message;
+      });
+      // print("เกิดข้อผิดพลาด: ${e.message}");
     }
   }
 
@@ -198,31 +203,41 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     obscureText: true,
                     onChanged: (val) => password = val,
-                    // style: TextStyle(color: Colors.white),
+                    onSubmitted: (v) {
+                      if (password.isNotEmpty && email.isNotEmpty) {
+                        !isSignUp ? _Login() : _Signup();
+                      }
+                    },
                   ),
                 ),
                 // Forgot?
-                ElevatedButton(
-                  onPressed: () {
-                    _Login();
-                  },
-                  child: Text(
-                    'Login to LisT',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFFFF6B00,
-                    ), //AppColors.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ), // ปรับเลขนี้ตามความต้องการ (ยิ่งมากยิ่งกลม)
+                Row(
+                  children: [
+                    // if(isSignUp) const SizedBox(width: 5,),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          !isSignUp ? _Login() : _Signup();
+                        },
+                        child: Text(
+                          !isSignUp ? 'Login to LisT' : 'Signup',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(
+                            0xFFFF6B00,
+                          ), //AppColors.primary,
+                          foregroundColor: Colors.white,
+                          minimumSize: Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+
                 SizedBox(height: 20),
 
                 // Row(
@@ -271,31 +286,43 @@ class _LoginPageState extends State<LoginPage> {
                 //     },
                 //   ),
                 // ),
-                SizedBox(height: 20),
-                RichText(
-                  text: TextSpan(
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      // fontSize: 16,
-                    ),
-                    children: [
-                      const TextSpan(text: "Don't have an account? "),
-                      TextSpan(
-                        text: 'Sign Up',
-                        style: const TextStyle(
-                          color: Color(0xFF5733),
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            print('ไปที่หน้า Sign Up');
-                            // ใส่คำสั่ง Navigator.push หรือโค้ดเปลี่ยนหน้าตรงนี้
-                          },
+                SizedBox(height: !isSignUp ? 20 : 5),
+                if (!isSignUp)
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        // fontSize: 16,
                       ),
-                    ],
+                      children: [
+                        const TextSpan(text: "Don't have an account? "),
+                        TextSpan(
+                          text: 'Sign Up',
+                          style: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              setState(() {
+                                isSignUp = true;
+                              });
+                            },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                if (isSignUp)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        isSignUp = false;
+                        password = '';
+                      });
+                    },
+                    child: Text(' Cancel '),
+                  ),
               ],
             ),
           ),

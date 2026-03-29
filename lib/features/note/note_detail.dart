@@ -97,8 +97,8 @@ class _DetailPageState extends State<DetailPage> {
                 const SizedBox(height: 10),
                 // textarea
                 TextField(
-                  maxLines: 5,
-                  minLines: 3,
+                  maxLines: 15,
+                  minLines: 5,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     hintText: 'Note here',

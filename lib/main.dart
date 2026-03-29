@@ -108,17 +108,14 @@ class _HomeScreenState extends State<HomeScreen> {
       onHover: (hovering) {
         /* จัดการตอน hover */
       },
-      borderRadius: BorderRadius.circular(15), 
+      borderRadius: BorderRadius.circular(15),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: _isHovered
-                ? Colors.grey
-                : Colors.transparent,
+            color: _isHovered ? Colors.grey : Colors.transparent,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
@@ -158,32 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNoteCard(String title, String desc) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          Text(desc, style: TextStyle(color: Colors.grey.shade600)),
-        ],
-      ),
-    );
-  }
-
   List<Widget> _buildFloatingItems() {
     final List<Map<String, dynamic>> menuItems = AppMenus.mainNavItems;
 
-    // กรณีที่เลือกหน้า 1 ขึ้นไป และยังไม่ได้กดขยาย
     if (_selectedIndex >= 1 && !_isExpanded) {
       var current = menuItems[_selectedIndex - 1];
       return [
@@ -193,8 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
           current['color'],
           current['index'],
           () {
-        setState(() => _isExpanded = !_isExpanded);
-      },
+            setState(() => _isExpanded = !_isExpanded);
+          },
         ),
         IconButton(
           icon: const Icon(
@@ -210,8 +184,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // กรณีหน้าแรก (Index 0) หรือกดขยายแล้ว ให้โชว์ทั้งหมด
     return [
       ...menuItems.map(
-        (item) =>
-            _navItem(item['icon'], item['label'], item['color'], item['index'], () => {}),
+        (item) => _navItem(
+          item['icon'],
+          item['label'],
+          item['color'],
+          item['index'],
+          () => {},
+        ),
       ),
       // if (_isExpanded) // ถ้าขยายอยู่ ให้มีปุ่มกดหดกลับ
       //   IconButton(
@@ -285,7 +264,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
-                  color: Colors.grey[200],
+                  color: Colors
+                      .grey[200], // (_selectedIndex != 1 && _selectedIndex !=4) ? : Colors.transparent,
                   // decoration: BoxDecoration(
                   //   gradient: LinearGradient(
                   //     begin: Alignment.topCenter,
@@ -297,15 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   //   ),
                   // ),
                   child: GestureDetector(
-                    onTap: () => {
-                      setState(() => _selectedIndex = 0),
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const ProfilePage(),
-                      //   ),
-                      // ),
-                    },
+                    onTap: () => {setState(() => _selectedIndex = 0)},
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -319,10 +291,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 12),
                         Text(
                           (((user?.email?.length ?? 0) > 4
-                                      ? user?.email?.substring(0, 4)
-                                      : user?.email) ??
-                                  '') +
-                              "@",
+                                  // && user?.isAnonymous == true
+                                  ? "${user?.email?.substring(0, 4)}@"
+                                  : user?.email) ??
+                              ''),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -395,7 +367,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                
               ),
             ),
           ],

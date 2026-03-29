@@ -196,7 +196,7 @@ class _SettingPageState extends State<SettingPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("ตั้งค่า"), centerTitle: true),
+      appBar: AppBar(title: const Text("ตั้งค่าผู้ใช้"), centerTitle: true),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -238,10 +238,14 @@ class _SettingPageState extends State<SettingPage> {
                       ExpansionTile(
                         title: Text(
                           "Profile",
-                          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blueAccent),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            // color:
+                          ),
                         ),
+                        textColor: Theme.of(context).primaryColor,
                         // subtitle: Text("คลิกที่นี่เพื่อขยาย"),
-                        // iconColor: Theme.of(context).primaryColor,
+                        iconColor: AppColors.secondary,
                         // leading: Icon(Icons.person_outline),
                         tilePadding: EdgeInsets.zero,
                         children: [
@@ -266,7 +270,7 @@ class _SettingPageState extends State<SettingPage> {
                               //   _isVisible = value ?? false; // อัปเดตสถานะเมื่อกด
                               // });
                             },
-                            activeColor: AppColors.secondary,
+                            activeColor: Colors.blueAccent,
                             controlAffinity: ListTileControlAffinity
                                 .leading, // เอาติ๊กถูกไว้ด้านหน้า
                             contentPadding: EdgeInsets.symmetric(

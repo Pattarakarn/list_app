@@ -525,7 +525,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                               'total_price': _totalAmount,
                               'fuelType': _fuelType,
                               'station': _station,
-                              '_fuelLevel': _fuelLevel*10
+                              '_fuelLevel': _fuelLevel * 10,
                             };
                             WriteBatch batch = FirebaseFirestore.instance
                                 .batch();
