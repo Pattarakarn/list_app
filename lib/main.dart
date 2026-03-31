@@ -100,10 +100,13 @@ class _HomeScreenState extends State<HomeScreen> {
     bool _isHovered = false;
     Color baseColor = color is List<Color> ? color[0] : color;
     return InkWell(
-      // onTap: onTap,
       onTap: () {
-        _isExpanded = false;
-        setState(() => _selectedIndex = index);
+        if (_isExpanded) {
+          _isExpanded = false;
+          setState(() => _selectedIndex = index);
+        } else {
+          onTap();
+        }
       },
       onHover: (hovering) {
         /* จัดการตอน hover */
@@ -240,136 +243,171 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<bool?> _showExitDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("ออกจากแอป?"),
+        content: const Text("คุณต้องการออกจากแอปใช่หรือไม่?"),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
+            child: const Text("ยกเลิก"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), // ส่งค่า true (ออก)
+            child: const Text("ใช่, ออกเลย"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.gray,
+    return PopScope(
+      canPop: false, // 1. สั่งห้ามไม่ให้ย้อนกลับทันที
+      onPopInvokedWithResult: (didPop, result) async {
+        // ถ้าการย้อนกลับเกิดขึ้นไปแล้ว (เช่น สั่ง pop จากที่อื่น) ไม่ต้องทำอะไร
+        if (didPop) return;
 
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              top: _selectedIndex == 0 ? 0 : 50,
-              // bottom: 78,
-              child: SafeArea(
-                // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
-                child: _pages[_selectedIndex],
+        // 2. เรียกฟังก์ชันแสดง Dialog ถามผู้ใช้
+        final shouldPop = await _showExitDialog(context);
+
+        // 3. ถ้าผู้ใช้กด "ใช่" (true) ให้สั่งออกจากแอป/หน้าจอด้วยตัวเอง
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.gray,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: _selectedIndex == 0 ? 0 : 50,
+                // bottom: 78,
+                child: SafeArea(
+                  // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
+                  child: _pages[_selectedIndex],
+                ),
               ),
-            ),
-            // Visibility(  visible: index != 0,
-            if (_selectedIndex != 0)
+              // Visibility(  visible: index != 0,
+              if (_selectedIndex != 0)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
+                    color: Colors
+                        .grey[200], // (_selectedIndex != 1 && _selectedIndex !=4) ? : Colors.transparent,
+                    // decoration: BoxDecoration(
+                    //   gradient: LinearGradient(
+                    //     begin: Alignment.topCenter,
+                    //     end: Alignment.bottomCenter,
+                    //     colors: [
+                    //       const Color(0xFFF3F7F9),
+                    //       const Color(0xFFF3F7F9).withOpacity(0.0),
+                    //     ],
+                    //   ),
+                    // ),
+                    child: GestureDetector(
+                      onTap: () => {setState(() => _selectedIndex = 0)},
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.person_rounded,
+                              // color: AppColors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            (((user?.email?.length ?? 0) > 4
+                                    // && user?.isAnonymous == true
+                                    ? "${user?.email?.substring(0, 4)}@"
+                                    : user?.email) ??
+                                ''),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          // IconButton(
+                          //   icon: const Icon(
+                          //     Icons.more_vert_rounded,
+                          //     // Icons.settings,//_suggest,
+                          //     // Icons.manage_accounts,
+                          //     color: Colors.black54,
+                          //   ),
+                          //   onPressed: () {
+                          //     _showLogoutDialog(context);
+                          //   },
+                          // ),
+
+                          // PopupMenuButton<String>(
+                          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
+                          //   onSelected: (value) {
+                          //     if (value == 'logout') {
+
+                          //     }
+                          //   },
+                          //   itemBuilder: (context) => [
+                          //     const PopupMenuItem(
+                          //       value: 'logout',
+                          //       child: Row(
+                          //         children: [
+                          //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                          //           SizedBox(width: 10),
+                          //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
+                          //         ],
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
-                  color: Colors
-                      .grey[200], // (_selectedIndex != 1 && _selectedIndex !=4) ? : Colors.transparent,
-                  // decoration: BoxDecoration(
-                  //   gradient: LinearGradient(
-                  //     begin: Alignment.topCenter,
-                  //     end: Alignment.bottomCenter,
-                  //     colors: [
-                  //       const Color(0xFFF3F7F9),
-                  //       const Color(0xFFF3F7F9).withOpacity(0.0),
-                  //     ],
-                  //   ),
-                  // ),
-                  child: GestureDetector(
-                    onTap: () => {setState(() => _selectedIndex = 0)},
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person_rounded,
-                            // color: AppColors.blue,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          (((user?.email?.length ?? 0) > 4
-                                  // && user?.isAnonymous == true
-                                  ? "${user?.email?.substring(0, 4)}@"
-                                  : user?.email) ??
-                              ''),
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        // IconButton(
-                        //   icon: const Icon(
-                        //     Icons.more_vert_rounded,
-                        //     // Icons.settings,//_suggest,
-                        //     // Icons.manage_accounts,
-                        //     color: Colors.black54,
-                        //   ),
-                        //   onPressed: () {
-                        //     _showLogoutDialog(context);
-                        //   },
-                        // ),
-
-                        // PopupMenuButton<String>(
-                        //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        //   icon: const Icon(Icons.more_vert_rounded, color: Colors.black54),
-                        //   onSelected: (value) {
-                        //     if (value == 'logout') {
-
-                        //     }
-                        //   },
-                        //   itemBuilder: (context) => [
-                        //     const PopupMenuItem(
-                        //       value: 'logout',
-                        //       child: Row(
-                        //         children: [
-                        //           Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                        //           SizedBox(width: 10),
-                        //           Text("ออกจากระบบ", style: TextStyle(color: Colors.red)),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ),
+                bottom: 20, // ให้ลอยจากขอบล่าง 20
+                left: 20,
+                right: 20,
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(35),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 10),
                       ],
                     ),
-                  ),
-                ),
-              ),
 
-            Positioned(
-              bottom: 20, // ให้ลอยจากขอบล่าง 20
-              left: 20,
-              right: 20,
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(35),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 10),
-                    ],
-                  ),
-
-                  child: Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: _isExpanded
-                          ? MainAxisSize.max
-                          : MainAxisSize.min,
-                      children: _buildFloatingItems(),
+                    child: Container(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: _isExpanded
+                            ? MainAxisSize.max
+                            : MainAxisSize.min,
+                        children: _buildFloatingItems(),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

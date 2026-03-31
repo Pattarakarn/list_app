@@ -9,6 +9,7 @@ class CheckList extends StatelessWidget {
   final List<Map<String, dynamic>> data;
   final Function(String) addText;
   final Function(int, String, Timestamp) setFieldDate;
+  final bool showRemark;
 
   const CheckList({
     super.key,
@@ -17,11 +18,13 @@ class CheckList extends StatelessWidget {
     required this.data,
     required this.addText,
     required this.setFieldDate,
+    required this.showRemark,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 1. แยกรายการที่ยังไม่ได้ทำ
+     bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     final pendingItems = requireDate
         ? data.where((item) => !item['isDone']).toList()
         : data;
@@ -44,6 +47,7 @@ class CheckList extends StatelessWidget {
       }
     }
 
+    final TextEditingController _remarkController = TextEditingController();
     // print(data);
     print(completedGroups);
 
@@ -51,7 +55,7 @@ class CheckList extends StatelessWidget {
       DateTime? pickedDate = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
-        firstDate: DateTime(2026),
+        firstDate: DateTime(2025),
         lastDate: DateTime(2200),
       );
       int ind = data.indexWhere((item) => item['create_date'] == unique);
@@ -74,6 +78,10 @@ class CheckList extends StatelessWidget {
                       hintText: "Text List!",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintStyle: TextStyle(
+                        color: AppColors.secondary,
+                        fontSize: 16,
                       ),
                       // filled: true,
                       // fillColor: Colors.white,
@@ -129,8 +137,7 @@ class CheckList extends StatelessWidget {
                   ),
                   Expanded(
                     child: Card(
-                      // color: Theme.of(context).cardColor,
-                      color: AppColors.gray,
+                      color: isLightMode ?  AppColors.gray : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                         // side: BorderSide(
@@ -263,17 +270,18 @@ class CheckList extends StatelessWidget {
                 ],
               );
             }),
-
-            //   TextField(
-            //   maxLines: 5,
-            //   minLines: 3,
-            //   keyboardType: TextInputType.multiline,
-            //   decoration: InputDecoration(
-            //     hintText: 'หมายเหตุ',
-            //     border: OutlineInputBorder(),
-            //   ),
-            //   controller: _remarkController,
-            // ),
+            const SizedBox(height: 10),
+            if (showRemark)
+              TextField(
+                maxLines: 5,
+                minLines: 3,
+                keyboardType: TextInputType.multiline,
+                decoration: InputDecoration(
+                  hintText: 'หมายเหตุ',
+                  border: OutlineInputBorder(),
+                ),
+                controller: _remarkController,
+              ),
           ],
         ),
       ),

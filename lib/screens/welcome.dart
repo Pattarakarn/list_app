@@ -78,6 +78,9 @@ class _LoginPageState extends State<LoginPage> {
   String password = "";
   String? _errorMessage;
   Future<void> _Login() async {
+    setState(() {
+      _errorMessage = null;
+    });
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email.trim().toLowerCase(),
@@ -96,6 +99,9 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isSignUp = false;
   Future<void> _Signup() async {
+    setState(() {
+      _errorMessage = null;
+    });
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(

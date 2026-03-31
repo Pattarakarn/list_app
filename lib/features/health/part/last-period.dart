@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:list_app/app_colors.dart'; 
 
 class PeriodSummaryCard extends StatelessWidget {
   const PeriodSummaryCard({super.key});
@@ -9,7 +10,7 @@ class PeriodSummaryCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
@@ -21,6 +22,7 @@ class PeriodSummaryCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Row(
           //   children: [
@@ -29,11 +31,12 @@ class PeriodSummaryCard extends StatelessWidget {
           //     const Text("Period Tracker", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           //   ],
           // ),
-          const Text("รอบเดือนล่าสุด"),
-          const Text("x - x (กี่วัน)"),
+          const Text("รอบเดือนล่าสุด",style: TextStyle(fontWeight: FontWeight.bold),),
+          const Text("x - x (กี่วัน)",style: TextStyle(color: AppColors.secondary),),
           // const SizedBox(height: 15),
-          // const Text("เหลืออีก 5 วัน", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.redAccent)),
-          // const Text("รอบเดือนถัดไปจะมาวันที่ 2 เม.ย.", style: TextStyle(color: Colors.grey)),
+
+// Icons.add_circle_outline
+          // How's Today
         ],
       ),
     );

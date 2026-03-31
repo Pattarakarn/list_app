@@ -184,7 +184,7 @@ class _ListPageState extends State<ListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.data['name']}"),
-        backgroundColor: AppColors.gray,
+        // backgroundColor:
         actions: [
           ElevatedButton.icon(
             onPressed: () {
@@ -195,7 +195,7 @@ class _ListPageState extends State<ListPage> {
               backgroundColor:
                   AppColors.primary, //Theme.of(context).primaryColor
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -228,7 +228,7 @@ class _ListPageState extends State<ListPage> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: Theme.of(context).scaffoldBackgroundColor,
                           focusedBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
                               color: AppColors.rand,
@@ -236,8 +236,8 @@ class _ListPageState extends State<ListPage> {
                             ),
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          focusColor: Colors.white,
-                          hoverColor: Colors.white,
+                          focusColor: AppColors.gray,
+                          hoverColor: AppColors.gray,
                         ),
                         textInputAction: TextInputAction
                             .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
@@ -280,7 +280,7 @@ class _ListPageState extends State<ListPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
-                          color: Color(0xFF2979FF),
+                          // color: Color(0xFF2979FF),
                         ),
                       ),
                       style: TextButton.styleFrom(
@@ -291,24 +291,34 @@ class _ListPageState extends State<ListPage> {
                         ),
                       ),
                     ),
+
+                    const SizedBox(width: 5),
+                    OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.timer,
+                        size: 20,
+                        color: AppColors.rand,
+                      ),
+                      label: const Text(
+                        "เวลา: 3 s",
+                        style: TextStyle(color: AppColors.rand),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: Color(0xFF00E5FF),
+                        ), // เปลี่ยนสีและขนาดขอบที่นี่
+                      ),
+                    ),
                     const SizedBox(width: 5),
                     OutlinedButton.icon(
                       onPressed: () {},
                       label: const Text(
                         "Adjust opportunity",
-                        style: TextStyle(color: Color(0xFF00E5FF)),
+                        style: TextStyle(color: Color(0xFF2979FF)),
                       ),
                       style: TextButton.styleFrom(),
                     ),
-                    const SizedBox(width: 5),
-                    OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.timer, size: 20),
-                      label: const Text("เวลา: 3 s"),
-                      style: TextButton.styleFrom(),
-                    ),
-
-                    // เพิ่มจำนวนโอกาสที่จะได้
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -359,7 +369,9 @@ class _ListPageState extends State<ListPage> {
                           child: ListTile(
                             leading: CircleAvatar(
                               child: Text("${index + 1}"),
-                              backgroundColor: Colors.white, //grey[100],
+                              backgroundColor: Theme.of(
+                                context,
+                              ).scaffoldBackgroundColor,
                             ),
                             title: Text(allItems[index]),
                             // trailing: IconButton(

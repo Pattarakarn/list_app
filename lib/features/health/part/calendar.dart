@@ -7,8 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class MoodCalendarWidget extends StatefulWidget {
   //  final Map<String, dynamic> data;
-  //  final List<DocumentSnapshot> datas;
-   final Map<DateTime, Map<String, dynamic>> data;
+  final List<DocumentSnapshot> data; //array
+  // final Map<DateTime, Map<String, dynamic>> data;
   const MoodCalendarWidget({super.key, required this.data});
 
   @override
@@ -19,20 +19,21 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _focusedDay = DateTime.now();
   final user = FirebaseAuth.instance.currentUser;
-  
+  late DateTime _firstDayC = DateTime(_focusedDay.year, _focusedDay.month, 1);
+  late DateTime _lastDayC = DateTime(
+    _focusedDay.year,
+    _focusedDay.month + 1,
+    0,
+  );
 
-  final Map<DateTime, Map<String, dynamic>> _moodData = {
-    DateTime.utc(2026, 3, 29): {
-      "emoji": "😊",
-      "label": "แฮปปี้",
-      "color": Colors.orange,
-    },
-    DateTime.utc(2026, 3, 30): {
-      "emoji": "😔",
-      "label": "เพลีย",
-      "color": Colors.blueGrey,
-    },
-  };
+  List<Color> colors = [
+    Colors.red,
+    Colors.orange,
+    Colors.yellow.shade700,
+    Colors.lightGreen,
+    Colors.green,
+    Colors.grey,
+  ];
 
   void _showEditDialog(date) {
     Map<String, dynamic> record = {
@@ -82,16 +83,8 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             Icons.sentiment_satisfied,
                             Icons.sentiment_very_satisfied,
                           ];
-                          List<Color> colors = [
-                            Colors.red,
-                            Colors.orange,
-                            Colors.yellow.shade700,
-                            Colors.lightGreen,
-                            Colors.green,
-                          ];
 
                           bool isSel = record['mental_level'] == (index + 1);
-
                           return IconButton(
                             icon: Icon(icons[index]),
                             iconSize: 40,
@@ -129,7 +122,12 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                               onChanged: (val) => setDialogState(
                                 () => record['pain_level'] = val.toInt(),
                               ),
-                              activeColor: AppColors.pink,
+                              // activeColor: Color(0xFFF06292), // AppColors.pink,
+                              activeColor: Color.lerp(
+                                AppColors.pink,
+                                Color(0xFFF06292),
+                                record['pain_level'].toDouble() / 10,
+                              ),
                             ),
                           ),
                         ],
@@ -163,6 +161,9 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             ),
                             icon: const Icon(Icons.add),
                             label: const Text("เพิ่มยา"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Color(0xFFBA68C8),
+                            ),
                           ),
                         ],
                       ),
@@ -267,16 +268,16 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
-
-                print(widget.data);
-
+    DateTime now = DateTime.now();
+    DateTime lastDayOfWeek = now.add(Duration(days: 6 - now.weekday));
+    DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
     return Column(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 400),
           curve: Curves.fastOutSlowIn,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
@@ -290,7 +291,9 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
             children: [
               TableCalendar(
                 firstDay: DateTime.utc(2025, 1, 1),
-                lastDay: DateTime.utc(2030, 12, 31),
+                lastDay: _calendarFormat == CalendarFormat.week
+                    ? lastDayOfWeek
+                    : lastDayOfMonth,
                 focusedDay: _focusedDay,
                 onDaySelected: (selectedDay, focusedDay) {
                   // setState(() {
@@ -298,7 +301,21 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                   //       focusedDay; // อัปเดตหน้าปฏิทินให้เลื่อนตาม (ถ้าจำเป็น)
                   // });
                   _showEditDialog(selectedDay);
-                  print("คุณกดวันที่: ${selectedDay.toString()}");
+                },
+                onPageChanged: (focusedDay) {
+                  setState(() {
+                    _focusedDay = focusedDay;
+                    // คำนวณวันแรกและวันสุดท้ายของเดือนที่แสดงอยู่ใหม่
+                    _firstDayC = DateTime(focusedDay.year, focusedDay.month, 1);
+                    _lastDayC = DateTime(
+                      focusedDay.year,
+                      focusedDay.month + 1,
+                      0,
+                    );
+                  });
+
+                  print("ปฏิทินเปลี่ยนหน้ามาที่เดือน: ${focusedDay.month}");
+                  print("เริ่มที่: $_firstDayC ถึง: $_lastDayC");
                 },
                 // selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onHeaderTapped: (focusedDay) {
@@ -312,11 +329,19 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                     ? 85
                     : 52, // ขยายความสูงถ้าเป็นรายสัปดาห์
                 headerStyle: const HeaderStyle(
-                  formatButtonVisible: false,
+                  formatButtonVisible: false, //มีปุ่ม 2 weeks
                   titleCentered: true,
                   titleTextStyle: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                  ),
+                  leftChevronIcon: Icon(
+                    Icons.chevron_left,
+                    color: Color(0xFFBA68C8),
+                  ),
+                  rightChevronIcon: Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFBA68C8),
                   ),
                 ),
                 daysOfWeekStyle: DaysOfWeekStyle(
@@ -332,7 +357,13 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                       return Center(
                         child: Text(
                           DateFormat.E().format(day),
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                            //  decoration: TextDecoration.underline,
+                            // decorationColor: Color(0xFFFF758C),
+                            // decorationThickness: 2,
+                          ),
                         ),
                       );
                     }
@@ -344,9 +375,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                         '${day.day}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          // decoration: TextDecoration.underline,
-                          // decorationColor: Color(0xFFFF758C),
-                          // decorationThickness: 2,
+                          color: Color(0xFFF06292),
                         ),
                       ),
                     );
@@ -358,9 +387,30 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                       date.month,
                       date.day,
                     );
-                    // var data = _moodData[dayOnly];
-                    var data = widget.data[dayOnly];
+                    // var data = widget.data[dayOnly]?['data'];
 
+                    //   var data = widget.data[dayOnly]?['data'];
+                    // DateTime firebaseDate = (widget.data['date'] as Timestamp)
+                    //     .toDate();
+                    // // var data = widget.data[firebaseDate]?['data'];
+                    var found = widget.data.firstWhere((doc) {
+                      // doc ในที่นี้คือ QueryDocumentSnapshot ต้องใช้ .data() หรือ [] เพื่อเข้าถึงฟิลด์
+                      DateTime itemDate = (doc['date'] as Timestamp).toDate();
+                      return itemDate.year == dayOnly.year &&
+                          itemDate.month == dayOnly.month &&
+                          itemDate.day == dayOnly.day;
+                    });
+                    final doc = widget.data.firstWhere(
+                      (d) =>
+                          (d['date'] as Timestamp).toDate().day == dayOnly.day,
+                      // orElse: () => null,
+                    );
+                    // bool isSameDay =  firebaseDate.year == dayOnly.year &&
+                    //     firebaseDate.month == dayOnly.month &&
+                    //     firebaseDate.day == dayOnly.day;
+                    var data = (found != null && found.exists) ? found.data() as Map<String, dynamic> : null;
+                    // print('data');
+                    // print(data);
                     if (_calendarFormat == CalendarFormat.week) {
                       return Center(
                         child: Padding(
@@ -372,7 +422,9 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             children: [
                               Icon(
                                 Icons.sentiment_satisfied,
-                                color: data?['color'],
+                                // color: data ? colors[data['data']['mental_level']] : colors[5],
+                                color:
+                                    colors[data?['data']['mental_level'] ?? 5],
                               ),
                             ],
                           ),
@@ -386,7 +438,8 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                           width: 5,
                           height: 5,
                           decoration: BoxDecoration(
-                            color: data['color'],
+                            // color: colors[data?['mental_level'] ?? 5],
+                            color: colors[data['data']['mental_level'] ?? 5],
                             shape: BoxShape.circle,
                           ),
                         ),

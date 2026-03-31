@@ -19,6 +19,7 @@ class _DetailPageState extends State<DetailPage> {
   String name = '';
   String content = '';
   bool isLock = false;
+  String _update = '';
 
   void _updateData() async {
     try {
@@ -29,7 +30,7 @@ class _DetailPageState extends State<DetailPage> {
             'name': name,
             'content': content,
             'lock': isLock,
-            'updateAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
           });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,18 +70,28 @@ class _DetailPageState extends State<DetailPage> {
         if (!isInitialized) {
           // var docData = snapshot.data?.data() as Map<String, String>?;
           var docData = snapshot.data!.data() as Map<String, dynamic>?;
-          // print(docData);
+          print(docData);
           if (docData != null) {
             name = docData['name'];
             content = docData['content'];
             isLock = docData['lock'];
-            // if (isLock is bool) {
+            _update = DateFormat('dd MMM yyyy').format(docData['updateAt'] );
           }
           isInitialized = true;
         }
 
         return Scaffold(
-          appBar: AppBar(title: Text('Note')),
+          appBar: AppBar(
+            title: Text('Note'),
+            actions: [
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: Text(_update, style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
           body: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -91,7 +102,7 @@ class _DetailPageState extends State<DetailPage> {
                     labelText: 'ชื่อ',
                     border: OutlineInputBorder(),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.gray,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -104,7 +115,7 @@ class _DetailPageState extends State<DetailPage> {
                     hintText: 'Note here',
                     border: OutlineInputBorder(),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.gray,
                   ),
                   controller: TextEditingController(text: content),
                 ),
@@ -139,10 +150,12 @@ class _DetailPageState extends State<DetailPage> {
                       setState(() => isLock = !isLock);
                       print("สถานะตอนนี้: $isLock");
                     },
-                    backgroundColor: AppColors.gray,
+                    backgroundColor: isLock
+                        ? AppColors.primary
+                        : AppColors.note,
                     child: Icon(
                       isLock == true ? Icons.lock : Icons.lock_open,
-                      color: isLock ? AppColors.primary : AppColors.note,
+                      color: AppColors.gray,
                       // key: ValueKey(isLock),
                     ),
                     elevation: 2, // เงาจางๆ

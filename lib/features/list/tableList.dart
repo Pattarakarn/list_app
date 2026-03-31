@@ -10,6 +10,8 @@ class TableList extends StatelessWidget {
   final Function(List) setRows;
   final Function() addRow;
   final bool isHideBox;
+  final bool showRemark;
+  final bool isDateY;
 
   const TableList({
     super.key,
@@ -20,10 +22,11 @@ class TableList extends StatelessWidget {
     required this.setRows,
     required this.addRow,
     required this.isHideBox,
+    required this.showRemark,
+    required this.isDateY,
   });
 
   DataCell _buildDoubleInputCell(Map<String, dynamic> cellData) {
-    print(isHideBox);
     return DataCell(
       Container(
         width: 200, // กำหนดความกว้างรวมของคอลัมน์ย่อย
@@ -46,8 +49,8 @@ class TableList extends StatelessWidget {
                   onChanged: (val) => cellData['text'] = val,
                 ),
               ),
-            const SizedBox(width: 5), // ระยะห่างระหว่าง 2 ช่องย่อย
-            // ช่อง Number
+            const SizedBox(width: 5), 
+
             Expanded(
               flex: 1,
               child: TextField(
@@ -59,7 +62,7 @@ class TableList extends StatelessWidget {
                   CurrencyTextInputFormatter.currency(
                     locale: 'ko',
                     symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
-                    decimalDigits: 0,
+                    decimalDigits: 2,
                   ),
                 ],
                 textAlign: TextAlign.right,
@@ -111,12 +114,15 @@ class TableList extends StatelessWidget {
               child: DataTable(
                 border: TableBorder.all(color: Colors.grey.shade300),
                 columns: [
-                  const DataColumn(
-                    label: Expanded(child: Center(child: Text('วันที่'))),
-                  ),
+                  if (requireDate)
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(child: Text(isDateY ? 'วันที่' : '')),
+                      ),
+                    ),
 
                   ...List.generate(
-                    headers.length,
+                    isDateY ? headers.length : rows.length,
                     (index) => DataColumn(
                       label:
                           //  Row(children: [
@@ -189,86 +195,93 @@ class TableList extends StatelessWidget {
                       tooltip: 'เพิ่มคอลัมน์',
                     ),
                   ),
-                  const DataColumn(label: Text('หมายเหตุ')),
+                  if (showRemark) const DataColumn(label: Text('หมายเหตุ')),
                 ],
-                rows: rows.map((rowData) {
+                //  rows.map(r => r.date)
+                // rows: (isDateY ? rows : headers).map((rowData) {
+                rows:  rows.map((rowData) {
+                  // final headersObj = headers.map((h)) ({date: h}));
+
                   return DataRow(
                     cells: [
-                      // DataCell(Text(rowData['date'])),
-                      DataCell(
-                        InkWell(
-                          onTap: () async {
-                            // 1. เรียกปฏิทินขึ้นมา
-                            DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate:
-                                  DateTime.now(), // วันที่เริ่มต้นในปฏิทิน
-                              firstDate: DateTime(
-                                2000,
-                              ), // วันที่เก่าสุดที่เลือกได้
-                              lastDate: DateTime(
-                                2100,
-                              ), // วันที่ใหม่สุดที่เลือกได้
-                              // ตกแต่งสีส้มตามธีมของคุณ
-                              builder: (context, child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    colorScheme: ColorScheme.light(
-                                      primary: Theme.of(
-                                        context,
-                                      ).primaryColor, // หัวปฏิทินสีส้ม
+                      if (requireDate)
+                        DataCell(
+                          InkWell(
+                            onTap: () async {
+                              DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(
+                                  2000,
+                                ), // วันที่เก่าสุดที่เลือกได้
+                                lastDate: DateTime(
+                                  2100,
+                                ), // วันที่ใหม่สุดที่เลือกได้
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: Theme.of(context).primaryColor,
+                                      ),
                                     ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
+                                    child: child!,
+                                  );
+                                },
+                              );
 
-                            if (pickedDate != null) {
-                              // 2. ถ้าผู้ใช้เลือกวันที่ (ไม่กดกากบาททิ้ง)
-                              // จัดฟอร์แมตวันที่ให้สวยงาม (เช่น 2026-02-26)
-                              // String formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                              String formattedDate = DateFormat(
-                                'dd/MM/yyyy',
-                              ).format(pickedDate);
-                              // setRows();
-                              // setState(() {
-                              //   rowData['date'] = formattedDate;
-                              // });
-                            }
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(rowData['date']),
-                              // const SizedBox(width: 5),
-                              // const Icon(
-                              //   Icons.calendar_today,
-                              //   size: 14,
-                              //   color: Colors.grey,
-                              // ),
-                            ],
+                              if (pickedDate != null) {
+                                // 2. ถ้าผู้ใช้เลือกวันที่ (ไม่กดกากบาททิ้ง)
+                                // จัดฟอร์แมตวันที่ให้สวยงาม (เช่น 2026-02-26)
+                                // String formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                                String formattedDate = DateFormat(
+                                  'dd/MM/yyyy',
+                                ).format(pickedDate);
+                                // setRows();
+                                // setState(() {
+                                //   rowData['date'] = formattedDate;
+                                // });
+                              }
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Text(isDateY ? rowData['date'] : rowData),
+                                Text(rowData['date']),
+                                // const SizedBox(width: 5),
+                                // const Icon(
+                                //   Icons.calendar_today,
+                                //   size: 14,
+                                //   color: Colors.grey,
+                                // ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      ...List.generate(headers.length, (index) {
+                      ...List.generate(isDateY ? headers.length : rows.length, (
+                        index,
+                      ) {
                         String colKey =
                             'col${index + 1}'; // สร้าง key เช่น col1, col2, ...
 
                         // ดึงข้อมูลมาตรวจสอบกัน Null
-                        var cellData = rowData[colKey];
+                        var cellData =  rowData[colKey]  ;
+                        // var cellData = rows[index];
+
+                        print('----');
+                        print(rows[index]);
 
                         // ถ้าในแถวนี้มีข้อมูลคอลัมน์นี้ ให้ส่งเข้าฟังก์ชัน build ของคุณ
                         if (cellData != null) {
                           return _buildDoubleInputCell(cellData);
                         } else {
                           // กรณีถ้าข้อมูลยังไม่มี (กันแอปแครช) ให้ส่ง Cell เปล่าไปก่อน
-                          return const DataCell(SizedBox.shrink());
                         }
+                        return const DataCell(SizedBox.shrink());
                       }),
                       DataCell(SizedBox()),
-                      DataCell(
+                      // if (showRemark) const DataCell(SizedBox.shrink()),
+                      if(showRemark) DataCell(
                         TextField(
                           decoration: const InputDecoration(hintText: ''),
                           onChanged: (val) => rowData['note'] = val,

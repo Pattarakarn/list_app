@@ -46,6 +46,8 @@ class _CreateNotePageState extends State<CreateNotePage> {
         'createdAt': FieldValue.serverTimestamp(),
         'lock': isLock,
         'authorId': user?.uid,
+         'isActive': true,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
 
       if (mounted) Navigator.pop(context);

@@ -94,10 +94,17 @@ class _NotesPageState extends State<NotesPage> {
           // ElevatedButton(
           TextButton(
             onPressed: () async {
+              // await FirebaseFirestore.instance
+              //     .collection('notes')
+              //     .doc(id)
+              //     .delete();
               await FirebaseFirestore.instance
                   .collection('notes')
                   .doc(id)
-                  .delete();
+                  .update({
+                    'isActive': true,
+                    'updatedAt': FieldValue.serverTimestamp(),
+                  });
               Navigator.pop(context);
             },
             child: const Text('ตกลง'),
@@ -115,6 +122,12 @@ class _NotesPageState extends State<NotesPage> {
             .collection('notes')
             .orderBy('createdAt', descending: true)
             .where('authorId', isEqualTo: user?.uid)
+            // .where(
+            //   Filter.or(
+            //     Filter('name', isGreaterThan: ''),
+            //     Filter('isActive', isEqualTo: false),
+            //   ),
+            // )
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {

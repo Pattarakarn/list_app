@@ -119,9 +119,15 @@ class _CreateListPageState extends State<CreateListPage> {
                 : ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                     onPressed: _createList,
-                    child: const Text('Save New'),
+                    child: Text(
+                      'Save New',
+                      style: TextStyle(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                    ),
                   ),
           ],
         ),

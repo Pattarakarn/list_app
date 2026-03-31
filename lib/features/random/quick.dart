@@ -196,8 +196,8 @@ class _RandomQuickState extends State<RandomQuick> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
+                    // filled: true,
+                    // fillColor: Colors.white,
                     focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(
                         color: AppColors.rand,
@@ -205,8 +205,6 @@ class _RandomQuickState extends State<RandomQuick> {
                       ),
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    focusColor: Colors.white,
-                    hoverColor: Colors.white,
                   ),
                   textInputAction: TextInputAction
                       .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
@@ -244,9 +242,7 @@ class _RandomQuickState extends State<RandomQuick> {
           //   child: _items.isEmpty
           //       ? const Center(child: Text("")) :
           SizedBox(
-            height:
-                MediaQuery.of(context).size.height *
-                0.25, // 30% ของความสูงหน้าจอ
+            height: MediaQuery.of(context).size.height * 0.21,
             child: ListView.builder(
               itemCount: _items.length,
               itemBuilder: (context, index) {
@@ -261,7 +257,9 @@ class _RandomQuickState extends State<RandomQuick> {
                   child: ListTile(
                     leading: CircleAvatar(
                       child: Text("${index + 1}"),
-                      backgroundColor: Colors.white, //grey[100],
+                      backgroundColor: Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor,
                     ),
                     title: Text(_items[index]),
                     trailing: IconButton(
@@ -281,10 +279,7 @@ class _RandomQuickState extends State<RandomQuick> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: canRandom ? _showRandomProcess : null,
-                    icon: Icon(
-                      Icons.bolt,
-                      color: canRandom ? AppColors.rand : Colors.grey,
-                    ),
+                    icon: Icon(Icons.bolt, color: Color(0xFF00E5FF)),
                     label: const Text("Quick"),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -293,6 +288,9 @@ class _RandomQuickState extends State<RandomQuick> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       foregroundColor: Colors.black,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor,
                     ),
                   ),
                 ),
@@ -306,8 +304,7 @@ class _RandomQuickState extends State<RandomQuick> {
                     icon: const Icon(Icons.bookmark_add),
                     label: const Text("บันทึก"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          AppColors.primary, //Theme.of(context).primaryColor
+                      backgroundColor: AppColors.rand,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       elevation: 2,

@@ -33,7 +33,7 @@ class _RandomPState extends State<RandomP> {
                   });
                 },
               ),
-
+              const SizedBox(height: 10),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -97,9 +97,9 @@ class _RandomPState extends State<RandomP> {
                                 ),
                               ),
                               subtitle: Text(
-                                "( ${data['items'].length.toString()} รายการ)",
+                                "( ${data['items'].length.toString()} รายการ )",
                                 style: const TextStyle(
-                                  color: Color(0xFF00E5FF),
+                                  color: AppColors.rand,
                                   fontSize: 12,
                                 ),
                               ),

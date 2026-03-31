@@ -28,7 +28,7 @@ class _DetailPageState extends State<DetailPage> {
   String _type = 'Table';
   bool _requireDate = true;
   bool showRemark = true;
-  bool isDateY = false;
+  bool isDateY = !false;
 
   final TextEditingController _selectController = TextEditingController(
     text: "Table",
@@ -176,6 +176,7 @@ class _DetailPageState extends State<DetailPage> {
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
+    required bool isLightMode,
   }) {
     return Expanded(
       child: GestureDetector(
@@ -184,10 +185,11 @@ class _DetailPageState extends State<DetailPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            // ถ้าเลือกจะเป็นสีน้ำเงินอ่อน ถ้าไม่เลือกจะเป็นสีขาวขอบเทา
             color: isSelected
                 ? Colors.blueAccent.withOpacity(0.1)
-                : Colors.white,
+                : isLightMode
+                ? Colors.white
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(30), // ทำให้กลมแบบ Toggle
             border: Border.all(
               color: isSelected ? Colors.blueAccent : Colors.grey[300]!,
@@ -217,7 +219,8 @@ class _DetailPageState extends State<DetailPage> {
     String type = _type;
     bool hideEmpty = _isHideBox;
     bool requireDate = _requireDate;
-
+    bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -257,6 +260,7 @@ class _DetailPageState extends State<DetailPage> {
                         icon: Icons.table_restaurant,
                         isSelected: type == 'Table',
                         onTap: () => setModalState(() => type = 'Table'),
+                        isLightMode: isLightMode,
                       ),
                       const SizedBox(width: 12),
                       _buildCustomToggle(
@@ -264,34 +268,59 @@ class _DetailPageState extends State<DetailPage> {
                         icon: Icons.checklist,
                         isSelected: type == 'Checklist',
                         onTap: () => setModalState(() => type = 'Checklist'),
+                        isLightMode: isLightMode,
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.disabled_by_default,
-                            color: AppColors.secondary,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            "Hide empty",
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                      Switch.adaptive(
-                        value: hideEmpty,
-                        onChanged: (val) {
-                          setModalState(() => hideEmpty = val);
-                        },
-                      ),
-                    ],
-                  ),
+                  if (_type == "Table")
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.disabled_by_default,
+                              color: AppColors.secondary,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              "Hide empty",
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        Switch.adaptive(
+                          value: hideEmpty,
+                          onChanged: (val) {
+                            setModalState(() => hideEmpty = val);
+                          },
+                        ),
+                      ],
+                    ),
+                  if (_type == "Checklist")
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.horizontal_split_outlined,
+                              color: AppColors.secondary,
+                            ),
+                            SizedBox(width: 10),
+                            Text("Seperate List"),
+                          ],
+                        ),
+                        Switch.adaptive(
+                          value: hideEmpty,
+                          onChanged: (val) {
+                            setModalState(() => hideEmpty = val);
+                          },
+                        ),
+                      ],
+                    ),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -318,20 +347,20 @@ class _DetailPageState extends State<DetailPage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // แยกส่วน Todo, Done
+
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: 8,
+                      vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: isLightMode ?  Colors.white: Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: // 1. สร้าง Row เพื่อวาง 3 ช่องเรียงกัน
-                    Row(
-                      children: List.generate(3, (index) {
-                        bool isSelected = false;
+                    child: Row(
+                      
+                      children: List.generate(2, (index) {
+                        bool isSelected = !false;
                         // selectedIndex == index; // เช็กว่าช่องนี้ถูกเลือกไหม
 
                         return Expanded(
@@ -345,25 +374,32 @@ class _DetailPageState extends State<DetailPage> {
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               height: 60, // ความสูงของช่องเลือก
                               decoration: BoxDecoration(
-                                // ถ้าเลือกให้เป็นสีฟ้า Cyan จางๆ ที่คุณชอบ ถ้าไม่เลือกเป็นสีเทาอ่อน
                                 color: isSelected
-                                    ? const Color(
-                                        0xFF00E5FF,
-                                      ).withValues(alpha: 0.1)
+                                    ? Colors.blueAccent.withValues(alpha: 0.1)
                                     : Colors.grey[100],
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFF00E5FF)
-                                      : Colors.transparent,
-                                  width: 2,
-                                ),
+                                // border: Border.all(
+                                //   color: isSelected
+                                //       ? Colors.blueAccent
+                                //       : Colors.transparent,
+                                //   width: 2,
+                                // ),
                               ),
                               child: Stack(
                                 children: [
+                                     if (isSelected && !hideEmpty)
+                                    const Positioned(
+                                      top: 18,
+                                      left: 5,
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: Colors.blueAccent,
+                                        size: 18,
+                                      ),
+                                    ),
                                   Center(
                                     child: Text(
-                                      "ข้อความ/ตัวเลข",
+                                     index == 0 ? "ข้อความ" : "ตัวเลข",
                                       style: TextStyle(
                                         color: isSelected
                                             ? Colors.black
@@ -374,17 +410,7 @@ class _DetailPageState extends State<DetailPage> {
                                       ),
                                     ),
                                   ),
-                                  // เครื่องหมายถูก (แสดงเฉพาะตอนถูกเลือก)
-                                  if (isSelected)
-                                    const Positioned(
-                                      top: 5,
-                                      right: 5,
-                                      child: Icon(
-                                        Icons.check_circle,
-                                        color: Color(0xFF00E5FF),
-                                        size: 18,
-                                      ),
-                                    ),
+                               
                                 ],
                               ),
                             ),
@@ -394,20 +420,22 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
+
+                  // if (_type == "Table")
+                  //   CheckboxListTile(
+                  //     title: Transform.translate(
+                  //       offset: Offset(-10, 0),
+                  //       child: Text("Rotate axis"),
+                  //     ),
+                  //     value: isDateY,
+                  //     onChanged: (bool? value) {
+                  //       setModalState(() => isDateY = !isDateY);
+                  //     },
+                  //     controlAffinity: ListTileControlAffinity.leading,
+                  //   ),
                   CheckboxListTile(
                     title: Transform.translate(
-                      offset: Offset(-18, 0),
-                      child: Text("Rotate axis"),
-                    ),
-                    value: isDateY,
-                    onChanged: (bool? value) {
-                      setModalState(() => isDateY = !isDateY);
-                    },
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  CheckboxListTile(
-                    title: Transform.translate(
-                      offset: Offset(-8, 0),
+                      offset: Offset(-10, 0),
                       child: Text("Show remark"),
                     ),
                     value: showRemark,
@@ -416,10 +444,9 @@ class _DetailPageState extends State<DetailPage> {
                       setModalState(() => showRemark = !showRemark);
                     },
                     controlAffinity: ListTileControlAffinity.leading,
-
                     //  visualDensity:  VisualDensity(horizontal: -4.0, vertical: 0),
                   ),
-                  const SizedBox(height: 24),
+                   const Spacer(),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -514,6 +541,7 @@ class _DetailPageState extends State<DetailPage> {
                 );
               }
               _requireDate = docData['required_date'];
+              showRemark = docData['showRemark'];
             }
             isInitialized =
                 true; // ล็อคไว้ว่าโหลดมาแล้วนะ ต่อไปนี้จะจัดการเองในเครื่อง
@@ -551,7 +579,9 @@ class _DetailPageState extends State<DetailPage> {
                       }
                     });
                   },
+                  showRemark: showRemark,
                 )
+               
               : TableList(
                   headers: headers,
                   rows: rows,
@@ -565,6 +595,8 @@ class _DetailPageState extends State<DetailPage> {
                   },
                   addRow: _addRow,
                   isHideBox: _isHideBox,
+                  showRemark: showRemark,
+                  isDateY: isDateY
                 ));
           //     ],
           //   ),
@@ -594,37 +626,6 @@ class _DetailPageState extends State<DetailPage> {
               foregroundColor: Colors.white,
               // backgroundColor:  Theme.of(context).secondaryColor,
             ),
-    );
-  }
-}
-
-class _NumericTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) return newValue;
-
-    // แปลงเลขเป็น format มีคอมม่า
-    String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanText.isEmpty) {
-      return const TextEditingValue(
-        text: '',
-        selection: TextSelection.collapsed(offset: 0),
-      );
-    }
-    double value = double.parse(cleanText);
-    final formatter = NumberFormat.decimalPattern();
-    // final double? value = double.tryParse(newValue.text.replaceAll(',', ''));
-    // if (value == null) return oldValue;
-
-    // final formatter = NumberFormat("#,###"); // กำหนดรูปแบบ
-    final newText = formatter.format(value);
-
-    return newValue.copyWith(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newText.length),
     );
   }
 }

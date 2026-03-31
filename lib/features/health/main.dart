@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:table_calendar/table_calendar.dart';
 import '../../app_colors.dart';
 import 'part/lists.dart';
 import 'part/calendar.dart';
@@ -31,6 +29,8 @@ class _HealthPageState extends State<HealthPage> {
         .collection('health')
         .where('authorId', isEqualTo: user?.uid)
         // .orderBy('createdAt', descending: true)
+        // .where('date',isNotEqualTo: null)
+        .limit(69)
         .snapshots();
   }
 
@@ -104,25 +104,27 @@ class _HealthPageState extends State<HealthPage> {
 
                 for (var doc in documents) {
                   final data = doc.data() as Map<String, dynamic>;
+                  print(data);
+                  //                   // DateTime dateValue = (data['date'] as Timestamp).toDate();
+                  //                   DateTime dateValue = (data['createdAt'] as Timestamp)
+                  //                       .toDate();
 
-                  // DateTime dateValue = (data['date'] as Timestamp).toDate();
-                  DateTime dateValue = (data['createdAt'] as Timestamp)
-                      .toDate();
+                  //                   DateTime dayKey = DateTime.utc(
+                  //                     dateValue.year,
+                  //                     dateValue.month,
+                  //                     dateValue.day,
+                  //                   );
+                  // // print(dayKey);
+                  //                   _calendar[dayKey] = data;
 
-                  DateTime dayKey = DateTime.utc(
-                    dateValue.year,
-                    dateValue.month,
-                    dateValue.day,
-                  );
-
-                  _calendar[dayKey] = {
-                    'symptoms': data['symptoms'],
-                    'pain_level': data['painLevel'],
-                    'medications': data['medications'],
-                    'periodLevel': data['periodLevel'],
-                    'mental_level': data['mental_level'],
-                    // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
-                  };
+                  // _calendar[dayKey] = {
+                  //   'symptoms': data['symptoms'],
+                  //   'pain_level': data['painLevel'],
+                  //   'medications': data['medications'],
+                  //   'periodLevel': data['periodLevel'],
+                  //   'mental_level': data['mental_level'],
+                  //   // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
+                  // };
                 }
                 return Scaffold(
                   // backgroundColor: Colors.grey[50],
@@ -161,11 +163,11 @@ class _HealthPageState extends State<HealthPage> {
 
                               const SizedBox(height: 10),
 
-                              // --- ส่วนที่ 2: Mood Calendar (Week/Month) ---
-                              MoodCalendarWidget(data: _calendar),
+                              // MoodCalendarWidget(data: _calendar),
+                              MoodCalendarWidget(data: documents),
                               const SizedBox(height: 25),
                               // --- ส่วนที่ 3: Recent Symptoms ---
-                              const SymptomHistoryList(),
+                              SymptomHistoryList(datas: documents),
 
                               const SizedBox(height: 100), // เผื่อระยะล่าง
                             ],

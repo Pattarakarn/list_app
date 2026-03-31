@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../app_colors.dart';
@@ -17,14 +16,6 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    final GoogleSignIn _googleSignIn = GoogleSignIn();
-    if (user == null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-      return const Text("กรุณาล็อกอินใหม่");
-    }
 
     void _showModal() {
       showDialog(
@@ -243,7 +234,7 @@ class _SettingPageState extends State<SettingPage> {
                             // color:
                           ),
                         ),
-                        textColor: Theme.of(context).primaryColor,
+                        textColor: AppColors.primary,
                         // subtitle: Text("คลิกที่นี่เพื่อขยาย"),
                         iconColor: AppColors.secondary,
                         // leading: Icon(Icons.person_outline),
