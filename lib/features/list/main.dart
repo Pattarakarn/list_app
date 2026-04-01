@@ -82,55 +82,63 @@ class _MyListsPageState extends State<MyListsPage> {
           return ListView.builder(
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              // ดึงข้อมูลในแต่ละแถวออกมา
               final data = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                color: Theme.of(context).scaffoldBackgroundColor, //cardColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: data['type'] == 'Checklist'
-                        ? context.primaryColor
-                        : Theme.of(context).colorScheme.secondary,
-                    width: 2, // ความหนาของเส้นขอบ
+              return InkWell(
+                onLongPress: () {
+                  print("กดค้างแล้ว!");
+                  // ลบ
+                },
+                child: Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
                   ),
-                ),
-                child: ListTile(
-                  leading: data['type'] == 'Table'
-                      ? Icon(Icons.table_chart, color: context.primaryColor)
-                      : Icon(
-                          Icons.checklist,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
+                  color: Theme.of(context).scaffoldBackgroundColor, //cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: data['type'] == 'Checklist'
+                          ? context.primaryColor
+                          : Theme.of(context).colorScheme.secondary,
+                      width: 2,
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: data['type'] == 'Table'
+                        ? Icon(Icons.table_chart, color: context.primaryColor)
+                        : Icon(
+                            Icons.checklist,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
 
-                  // leading: SvgPicture.asset(
-                  //   'assets/icons/table.svg',
-                  //   width: 24,
-                  //   height: 24,
-                  //   // colorFilter: ColorFilter.mode(Colors.blue, BoxType.srcIn), // เปลี่ยนสีได้ด้วย!
-                  // ),
-                  title: Text(data['name'] ?? 'ว่าง'),
-                  subtitle: Text(
-                    data['createdAt'] != null
-                        // ? (data['createdAt'] as Timestamp).toDate().toString()
-                        ? DateFormat(
-                            'dd/MM/yyyy HH:mm',
-                          ).format((data['createdAt'] as Timestamp).toDate())
-                        : '',
-                    style: const TextStyle(fontSize: 12),
+                    // leading: SvgPicture.asset(
+                    //   'assets/icons/table.svg',
+                    //   width: 24,
+                    //   height: 24,
+                    //   // colorFilter: ColorFilter.mode(Colors.blue, BoxType.srcIn), // เปลี่ยนสีได้ด้วย!
+                    // ),
+                    title: Text(data['name'] ?? 'ว่าง'),
+                    subtitle: Text(
+                      data['createdAt'] != null
+                          // ? (data['createdAt'] as Timestamp).toDate().toString()
+                          ? DateFormat(
+                              'dd/MM/yyyy HH:mm',
+                            ).format((data['createdAt'] as Timestamp).toDate())
+                          : '',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onTap: () {
+                      String itemName = data['name'] ?? 'Unnamed';
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetailPage(title: itemName, docId: docId),
+                        ),
+                      );
+                    },
                   ),
-                  onTap: () {
-                    String itemName = data['name'] ?? 'Unnamed';
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            DetailPage(title: itemName, docId: docId),
-                      ),
-                    );
-                  },
                 ),
               );
             },

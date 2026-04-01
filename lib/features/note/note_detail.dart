@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // สำหรับจัดการวันที่
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import '../../app_colors.dart';
 
 class DetailPage extends StatefulWidget {
@@ -35,7 +34,7 @@ class _DetailPageState extends State<DetailPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('บันทึกข้อมูลสำเร็จ!'),
+          content: const Text('บันทึกข้อมูลสำเร็จ!'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           width: MediaQuery.of(context).size.width * 0.9,
@@ -54,6 +53,7 @@ class _DetailPageState extends State<DetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('notes')
@@ -75,7 +75,10 @@ class _DetailPageState extends State<DetailPage> {
             name = docData['name'];
             content = docData['content'];
             isLock = docData['lock'];
-            _update = DateFormat('dd MMM yyyy').format(docData['updateAt'] );
+            if (docData['updatedAt'] is Timestamp)
+              _update = DateFormat(
+                'dd MMM yyyy',
+              ).format(docData['updatedAt'].toDate());
           }
           isInitialized = true;
         }
@@ -86,8 +89,8 @@ class _DetailPageState extends State<DetailPage> {
             actions: [
               Center(
                 child: Padding(
-                  padding: EdgeInsets.only(right: 16.0),
-                  child: Text(_update, style: TextStyle(fontSize: 16)),
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Text(_update, style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],
@@ -135,46 +138,48 @@ class _DetailPageState extends State<DetailPage> {
               ],
             ),
           ),
-          floatingActionButton: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                // width: 65,
-                // height: 65,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 32),
-                  child: FloatingActionButton(
-                    heroTag: "Lock",
-                    onPressed: () {
-                      // isLock = !isLock;
-                      setState(() => isLock = !isLock);
-                      print("สถานะตอนนี้: $isLock");
-                    },
-                    backgroundColor: isLock
-                        ? AppColors.primary
-                        : AppColors.note,
-                    child: Icon(
-                      isLock == true ? Icons.lock : Icons.lock_open,
-                      color: AppColors.gray,
-                      // key: ValueKey(isLock),
+          floatingActionButton: isKeyboardOpen
+              ? null
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      // width: 65,
+                      // height: 65,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 32),
+                        child: FloatingActionButton(
+                          heroTag: "Lock",
+                          onPressed: () {
+                            // isLock = !isLock;
+                            setState(() => isLock = !isLock);
+                            print("สถานะตอนนี้: $isLock");
+                          },
+                          backgroundColor: isLock
+                              ? AppColors.primary
+                              : AppColors.note,
+                          child: Icon(
+                            isLock == true ? Icons.lock : Icons.lock_open,
+                            color: AppColors.gray,
+                            // key: ValueKey(isLock),
+                          ),
+                          elevation: 2, // เงาจางๆ
+                          shape: const CircleBorder(),
+                        ),
+                      ),
                     ),
-                    elevation: 2, // เงาจางๆ
-                    shape: const CircleBorder(),
-                  ),
+                    // const SizedBox(width: 16),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: FloatingActionButton.extended(
+                        onPressed: _updateData,
+                        // icon: const Icon(Icons.save),
+                        label: const Text('Save'),
+                        heroTag: "save",
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              // const SizedBox(width: 16),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: FloatingActionButton.extended(
-                  onPressed: _updateData,
-                  // icon: const Icon(Icons.save),
-                  label: const Text('Save'),
-                  heroTag: "save",
-                ),
-              ),
-            ],
-          ),
         );
       },
     );

@@ -5,6 +5,7 @@ import '../../loading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter/cupertino.dart';
 
 class ListPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -16,7 +17,7 @@ class ListPage extends StatefulWidget {
 class _ListPageState extends State<ListPage> {
   final user = FirebaseAuth.instance.currentUser;
   // ต้องรอให้ Class สร้างเสร็จก่อน
-  late final dynamic _items = List.from(widget.data["items"]);
+  late dynamic _items = List.from(widget.data["items"]);
   // สร้าง List ใหม่จากการก๊อปปี้ข้อมูลต้นฉบับ
   late final List<dynamic> allItems = List.from(widget.data["items"]);
   bool onPopup = false;
@@ -106,7 +107,7 @@ class _ListPageState extends State<ListPage> {
                         (_items.length - 1 == 1)
                             ? "แสดงรายการสุดท้าย"
                             : "สุ่มต่อ (${_items.length - 1} รายการ)",
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -125,7 +126,7 @@ class _ListPageState extends State<ListPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context) => const AlertDialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
         content: Column(
@@ -181,24 +182,54 @@ class _ListPageState extends State<ListPage> {
       }
     }
 
+    void showPopup(BuildContext context) {
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => CupertinoActionSheet(
+          title: const Text('เลือกรายการ'),
+          message: const Text('คุณต้องการดำเนินการอย่างไรต่อ?'),
+          actions: [
+            CupertinoActionSheetAction(
+              onPressed: () => {_updateList(), Navigator.pop(context)},
+              child: const Text('บันทึก'),
+            ),
+            CupertinoActionSheetAction(
+              isDestructiveAction: true, // ทำให้ตัวอักษรเป็นสีแดง (สำหรับลบ)
+              onPressed: () => Navigator.pop(context),
+              child: const Text('ลบข้อมูล'),
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            isDefaultAction: true, // ทำให้ตัวหนา
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'ยกเลิก',
+            ), // style: TextStyle(color: AppColors.gray)),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.data['name']}"),
-        // backgroundColor:
         actions: [
-          ElevatedButton.icon(
+          OutlinedButton.icon(
             onPressed: () {
-              _updateList();
+              showPopup(context);
             },
-            label: const Text("บันทึก"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  AppColors.primary, //Theme.of(context).primaryColor
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            label: const Text("จัดการ"),
+            style: OutlinedButton.styleFrom(
+              // ElevatedButton.styleFrom(backgroundColor:
+              //     AppColors.primary, //Theme.of(context).primaryColor
+              // foregroundColor: Colors.white,
+              // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              // elevation: 2,
+              // shape: RoundedRectangleBorder(
+              //   borderRadius: BorderRadius.circular(12),
+              // ),
+              side: const BorderSide(
+                color: AppColors.primary, // กำหนดความหนาของเส้นขอบ
               ),
             ),
           ),
@@ -274,9 +305,12 @@ class _ListPageState extends State<ListPage> {
                     TextButton.icon(
                       onPressed: () {
                         // reset();
+                        setState(() {
+                          _items = List.from(allItems);
+                        });
                       },
                       label: const Text(
-                        "Reset",
+                        " Reset ",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -285,7 +319,7 @@ class _ListPageState extends State<ListPage> {
                       ),
                       style: TextButton.styleFrom(
                         backgroundColor: AppColors.gray,
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 20,
                         ),
@@ -305,9 +339,7 @@ class _ListPageState extends State<ListPage> {
                         style: TextStyle(color: AppColors.rand),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: Color(0xFF00E5FF),
-                        ), // เปลี่ยนสีและขนาดขอบที่นี่
+                        side: const BorderSide(color: Color(0xFF00E5FF)),
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -368,10 +400,14 @@ class _ListPageState extends State<ListPage> {
                           // color: Colors.blueAccent[80],
                           child: ListTile(
                             leading: CircleAvatar(
-                              child: Text("${index + 1}"),
                               backgroundColor: Theme.of(
                                 context,
                               ).scaffoldBackgroundColor,
+                              child: Text(
+                                _items.contains(allItems[index])
+                                    ? "${index + 1}"
+                                    : '/',
+                              ),
                             ),
                             title: Text(allItems[index]),
                             // trailing: IconButton(
@@ -414,11 +450,11 @@ class _ListPageState extends State<ListPage> {
                 FloatingActionButton.extended(
                   heroTag: "primary",
                   onPressed: canRandom ? showRandomProcess : null,
-                  label: Text(
+                  label: const Text(
                     'Random!',
-                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
-                  icon: Icon(Icons.shuffle, color: Colors.white),
+                  icon: const Icon(Icons.shuffle, color: Colors.white),
                   backgroundColor: canRandom ? AppColors.rand : Colors.grey,
                 ),
               ],

@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:collection/collection.dart';
 
 class MoodCalendarWidget extends StatefulWidget {
   //  final Map<String, dynamic> data;
@@ -58,7 +59,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
           return AlertDialog(
             title: Text(
               "เพิ่มข้อมูล - $formattedDate",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 color: AppColors.secondary,
                 fontWeight: FontWeight.bold,
@@ -84,13 +85,13 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             Icons.sentiment_very_satisfied,
                           ];
 
-                          bool isSel = record['mental_level'] == (index + 1);
+                          bool isSel = record['mental_level'] == (index );
                           return IconButton(
                             icon: Icon(icons[index]),
                             iconSize: 40,
                             color: isSel ? colors[index] : Colors.grey.shade300,
                             onPressed: () => setDialogState(
-                              () => record['mental_level'] = index + 1,
+                              () => record['mental_level'] = index ,
                             ),
                           );
                         }),
@@ -108,7 +109,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "Level of discomfort:",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
@@ -125,7 +126,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                               // activeColor: Color(0xFFF06292), // AppColors.pink,
                               activeColor: Color.lerp(
                                 AppColors.pink,
-                                Color(0xFFF06292),
+                                const Color(0xFFF06292),
                                 record['pain_level'].toDouble() / 10,
                               ),
                             ),
@@ -162,7 +163,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             icon: const Icon(Icons.add),
                             label: const Text("เพิ่มยา"),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: Color(0xFFBA68C8),
+                              foregroundColor: const Color(0xFFBA68C8),
                             ),
                           ),
                         ],
@@ -175,10 +176,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                         children: [
                           const Text(
                             "Period:",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -195,6 +193,19 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                                   // อย่าลืมใช้ setDialogState หากอยู่ใน AlertDialog
                                   setDialogState(() {
                                     record['periodLevel'] = level;
+                                  });
+                                },
+                                onHorizontalDragUpdate: (details) {
+                                  // double renderBoxWidth = _iconSize * 5;
+                                  double position = details.localPosition.dx;
+
+                                  setDialogState(() {
+                                    // ปรับค่าให้อยู่ในช่วง 1-5 และปัดเศษขึ้น
+                                    record['periodLevel'] =
+                                        (position / iconSize)
+                                            .clamp(0, 5)
+                                            .toDouble();
+                                    // ถ้าอยากให้เป็นเลขเต็ม 1, 2, 3, 4, 5 ให้ใช้ .ceilToDouble()
                                   });
                                 },
                                 child: Padding(
@@ -220,6 +231,11 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                           ),
                         ],
                       ),
+
+                      // Text(
+                      //     "Excercise:",
+                      //     style: TextStyle(fontWeight: FontWeight.bold),
+                      //   ),
                       const SizedBox(height: 30),
                       Row(
                         children: [
@@ -231,6 +247,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                               ), //, style: TextStyle(color: Colors.grey)),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -387,30 +404,28 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                       date.month,
                       date.day,
                     );
-                    // var data = widget.data[dayOnly]?['data'];
+                    // DocumentSnapshot? result;
+                    // try {
+                    //   result = widget.data.firstWhere((doc) => doc.data()?['isA'] == true);
+                    // } catch (e) {
+                    //   result = null; // ถ้า Error (หาไม่เจอ) ให้เป็น null
+                    // }
+                    var found = widget.data
+                        .cast<
+                          DocumentSnapshot?
+                        >() // แปลง List ให้ยอมรับ null ได้
+                        .firstWhere((doc) {
+                          DateTime itemDate = (doc?['date'] as Timestamp)
+                              .toDate();
+                          return itemDate.year == dayOnly.year &&
+                              itemDate.month == dayOnly.month &&
+                              itemDate.day == dayOnly.day;
+                        }, orElse: () => null);
 
-                    //   var data = widget.data[dayOnly]?['data'];
-                    // DateTime firebaseDate = (widget.data['date'] as Timestamp)
-                    //     .toDate();
-                    // // var data = widget.data[firebaseDate]?['data'];
-                    var found = widget.data.firstWhere((doc) {
-                      // doc ในที่นี้คือ QueryDocumentSnapshot ต้องใช้ .data() หรือ [] เพื่อเข้าถึงฟิลด์
-                      DateTime itemDate = (doc['date'] as Timestamp).toDate();
-                      return itemDate.year == dayOnly.year &&
-                          itemDate.month == dayOnly.month &&
-                          itemDate.day == dayOnly.day;
-                    });
-                    final doc = widget.data.firstWhere(
-                      (d) =>
-                          (d['date'] as Timestamp).toDate().day == dayOnly.day,
-                      // orElse: () => null,
-                    );
-                    // bool isSameDay =  firebaseDate.year == dayOnly.year &&
-                    //     firebaseDate.month == dayOnly.month &&
-                    //     firebaseDate.day == dayOnly.day;
-                    var data = (found != null && found.exists) ? found.data() as Map<String, dynamic> : null;
-                    // print('data');
-                    // print(data);
+                    var data = (found != null && found.exists)
+                        ? found.data() as Map<String, dynamic>
+                        : null;
+
                     if (_calendarFormat == CalendarFormat.week) {
                       return Center(
                         child: Padding(
@@ -464,9 +479,9 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                 child: Container(
                   width: double.infinity, // แถบยาวเต็มการ์ดด้านล่าง
                   height: 30,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     // color: Colors.grey[50],
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(25),
                     ),
                   ),

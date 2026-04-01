@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
+// import 'package:flutter/services.dart';
+//  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
 
 class TableList extends StatelessWidget {
   final bool requireDate;
@@ -28,72 +30,66 @@ class TableList extends StatelessWidget {
 
   DataCell _buildDoubleInputCell(Map<String, dynamic> cellData) {
     return DataCell(
-      Container(
-        width: 200, // กำหนดความกว้างรวมของคอลัมน์ย่อย
+      SizedBox(
+        width: 210, // กำหนดความกว้างรวมของคอลัมน์ย่อย
         child: Row(
           children: [
-            // ช่อง Text
             if (!(cellData['text'].toString().isEmpty && isHideBox))
               Expanded(
                 flex: 2, // ให้พื้นที่ช่องข้อความมากกว่าหน่อย
                 child: TextField(
                   controller: TextEditingController(text: cellData['text']),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: '',
                     isDense: true,
-                    //               border: OutlineInputBorder(
-                    //   borderRadius: BorderRadius.circular(8),
-                    //   borderSide: BorderSide(color: Colors.grey.shade300), // กำหนดสีที่นี่
-                    // ),
                   ),
                   onChanged: (val) => cellData['text'] = val,
                 ),
               ),
-            const SizedBox(width: 5), 
+            const SizedBox(width: 5),
 
-            Expanded(
-              flex: 1,
-              child: TextField(
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  //   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}')),
-                  //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
-                  //   _NumericTextFormatter(),
-                  CurrencyTextInputFormatter.currency(
-                    locale: 'ko',
-                    symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
-                    decimalDigits: 2,
+            if (!(cellData['num'].toString().isEmpty && isHideBox))
+              Expanded(
+                flex: 1,
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
+                    CurrencyTextInputFormatter.currency(
+                      locale: 'ko',
+                      symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
+                      decimalDigits: 2,
+                    ),
+                  ],
+                  textAlign: TextAlign.right,
+                  controller:
+                      TextEditingController(
+                          text: cellData['num']?.toString() ?? '0',
+                          // text: (cellData['num'] is num && cellData['num'] > 0)
+                          //     ? formatter.format(cellData['num'])
+                          //     : (cellData['num']?.toString() ?? '0'),
+                        )
+                        ..selection = TextSelection.collapsed(
+                          offset: (cellData['num']?.toString() ?? '0').length,
+                        ),
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    // suffixText: "บาท",
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withValues(
+                        alpha: 0.5,
+                      ), // ค่า alpha ยิ่งน้อยยิ่งจาง (0.0 - 1.0)
+                    ),
                   ),
-                ],
-                textAlign: TextAlign.right,
-                controller:
-                    TextEditingController(
-                        text: cellData['num']?.toString() ?? '0',
-                        // text: (cellData['num'] is num && cellData['num'] > 0)
-                        //     ? formatter.format(cellData['num'])
-                        //     : (cellData['num']?.toString() ?? '0'),
-                      )
-                      ..selection = TextSelection.collapsed(
-                        offset: (cellData['num']?.toString() ?? '0').length,
-                      ),
-                decoration: InputDecoration(
-                  hintText: '0',
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  // suffixText: "บาท",
-                  hintStyle: TextStyle(
-                    color: Colors.grey.withValues(
-                      alpha: 0.5,
-                    ), // ค่า alpha ยิ่งน้อยยิ่งจาง (0.0 - 1.0)
-                  ),
+                  onChanged: (val) => cellData['num'] = val,
                 ),
-                onChanged: (val) => cellData['num'] = val,
               ),
-            ),
           ],
         ),
       ),
@@ -128,7 +124,7 @@ class TableList extends StatelessWidget {
                           //  Row(children: [
                           Expanded(
                             child: Center(
-                              child: Container(
+                              child: SizedBox(
                                 width:
                                     120, // ต้องกำหนดความกว้างให้ช่อง Input ในหัวตารางด้วย
                                 child: TextField(
@@ -199,7 +195,7 @@ class TableList extends StatelessWidget {
                 ],
                 //  rows.map(r => r.date)
                 // rows: (isDateY ? rows : headers).map((rowData) {
-                rows:  rows.map((rowData) {
+                rows: rows.map((rowData) {
                   // final headersObj = headers.map((h)) ({date: h}));
 
                   return DataRow(
@@ -265,7 +261,7 @@ class TableList extends StatelessWidget {
                             'col${index + 1}'; // สร้าง key เช่น col1, col2, ...
 
                         // ดึงข้อมูลมาตรวจสอบกัน Null
-                        var cellData =  rowData[colKey]  ;
+                        var cellData = rowData[colKey];
                         // var cellData = rows[index];
 
                         print('----');
@@ -279,20 +275,23 @@ class TableList extends StatelessWidget {
                         }
                         return const DataCell(SizedBox.shrink());
                       }),
-                      DataCell(SizedBox()),
+                      const DataCell(SizedBox()),
                       // if (showRemark) const DataCell(SizedBox.shrink()),
-                      if(showRemark) DataCell(
-                        TextField(
-                          decoration: const InputDecoration(hintText: ''),
-                          onChanged: (val) => rowData['note'] = val,
-                          // ✅ ต้องมี Controller เพื่อดึงค่าจาก Map มาแสดงในช่องกรอก
-                          controller:
-                              TextEditingController(text: rowData['note'] ?? '')
-                                ..selection = TextSelection.collapsed(
-                                  offset: (rowData['note'] ?? '').length,
-                                ),
+                      if (showRemark)
+                        DataCell(
+                          TextField(
+                            decoration: const InputDecoration(hintText: ''),
+                            onChanged: (val) => rowData['note'] = val,
+                            // ✅ ต้องมี Controller เพื่อดึงค่าจาก Map มาแสดงในช่องกรอก
+                            controller:
+                                TextEditingController(
+                                    text: rowData['note'] ?? '',
+                                  )
+                                  ..selection = TextSelection.collapsed(
+                                    offset: (rowData['note'] ?? '').length,
+                                  ),
+                          ),
                         ),
-                      ),
                     ],
                   );
                 }).toList(),

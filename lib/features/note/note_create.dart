@@ -46,7 +46,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
         'createdAt': FieldValue.serverTimestamp(),
         'lock': isLock,
         'authorId': user?.uid,
-         'isActive': true,
+        'isActive': true,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
@@ -112,7 +112,7 @@ class _CreateNotePageState extends State<CreateNotePage> {
               maxLines: 10,
               minLines: 3,
               keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Note here',
                 border: OutlineInputBorder(),
               ),

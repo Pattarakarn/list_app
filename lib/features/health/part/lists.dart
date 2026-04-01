@@ -9,6 +9,8 @@ class SymptomHistoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,17 +26,17 @@ class SymptomHistoryList extends StatelessWidget {
             itemCount: datas.length,
             itemBuilder: (context, index) {
               final data = (datas[index].data()) as Map<String, dynamic>;
-              print(data['date']);
+              // print(data);
               final mentallevel = data['data']['mental_level'];
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
-                  side: BorderSide(
+                  side:const BorderSide(
                     color: AppColors.blue, // สีขอบ
                   ),
                 ),
-                color: Colors.white,
+                color: isLightMode ? Colors.white : Colors.transparent,
                 child: ListTile(
                   leading: CircleAvatar(
                     // backgroundColor: Colors.transparent,
@@ -55,7 +57,7 @@ class SymptomHistoryList extends StatelessWidget {
                           : Theme.of(context).primaryColor,
                     ),
                   ),
-                  title: Text(data['data']['symptoms'] ?? 'บันทึก'),
+                  title: Text(data['data']['symptoms'].split('\n').first ?? 'บันทึก'),
                   subtitle: Text(
                     DateFormat('dd MMMM yyyy').format(data['date'].toDate()),
                     // (data['date'] != null)
@@ -63,28 +65,27 @@ class SymptomHistoryList extends StatelessWidget {
                     //         'dd MMMM yyyy',
                     //       ).format(data['date'] | data['createdAt]).toString()
                     //     : "29 มี.ค. 2026",
-                    style: TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 12),
                   ),
 
-                  // trailing คือส่วนที่อยู่ขวาสุด
                   trailing: Wrap(
                     spacing: 4, // ระยะห่างระหว่างไอคอน
                     crossAxisAlignment: WrapCrossAlignment.end,
                     children: [
                       if (data['data']['pain_level'] > 0)
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Color(0xFFF06292).withValues(alpha: 0.1),
+                            color: const Color(0xFFF06292).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             "${data['data']['pain_level']}/10",
-                            style: TextStyle(
-                              color: Color(0xFFF06292),
+                            style:const TextStyle(
+                              color:  Color(0xFFF06292),
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -97,7 +98,7 @@ class SymptomHistoryList extends StatelessWidget {
                           size: 20.0 + (index * data['data']['periodLevel']),
                         ),
                       if (data['data']['medications'].isNotEmpty)
-                        Icon(Icons.medical_services, color: Color(0xFFBA68C8)),
+                       const Icon(Icons.medical_services, color: Color(0xFFBA68C8)),
                     ],
                   ),
                 ),

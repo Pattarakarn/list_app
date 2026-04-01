@@ -44,6 +44,7 @@ void main() async {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F172A),
+        colorScheme: const ColorScheme.dark(primary: Color(0xFFFF6B00)),
       ),
       themeMode: ThemeMode.system,
       home: StreamBuilder<User?>(
@@ -72,7 +73,7 @@ void main() async {
 }
 
 class HomeScreen extends StatefulWidget {
-  // const MainNavigation({super.key});
+  const HomeScreen({super.key});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -103,10 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         if (_isExpanded) {
           _isExpanded = false;
-          setState(() => _selectedIndex = index);
-        } else {
-          onTap();
+          // } else {
+          //   onTap();
         }
+        setState(() => _selectedIndex = index);
       },
       onHover: (hovering) {
         /* จัดการตอน hover */
@@ -116,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(8.0),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             color: _isHovered ? Colors.grey : Colors.transparent,
             borderRadius: BorderRadius.circular(15),
@@ -195,11 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
           () => {},
         ),
       ),
-      // if (_isExpanded) // ถ้าขยายอยู่ ให้มีปุ่มกดหดกลับ
-      //   IconButton(
-      //     icon: const Icon(Icons.arrow_back_ios, size: 16, color: Colors.grey),
-      //     onPressed: () => setState(() => _isExpanded = false),
-      //   ),
     ];
   }
 
@@ -251,13 +247,13 @@ class _HomeScreenState extends State<HomeScreen> {
         content: const Text("คุณต้องการออกจากแอปใช่หรือไม่?"),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("ตกลง"),
+          ),
+          TextButton(
             onPressed: () =>
                 Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
             child: const Text("ยกเลิก"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true), // ส่งค่า true (ออก)
-            child: const Text("ใช่, ออกเลย"),
           ),
         ],
       ),
@@ -266,6 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return PopScope(
       canPop: false, // 1. สั่งห้ามไม่ให้ย้อนกลับทันที
       onPopInvokedWithResult: (didPop, result) async {
@@ -281,6 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         backgroundColor: AppColors.gray,
         body: SafeArea(
           child: Stack(
@@ -288,10 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Positioned.fill(
                 top: _selectedIndex == 0 ? 0 : 50,
                 // bottom: 78,
-                child: SafeArea(
-                  // ใช้ SafeArea เพื่อไม่ให้เนื้อหาไปทับแถบสถานะด้านบน
-                  child: _pages[_selectedIndex],
-                ),
+                child: SafeArea(child: _pages[_selectedIndex]),
               ),
               // Visibility(  visible: index != 0,
               if (_selectedIndex != 0)
@@ -301,23 +296,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
-                    color: Colors
-                        .grey[200], // (_selectedIndex != 1 && _selectedIndex !=4) ? : Colors.transparent,
-                    // decoration: BoxDecoration(
-                    //   gradient: LinearGradient(
-                    //     begin: Alignment.topCenter,
-                    //     end: Alignment.bottomCenter,
-                    //     colors: [
-                    //       const Color(0xFFF3F7F9),
-                    //       const Color(0xFFF3F7F9).withOpacity(0.0),
-                    //     ],
-                    //   ),
-                    // ),
+                    color: Colors.grey[200],
                     child: GestureDetector(
                       onTap: () => {setState(() => _selectedIndex = 0)},
                       child: Row(
                         children: [
-                          CircleAvatar(
+                          const CircleAvatar(
                             radius: 22,
                             backgroundColor: Colors.white,
                             child: Icon(
@@ -332,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ? "${user?.email?.substring(0, 4)}@"
                                     : user?.email) ??
                                 ''),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -378,33 +362,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
               Positioned(
-                bottom: 20, // ให้ลอยจากขอบล่าง 20
+                bottom: 15, // ให้ลอยจากขอบล่าง 20
                 left: 20,
                 right: 20,
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(35),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 10),
-                      ],
-                    ),
+                child: isKeyboardOpen
+                    ? const SizedBox.shrink() // ถ้าเปิดแป้นพิมพ์ ให้ซ่อน
+                    : Align(
+                        alignment: Alignment.bottomLeft,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          // height: 70, BOTTOM OVERFLOW BY 9.0 PIXELS
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(35),
+                            boxShadow: [
+                              const BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
 
-                    child: Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: _isExpanded
-                            ? MainAxisSize.max
-                            : MainAxisSize.min,
-                        children: _buildFloatingItems(),
+                          child: Container(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: _selectedIndex == 0
+                                  ? MainAxisSize.max
+                                  : MainAxisSize.min,
+                              children: _buildFloatingItems(),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

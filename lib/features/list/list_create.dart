@@ -10,7 +10,6 @@ class CreateListPage extends StatefulWidget {
 }
 
 class _CreateListPageState extends State<CreateListPage> {
-  final TextEditingController _controller = TextEditingController();
   bool _isLoading = false;
   final TextEditingController _nameController = TextEditingController();
 

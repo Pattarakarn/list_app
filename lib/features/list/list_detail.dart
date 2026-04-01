@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // !เพิ่ม intl ใน pubspec.yaml สำหรับจัดการวันที่
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import '../../app_colors.dart';
-import '../../../utils/constant.dart';
 import 'checkList.dart';
 import 'tableList.dart';
 
@@ -29,10 +27,10 @@ class _DetailPageState extends State<DetailPage> {
   bool _requireDate = true;
   bool showRemark = true;
   bool isDateY = !false;
-
-  final TextEditingController _selectController = TextEditingController(
-    text: "Table",
+  final TextEditingController _remarkController = TextEditingController(
+    text: "",
   );
+
   final TextEditingController _checkController = TextEditingController(
     text: "false",
   );
@@ -68,9 +66,6 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
-  final formatter = NumberFormat(
-    "#,###.##",
-  ); // .## คือแสดงทศนิยมเฉพาะเมื่อมีค่า
   void _saveToFirebase() async {
     try {
       await FirebaseFirestore.instance
@@ -84,12 +79,13 @@ class _DetailPageState extends State<DetailPage> {
             'hideEmpty': _isHideBox,
             'required_date': _requireDate,
             'showRemark': showRemark,
+            'remark': _remarkController.text,
           });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
           .showSnackBar(
             SnackBar(
-              content: Text('บันทึกข้อมูลสำเร็จ!'),
+              content: const Text('บันทึกข้อมูลสำเร็จ!'),
               backgroundColor: Colors.green, //.transparent,
               elevation: 0,
               behavior: SnackBarBehavior
@@ -108,16 +104,12 @@ class _DetailPageState extends State<DetailPage> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      ).showSnackBar(const SnackBar(content: Text('เกิดข้อผิดพลาด')));
     }
   }
 
-  void _toggleSomeValueCol() async {
-    setState(() => _isHideBox = !_isHideBox);
-  }
-
   void _showEditDialog() {
-    final TextEditingController _editController = TextEditingController(
+    final TextEditingController editController = TextEditingController(
       text: widget.title,
     );
 
@@ -127,14 +119,12 @@ class _DetailPageState extends State<DetailPage> {
         return AlertDialog(
           title: const Text('แก้ไขชื่อ'),
           content: TextField(
-            controller: _editController,
+            controller: editController,
             autofocus: true, // ให้คีย์บอร์ดเด้งขึ้นมาทันที
             decoration: InputDecoration(
               hintText: widget.title,
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor,
-                ), // สีส้มตามธีม
+                borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
             ),
           ),
@@ -151,14 +141,11 @@ class _DetailPageState extends State<DetailPage> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
-                // setState(() {
-                //   _currentTitle = _editController.text;
-                // });
                 FirebaseFirestore.instance
                     .collection('lists')
                     .doc(widget.docId)
                     .update({
-                      'name': _editController.text,
+                      'name': editController.text,
                       'updatedAt': FieldValue.serverTimestamp(),
                     });
                 Navigator.pop(context);
@@ -277,8 +264,8 @@ class _DetailPageState extends State<DetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: const [
+                        const Row(
+                          children: [
                             Icon(
                               Icons.disabled_by_default,
                               color: AppColors.secondary,
@@ -302,8 +289,8 @@ class _DetailPageState extends State<DetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: const [
+                        const Row(
+                          children: [
                             Icon(
                               Icons.horizontal_split_outlined,
                               color: AppColors.secondary,
@@ -324,8 +311,8 @@ class _DetailPageState extends State<DetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Icon(
                             Icons.calendar_month,
                             color: AppColors.secondary,
@@ -354,11 +341,10 @@ class _DetailPageState extends State<DetailPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isLightMode ?  Colors.white: Colors.transparent,
+                      color: isLightMode ? Colors.white : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
-                      
                       children: List.generate(2, (index) {
                         bool isSelected = !false;
                         // selectedIndex == index; // เช็กว่าช่องนี้ถูกเลือกไหม
@@ -387,7 +373,7 @@ class _DetailPageState extends State<DetailPage> {
                               ),
                               child: Stack(
                                 children: [
-                                     if (isSelected && !hideEmpty)
+                                  if (isSelected && !hideEmpty)
                                     const Positioned(
                                       top: 18,
                                       left: 5,
@@ -399,7 +385,7 @@ class _DetailPageState extends State<DetailPage> {
                                     ),
                                   Center(
                                     child: Text(
-                                     index == 0 ? "ข้อความ" : "ตัวเลข",
+                                      index == 0 ? "ข้อความ" : "ตัวเลข",
                                       style: TextStyle(
                                         color: isSelected
                                             ? Colors.black
@@ -410,7 +396,6 @@ class _DetailPageState extends State<DetailPage> {
                                       ),
                                     ),
                                   ),
-                               
                                 ],
                               ),
                             ),
@@ -435,8 +420,8 @@ class _DetailPageState extends State<DetailPage> {
                   //   ),
                   CheckboxListTile(
                     title: Transform.translate(
-                      offset: Offset(-10, 0),
-                      child: Text("Show remark"),
+                      offset: const Offset(-10, 0),
+                      child: const Text("Show remark"),
                     ),
                     value: showRemark,
                     onChanged: (bool? value) {
@@ -446,7 +431,7 @@ class _DetailPageState extends State<DetailPage> {
                     controlAffinity: ListTileControlAffinity.leading,
                     //  visualDensity:  VisualDensity(horizontal: -4.0, vertical: 0),
                   ),
-                   const Spacer(),
+                  const Spacer(),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -462,6 +447,7 @@ class _DetailPageState extends State<DetailPage> {
                           showRemark = showRemark;
                           isDateY = isDateY;
                           _requireDate = requireDate;
+                          _isHideBox = hideEmpty;
                         }),
                         // if(isDateY)
                         Navigator.pop(context),
@@ -478,15 +464,16 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  void setHeaders(_headers) {
+  void setHeaders(header) {
     setState(() {
       // headers = [...headers, '${headers.length + 1}'];
-      headers = _headers;
+      headers = header;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -580,8 +567,11 @@ class _DetailPageState extends State<DetailPage> {
                     });
                   },
                   showRemark: showRemark,
+                  setRemark: (val) {
+                    _remarkController.text = val;
+                  },
+                  remarkController: _remarkController,
                 )
-               
               : TableList(
                   headers: headers,
                   rows: rows,
@@ -596,7 +586,7 @@ class _DetailPageState extends State<DetailPage> {
                   addRow: _addRow,
                   isHideBox: _isHideBox,
                   showRemark: showRemark,
-                  isDateY: isDateY
+                  isDateY: isDateY,
                 ));
           //     ],
           //   ),
@@ -616,7 +606,7 @@ class _DetailPageState extends State<DetailPage> {
           //   ),
         },
       ),
-      floatingActionButton: _isSuccess
+      floatingActionButton: _isSuccess || isKeyboardOpen
           ? null // หรือ const SizedBox.shrink() ถ้าอยากให้หายไปเลยแบบไม่มี Animation
           : FloatingActionButton.extended(
               onPressed: _saveToFirebase,

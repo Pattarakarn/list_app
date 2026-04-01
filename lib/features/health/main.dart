@@ -85,7 +85,6 @@ class _HealthPageState extends State<HealthPage> {
               stream: _healthRecord,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  print("Firestore Error: ${snapshot.error}");
                   return const Center(
                     child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'),
                   );
@@ -99,12 +98,10 @@ class _HealthPageState extends State<HealthPage> {
                     snapshot.data!.docs; //array
                 //     if (documents.isEmpty) return Text("ไม่มีข้อมูล");
                 //     Map<String, dynamic> data = documents[0].data() as Map<String, dynamic>;
-                // print(data);
                 final Map<DateTime, Map<String, dynamic>> _calendar = {};
 
                 for (var doc in documents) {
                   final data = doc.data() as Map<String, dynamic>;
-                  print(data);
                   //                   // DateTime dateValue = (data['date'] as Timestamp).toDate();
                   //                   DateTime dateValue = (data['createdAt'] as Timestamp)
                   //                       .toDate();
@@ -151,7 +148,6 @@ class _HealthPageState extends State<HealthPage> {
                         ),
                       ),
 
-                      // 2. ส่วนเนื้อหา Body
                       SafeArea(
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.symmetric(horizontal: 20),

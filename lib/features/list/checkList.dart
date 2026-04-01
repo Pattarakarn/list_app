@@ -10,6 +10,8 @@ class CheckList extends StatelessWidget {
   final Function(String) addText;
   final Function(int, String, Timestamp) setFieldDate;
   final bool showRemark;
+  final Function(String) setRemark;
+  final TextEditingController remarkController;
 
   const CheckList({
     super.key,
@@ -19,11 +21,13 @@ class CheckList extends StatelessWidget {
     required this.addText,
     required this.setFieldDate,
     required this.showRemark,
+    required this.setRemark,
+    required this.remarkController,
   });
 
   @override
   Widget build(BuildContext context) {
-     bool isLightMode =
+    bool isLightMode =
         MediaQuery.of(context).platformBrightness == Brightness.light;
     final pendingItems = requireDate
         ? data.where((item) => !item['isDone']).toList()
@@ -47,7 +51,6 @@ class CheckList extends StatelessWidget {
       }
     }
 
-    final TextEditingController _remarkController = TextEditingController();
     // print(data);
     print(completedGroups);
 
@@ -79,7 +82,7 @@ class CheckList extends StatelessWidget {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: AppColors.secondary,
                         fontSize: 16,
                       ),
@@ -137,7 +140,7 @@ class CheckList extends StatelessWidget {
                   ),
                   Expanded(
                     child: Card(
-                      color: isLightMode ?  AppColors.gray : Colors.transparent,
+                      color: isLightMode ? AppColors.gray : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                         // side: BorderSide(
@@ -173,7 +176,7 @@ class CheckList extends StatelessWidget {
                                       ? 'dd MMM'
                                       : 'dd MMM yyyy',
                                 ).format(date),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.pink,
                                 ),
@@ -200,7 +203,7 @@ class CheckList extends StatelessWidget {
                                   setDate(item['create_date'], 'complete_date'),
                               child: Text(
                                 DateFormat('dd MMM yyyy').format(date),
-                                style: TextStyle(fontSize: 12),
+                                style: const TextStyle(fontSize: 12),
                               ),
                             );
                             // const SizedBox.shrink();
@@ -211,7 +214,7 @@ class CheckList extends StatelessWidget {
                   ),
                 ],
               );
-            }).toList(),
+            }),
 
             if (requireDate) const Divider(height: 40),
             ...completedGroups.entries.map((group) {
@@ -276,11 +279,11 @@ class CheckList extends StatelessWidget {
                 maxLines: 5,
                 minLines: 3,
                 keyboardType: TextInputType.multiline,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'หมายเหตุ',
                   border: OutlineInputBorder(),
                 ),
-                controller: _remarkController,
+                controller: remarkController,
               ),
           ],
         ),

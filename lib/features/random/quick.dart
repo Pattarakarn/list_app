@@ -21,7 +21,7 @@ class _RandomQuickState extends State<RandomQuick> {
     showDialog(
       context: context,
       barrierDismissible: false, // ห้ามกดปิดจนกว่าจะสุ่มเสร็จ
-      builder: (context) => AlertDialog(
+      builder: (context) => const AlertDialog(
         backgroundColor:
             Colors.transparent, // ทำให้พื้นหลังใสเพื่อโชว์แค่ Animation
         elevation: 0,
@@ -118,7 +118,7 @@ class _RandomQuickState extends State<RandomQuick> {
                         _showRandomProcess(); // เปิดอันใหม่ (สุ่มต่อทันที)
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(
+                        backgroundColor: const Color(
                           0xFF2979FF,
                         ), // AppColors.secondary,
                       ),
@@ -126,7 +126,7 @@ class _RandomQuickState extends State<RandomQuick> {
                         (_items.length - 1 == 1)
                             ? "แสดงรายการสุดท้าย"
                             : "สุ่มต่อ (${_items.length - 1} รายการ)",
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -171,11 +171,6 @@ class _RandomQuickState extends State<RandomQuick> {
   Widget build(BuildContext context) {
     bool canRandom = _items.length >= 2;
 
-    // return Scaffold(
-    //   body: Padding(
-    //     padding: const EdgeInsets.all(20.0),
-    //     child:
-    //     Column(
     return Container(
       width: double.infinity, // บังคับให้กว้างเต็มจอ
       padding: const EdgeInsets.all(15),
@@ -256,10 +251,10 @@ class _RandomQuickState extends State<RandomQuick> {
                   // color: Colors.blueAccent[80],
                   child: ListTile(
                     leading: CircleAvatar(
-                      child: Text("${index + 1}"),
                       backgroundColor: Theme.of(
                         context,
                       ).scaffoldBackgroundColor,
+                      child: Text("${index + 1}"),
                     ),
                     title: Text(_items[index]),
                     trailing: IconButton(
@@ -279,7 +274,7 @@ class _RandomQuickState extends State<RandomQuick> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: canRandom ? _showRandomProcess : null,
-                    icon: Icon(Icons.bolt, color: Color(0xFF00E5FF)),
+                    icon: const Icon(Icons.bolt, color: Color(0xFF00E5FF)),
                     label: const Text("Quick"),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),

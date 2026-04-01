@@ -19,6 +19,8 @@ class _RandomPState extends State<RandomP> {
 
   @override
   Widget build(BuildContext context) {
+    bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Container(
@@ -77,7 +79,9 @@ class _RandomPState extends State<RandomP> {
                           ),
                           clipBehavior: Clip
                               .antiAlias, // ทำให้ InkWell ไม่ทะลุขอบโค้งของ Card
-                          color: AppColors.gray,
+                          color: isLightMode
+                              ? AppColors.gray
+                              : Colors.transparent,
                           child: InkWell(
                             onTap: () {
                               Navigator.push(
@@ -87,7 +91,9 @@ class _RandomPState extends State<RandomP> {
                                 ),
                               );
                             },
-                            hoverColor: AppColors.gray,
+                            hoverColor: isLightMode
+                                ? AppColors.gray
+                                : Colors.transparent,
                             // highlightColor: สีตอนกดค้าง
                             child: ListTile(
                               title: Text(

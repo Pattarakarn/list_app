@@ -3,12 +3,9 @@ import 'note_detail.dart';
 import 'note_create.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:list_app/features/note/note_detail.dart';
 import '../../app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
-// import 'package:local_auth_android/local_auth_android.dart';
-// import 'package:local_auth_ios/local_auth_ios.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class NotesPage extends StatefulWidget {
@@ -47,8 +44,7 @@ class AuthService {
         //   ),
         //   IOSAuthMessages(cancelButton: 'ยกเลิก'),
         // ],
-        biometricOnly:
-            false, // วางไว้ตรงๆ แบบนี้เลย ไม่ต้องมี AuthenticationOptions
+        biometricOnly: false,
         // stickyAuth: true,
         // useErrorDialogs: true,
         // // options:  AuthenticationOptions(
@@ -60,7 +56,6 @@ class AuthService {
       );
 
       if (didAuthenticate) {
-        // สแกนผ่านแล้ว! ทำงานที่ต้องการต่อที่นี่
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -71,16 +66,14 @@ class AuthService {
         // ผู้ใช้ยกเลิก หรือสแกนไม่ผ่าน
       }
     } catch (e) {
-      print("เกิดข้อผิดพลาด: $e");
+      // Don't invoke 'print' in production code. print("เกิดข้อผิดพลาด: $e");
     }
   }
 }
 
 class _NotesPageState extends State<NotesPage> {
-  final List<String> _items = ["โปรเจกต์ที่ 1"];
   final user = FirebaseAuth.instance.currentUser;
   void _deleteItem({required String id, String? name}) {
-    String inputText = "";
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -141,7 +134,7 @@ class _NotesPageState extends State<NotesPage> {
           final docs = snapshot.data!.docs;
 
           if (docs.isEmpty) {
-            return Text('');
+            return const Center(child: Text('-'));
           }
           return ListView.builder(
             itemCount: docs.length,
@@ -224,16 +217,10 @@ class _NotesPageState extends State<NotesPage> {
         backgroundColor: Colors.yellow,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateNotePage()),
           );
-
-          if (result != null && result is String) {
-            setState(() {
-              _items.add(result);
-            });
-          }
         },
       ),
     );

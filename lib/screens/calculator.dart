@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:flutter/services.dart';
+import '../features/others/cal-utility.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
@@ -11,34 +12,37 @@ class CalculatorPage extends StatefulWidget {
 }
 
 class _CalculatorPageState extends State<CalculatorPage> {
-  String _input = "0";
+  // String _input = "0";
   String _result = "0";
+  String _mode = "General";
+  final TextEditingController _controller = TextEditingController(text: "");
 
   void _onPressed(String text) {
+    String input = _controller.text;
     setState(() {
       if (text == "C") {
-        _input = "0";
+        input = "0";
         _result = "";
       } else if (text == "=") {
-        _input = _result; //ผลลัพธ์มาแทนที่เลขข้างบน
+        input = _result; //ผลลัพธ์มาแทนที่เลขข้างบน
         _result = "";
       } else if (text == "+/-") {
-        if (_input.startsWith('-')) {
-          _input = _input.substring(1);
+        if (input.startsWith('-')) {
+          input = input.substring(1);
         } else {
-          _input = '-$_input';
+          input = '-$input';
         }
       } else {
         // ถ้าเริ่มด้วย 0 ให้ทับไปเลย ถ้าไม่ใช่ให้ต่อท้าย
-        if (_input == "0") {
-          _input = text;
+        if (input == "0") {
+          input = text;
         } else {
-          _input += text;
+          input += text;
         }
 
         try {
           // แปลง ÷ เป็น / และ × เป็น * ก่อนส่งไปคำนวณ
-          String mathExpression = _input
+          String mathExpression = input
               .replaceAll('÷', '/')
               .replaceAll('×', '*');
 
@@ -58,6 +62,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
     });
   }
 
+  final formatter = NumberFormat("#,###.##");
   @override
   Widget build(BuildContext context) {
     final List<String> buttons = [
@@ -84,6 +89,30 @@ class _CalculatorPageState extends State<CalculatorPage> {
     ];
     bool isLightMode =
         MediaQuery.of(context).platformBrightness == Brightness.light;
+    TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+    ) {
+      // 1. กรองตัวอักษรที่ไม่ต้องการออก (Allow only math chars & digits)
+      final regExp = RegExp(r'[0-9\+\-\*\/\(\)\.]');
+      String newText = newValue.text
+          .split('')
+          .where((char) => regExp.hasMatch(char))
+          .join();
+
+      // 2. Logic การใส่ Comma (ใช้ Regex แยกกลุ่มตัวเลขออกจากเครื่องหมาย)
+      // แยกส่วนที่เป็นตัวเลขออกมาเพื่อใส่ comma แล้วเอากลับไปรวมกับเครื่องหมาย
+      String formatted = newText.replaceAllMapped(RegExp(r'\d+'), (match) {
+        double val = double.parse(match.group(0)!);
+        return formatter.format(val);
+      });
+
+      return newValue.copyWith(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+
     return Scaffold(
       // backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
@@ -107,11 +136,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
         // ],
         centerTitle: true,
         title: ConstrainedBox(
-          constraints: BoxConstraints(), //minWidth: 180),
+          constraints: const BoxConstraints(), //minWidth: 180),
           child: DropdownButtonHideUnderline(
             // ซ่อนเส้นใต้เพื่อให้ดูคลีน
             child: DropdownButton<String>(
-              value: "General", // ค่าปัจจุบัน
+              value: _mode,
               items: <String>['General', 'Stock', 'Utility'].map((
                 String value,
               ) {
@@ -124,69 +153,97 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 );
               }).toList(),
               onChanged: (newValue) {
-                // อัปเดตสถานะเมื่อเลือก
+                setState(() {
+                  _mode = newValue as String;
+                });
               },
             ),
           ),
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(32),
-                alignment: Alignment.bottomRight,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _input,
-                      style: const TextStyle(
-                        // color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
+        child: _mode == "General"
+            ? Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      alignment: Alignment.bottomRight,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // Text(
+                          //   _input,
+                          //   style: const TextStyle(
+                          //     // color: Colors.white,
+                          //     fontSize: 48,
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                          TextField(
+                            minLines: 3,
+                            maxLines: null,
+                            controller: _controller,
+                            keyboardType: TextInputType
+                                .text, // ใช้ text เพื่อให้พิมพ์เครื่องหมายได้ง่าย
+                            inputFormatters: [
+                              // ถ้าอยากคุมแค่ตัวอักษรเบื้องต้นใช้ตัวนี้
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9\+\-\*\/\(\)\.]'),
+                              ),
+                              // ถ้าอยากให้มีคอมม่าด้วย ให้ใช้ Class ที่เราสร้างข้างบน (ต้องปรับจูนเพิ่มตามความซับซ้อน)
+                            ],
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                            ),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            NumberFormat(
+                              "#,###.###",
+                            ).format(double.parse(_result)).toString(),
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 24,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      NumberFormat(
-                        "#,###",
-                      ).format(double.parse(_result)).toString(),
-                      style: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
 
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isLightMode
-                    ? const Color(0xFF334155).withOpacity(0.7)
-                    : Color(0xFF1E293B),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              ),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: buttons.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 15,
-                  crossAxisSpacing: 15,
-                ),
-                itemBuilder: (context, index) {
-                  return _buildButton(buttons[index], isLightMode);
-                },
-              ),
-            ),
-          ],
-        ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isLightMode
+                          ? Colors.grey
+                          : const Color(0xFF1E293B),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(32),
+                      ),
+                    ),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: buttons.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 15,
+                            crossAxisSpacing: 15,
+                          ),
+                      itemBuilder: (context, index) {
+                        return _buildButton(buttons[index], isLightMode);
+                      },
+                    ),
+                  ),
+                ],
+              )
+            :  UtilityPage(mode: _mode),
       ),
     );
   }
