@@ -44,7 +44,7 @@ void main() async {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F172A),
-        colorScheme: const ColorScheme.dark(primary: Color(0xFFFF6B00)),
+        // colorScheme: const ColorScheme.dark(primary: Color(0xFFFF6B00)),
       ),
       themeMode: ThemeMode.system,
       home: StreamBuilder<User?>(
@@ -104,8 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         if (_isExpanded) {
           _isExpanded = false;
-          // } else {
-          //   onTap();
+          } else {
+            onTap();
         }
         setState(() => _selectedIndex = index);
       },
@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: AppColors.gray,
+        // backgroundColor: AppColors.gray,
         body: SafeArea(
           child: Stack(
             children: [
@@ -310,12 +310,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(
-                            (((user?.email?.length ?? 0) > 4
-                                    // && user?.isAnonymous == true
-                                    ? "${user?.email?.substring(0, 4)}@"
-                                    : user?.email) ??
-                                ''),
+                          Text(user?.displayName ?? user?.email ?? '',
+                            // (((user?.email?.length ?? 0) > 4
+                            //         // && user?.isAnonymous == true
+                            //         ? "${user?.email?.substring(0, 4)}@"
+                            //         : user?.email) ??
+                            //     ''),
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

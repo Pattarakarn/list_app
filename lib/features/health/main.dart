@@ -28,8 +28,8 @@ class _HealthPageState extends State<HealthPage> {
     _healthRecord = FirebaseFirestore.instance
         .collection('health')
         .where('authorId', isEqualTo: user?.uid)
-        // .orderBy('createdAt', descending: true)
         // .where('date',isNotEqualTo: null)
+        // .orderBy('date', descending: true)
         .limit(69)
         .snapshots();
   }
@@ -155,7 +155,7 @@ class _HealthPageState extends State<HealthPage> {
                             children: [
                               const SizedBox(height: 15),
                               // --- ส่วนที่ 1: Period Tracker ---
-                              const PeriodSummaryCard(),
+                               PeriodSummaryCard(datas: documents),
 
                               const SizedBox(height: 10),
 

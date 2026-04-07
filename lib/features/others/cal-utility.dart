@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 
 class UtilityPage extends StatefulWidget {
   final String mode;
@@ -18,7 +19,8 @@ class _UtilityPageState extends State<UtilityPage> {
   final _ratioController =
       TextEditingController(); // ช่องที่ 3 (เปอร์เซ็นต์ หรือ จำนวน)
 
-  bool isPercentMode = true; // สลับโหมด % หรือ ราคา
+  // bool isPercentMode = true; // สลับโหมด % หรือ ราคา
+  ValueNotifier<bool> isPercentMode = ValueNotifier<bool>(true);
   double resultA = 0;
 
   // Controllers สำหรับโหมด B (หุ้น)
@@ -28,12 +30,57 @@ class _UtilityPageState extends State<UtilityPage> {
   final _buyPriceController = TextEditingController();
   final _buyVolController = TextEditingController();
 
+  double totalCostNew = 0;
+  double totalVolNew = 0;
+  double newAvg = 0;
+  double profitPercent = 0;
+  double sumprice = 0;
   @override
+  void initState() {
+    super.initState();
+    //  ติดตามการเปลี่ยนแปลง
+    _currentVolController.addListener(_calculateResult);
+    _avgPriceController.addListener(_calculateResult);
+    _marketPriceController.addListener(_calculateResult);
+    _buyPriceController.addListener(_calculateResult);
+    _buyVolController.addListener(_calculateResult);
+
+    isPercentMode.addListener(_calculateA);
+  }
+
+  void _calculateResult() {
+    setState(() {
+      double currentVol = double.tryParse(_currentVolController.text) ?? 0;
+      double avgPrice = double.tryParse(_avgPriceController.text) ?? 0;
+      double marketPrice = double.tryParse(_marketPriceController.text) ?? 0;
+      double buyPrice = double.tryParse(_buyPriceController.text) ?? 0;
+      double buyVol = double.tryParse(_buyVolController.text) ?? 0;
+
+      totalCostNew = (currentVol * avgPrice) + (buyVol * buyPrice);
+      totalVolNew = currentVol + buyVol;
+      newAvg = totalVolNew != 0 ? totalCostNew / totalVolNew : 0;
+      // newAvg = totalVolNew != 0 ? ((currentVol * avgPrice) + (buyVol * buyPrice)) / (currentVol + buyVol) : 0;
+      // คำนวณ % จาก market vs avg
+      profitPercent = avgPrice != 0
+          ? ((marketPrice - avgPrice) / avgPrice) * 100
+          : 0;
+      sumprice = buyPrice * buyVol;
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: widget.mode == 'Utility' ? _buildModeU() : _buildModeS(),
+        child: widget.mode == 'Utility'
+            ? _buildModeU()
+            : _buildModeS(
+                totalCostNew,
+                totalVolNew,
+                newAvg,
+                profitPercent,
+                sumprice,
+              ),
       ),
     );
   }
@@ -45,19 +92,20 @@ class _UtilityPageState extends State<UtilityPage> {
           children: [
             ChoiceChip(
               label: const Text("Percent"),
-              selected: isPercentMode,
+              selected: isPercentMode.value,
               onSelected: (val) => setState(() {
-                isPercentMode = true;
+                isPercentMode.value = true;
                 _ratioController.text = "100";
               }),
             ),
             const SizedBox(width: 10),
             ChoiceChip(
               label: const Text("Shopping"),
-              selected: !isPercentMode,
+              selected: !isPercentMode.value,
               onSelected: (val) => setState(() {
-                isPercentMode = false;
+                isPercentMode.value = false;
                 _ratioController.text = "1";
+                // resultA = 0;
               }),
             ),
           ],
@@ -67,41 +115,54 @@ class _UtilityPageState extends State<UtilityPage> {
             Expanded(
               child: _buildTextField(
                 _weightController,
-                isPercentMode ? "ร้อยละ" : "น้ำหนัก/จำนวนทั้งหมด",
+                isPercentMode.value ? "ร้อยละ" : "น้ำหนัก/จำนวนทั้งหมด",
                 onChanged: (v) => _calculateA(),
               ),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _buildTextField(
-                _totalPriceController,
-                isPercentMode ? "จำนวนทั้งหมด" : "ราคาสิ่งของ",
-                onChanged: (v) => _calculateA(),
+            if (isPercentMode.value)
+              Expanded(
+                child: Text(
+                  "คิดเป็น ${resultA.toStringAsFixed(2)}%",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
+            if (!isPercentMode.value)
+              Expanded(
+                child: _buildTextField(
+                  _totalPriceController,
+                  isPercentMode.value ? "จำนวนทั้งหมด" : "ราคาสิ่งของ",
+                  onChanged: (v) => _calculateA(),
+                ),
+              ),
           ],
         ),
         Row(
           children: [
+            if (isPercentMode.value)
+              Expanded(
+                child: _buildTextField(
+                  _totalPriceController,
+                  "จำนวนทั้งหมด",
+                  onChanged: (v) => _calculateA(),
+                ),
+              ),
+                if (isPercentMode.value)   const SizedBox(width: 5),
             Expanded(
               child: _buildTextField(
                 _ratioController,
-                isPercentMode ? "จำนวนของที่มี" : "อัตราส่วน",
+                isPercentMode.value ? "จำนวนของที่มี" : "อัตราส่วน",
                 onChanged: (v) => _calculateA(),
               ),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: !isPercentMode
-                  ? Text(
-                      " ราคาต่อ 1 ชิ้น/กรัม: ${resultA.toStringAsFixed(2)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    )
-                  : Text(
-                      "คิดเป็น ${resultA.toStringAsFixed(2)}%",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-            ),
+            if (!isPercentMode.value)
+              Expanded(
+                child: Text(
+                  " ราคา ${resultA.toStringAsFixed(2)} ต่อ 1 ชิ้น/g",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
           ],
         ),
       ],
@@ -114,7 +175,7 @@ class _UtilityPageState extends State<UtilityPage> {
     double ratio = double.tryParse(_ratioController.text) ?? 0;
 
     setState(() {
-      if (isPercentMode) {
+      if (isPercentMode.value) {
         // คำนวณตาม %: (ราคา * %) / 100
         resultA = (weight * ratio) / totalP;
       } else {
@@ -124,23 +185,14 @@ class _UtilityPageState extends State<UtilityPage> {
     });
   }
 
-  Widget _buildModeS() {
-    double currentVol = double.tryParse(_currentVolController.text) ?? 0;
-    double avgPrice = double.tryParse(_avgPriceController.text) ?? 0;
-    double marketPrice = double.tryParse(_marketPriceController.text) ?? 0;
-    double buyPrice = double.tryParse(_buyPriceController.text) ?? 0;
-    double buyVol = double.tryParse(_buyVolController.text) ?? 0;
-
-    // คำนวณ % จาก market vs avg
-    double profitPercent = avgPrice != 0
-        ? ((marketPrice - avgPrice) / avgPrice) * 100
-        : 0;
-
-    // คำนวณหุ้นใหม่
-    double totalCostNew = (currentVol * avgPrice) + (buyVol * buyPrice);
-    double totalVolNew = currentVol + buyVol;
-    double newAvg = totalVolNew != 0 ? totalCostNew / totalVolNew : 0;
-
+  Widget _buildModeS(
+    double totalCostNew,
+    double totalVolNew,
+    double newAvg,
+    double profitPercent,
+    double sumprice,
+  ) {
+    //  double average = totalVolNew != 0 ? totalCostNew / totalVolNew : 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -168,15 +220,18 @@ class _UtilityPageState extends State<UtilityPage> {
         const SizedBox(height: 20),
         _buildResultRow(
           "ราคารวมที่ซื้อเพิ่ม:",
-          "${(buyPrice * buyVol).toStringAsFixed(2)}",
+          // "${(buyPrice * buyVol).toStringAsFixed(2)}",
+          NumberFormat('#,###.##').format(sumprice),
         ),
         _buildResultRow(
           "ค่าดำเนินการ (ประมาณ):",
-          "${(buyPrice * buyVol * 1.0015).toStringAsFixed(2)}",
-        ), // ตย. หักค่าคอม
+          NumberFormat.decimalPattern().format((sumprice * 1.0015) - sumprice),
+          // "${(buyPrice * buyVol * 1.0015).toStringAsFixed(2)}",
+        ),
         _buildResultRow(
           "Avg Price ใหม่:",
           newAvg.toStringAsFixed(2),
+          // average.toStringAsFixed(2),
           isBold: true,
         ),
       ],

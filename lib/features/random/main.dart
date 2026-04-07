@@ -76,6 +76,7 @@ class _RandomPState extends State<RandomP> {
                           margin: const EdgeInsets.only(bottom: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
+                            side: const BorderSide(color: AppColors.gray),
                           ),
                           clipBehavior: Clip
                               .antiAlias, // ทำให้ InkWell ไม่ทะลุขอบโค้งของ Card

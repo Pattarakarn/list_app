@@ -66,3 +66,14 @@ class Options {
     'ดีเซล',
   ];
 }
+
+// class Color {
+//   static List<Color> Mental = [
+//     Colors.red,
+//     Colors.orange,
+//     Colors.yellow.shade700,
+//     Colors.lightGreen,
+//     Colors.green,
+//     Colors.grey,
+//   ];
+// }

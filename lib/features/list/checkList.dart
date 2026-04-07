@@ -52,7 +52,7 @@ class CheckList extends StatelessWidget {
     }
 
     // print(data);
-    print(completedGroups);
+    // print(completedGroups);
 
     void setDate(unique, type) async {
       DateTime? pickedDate = await showDatePicker(

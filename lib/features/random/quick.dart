@@ -170,7 +170,8 @@ class _RandomQuickState extends State<RandomQuick> {
   @override
   Widget build(BuildContext context) {
     bool canRandom = _items.length >= 2;
-
+ bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return Container(
       width: double.infinity, // บังคับให้กว้างเต็มจอ
       padding: const EdgeInsets.all(15),
@@ -254,7 +255,8 @@ class _RandomQuickState extends State<RandomQuick> {
                       backgroundColor: Theme.of(
                         context,
                       ).scaffoldBackgroundColor,
-                      child: Text("${index + 1}"),
+                      child: Text("${index + 1}",
+                      style: TextStyle( color: isLightMode ? AppColors.secondary : AppColors.primary,)),
                     ),
                     title: Text(_items[index]),
                     trailing: IconButton(
@@ -282,7 +284,7 @@ class _RandomQuickState extends State<RandomQuick> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      foregroundColor: Colors.black,
+                      // foregroundColor: Colors.black,
                       backgroundColor: Theme.of(
                         context,
                       ).scaffoldBackgroundColor,

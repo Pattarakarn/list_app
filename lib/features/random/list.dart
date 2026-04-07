@@ -63,31 +63,31 @@ class _ListPageState extends State<ListPage> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // if (_items.length == 1)
-                      setState(() {
-                        _items.removeAt(0);
-                      });
-                      setState(() {
-                        onPopup = false;
-                      });
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                // Expanded( child:
+                OutlinedButton(
+                  onPressed: () {
+                    // if (_items.length == 1)
+                    setState(() {
+                      _items.removeAt(0);
+                    });
+                    setState(() {
+                      onPopup = false;
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    // _items.length == 1 ? "เคลียร์และปิด" : "ปิด"
-                    child: const Text("ปิด"),
                   ),
+                  // _items.length == 1 ? "เคลียร์และปิด" : "ปิด"
+                  child: const Text("ปิด"),
                 ),
 
+                // ),
                 const SizedBox(width: 10),
 
                 if (_items.length > 1)
@@ -186,8 +186,8 @@ class _ListPageState extends State<ListPage> {
       showCupertinoModalPopup(
         context: context,
         builder: (BuildContext context) => CupertinoActionSheet(
-          title: const Text('เลือกรายการ'),
-          message: const Text('คุณต้องการดำเนินการอย่างไรต่อ?'),
+          title: const Text('จัดการ'),
+          // message: const Text('คุณต้องการดำเนินการอย่างไรต่อ?'),
           actions: [
             CupertinoActionSheetAction(
               onPressed: () => {_updateList(), Navigator.pop(context)},
@@ -204,12 +204,14 @@ class _ListPageState extends State<ListPage> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'ยกเลิก',
-            ), // style: TextStyle(color: AppColors.gray)),
+            ), //  style: TextStyle(color: AppColors.gray)),
           ),
         ),
       );
     }
 
+    bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.data['name']}"),
@@ -366,7 +368,7 @@ class _ListPageState extends State<ListPage> {
                         endActionPane: ActionPane(
                           motion: //DrawerMotion(),
                               const ScrollMotion(), // BehindMotion
-                          extentRatio: 0.10,
+                          extentRatio: 0.15,
                           children: [
                             // SlidableAction(
                             //   onPressed: (context) {
@@ -407,6 +409,11 @@ class _ListPageState extends State<ListPage> {
                                 _items.contains(allItems[index])
                                     ? "${index + 1}"
                                     : '/',
+                                style: TextStyle(
+                                  color: isLightMode
+                                      ? AppColors.secondary
+                                      : AppColors.primary,
+                                ),
                               ),
                             ),
                             title: Text(allItems[index]),

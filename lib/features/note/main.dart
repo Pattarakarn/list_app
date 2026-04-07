@@ -82,7 +82,8 @@ class _NotesPageState extends State<NotesPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
+            child: const Text('ยกเลิก',
+            style: TextStyle(color: AppColors.gray, ),),
           ),
           // ElevatedButton(
           TextButton(

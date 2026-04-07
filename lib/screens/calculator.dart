@@ -59,6 +59,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
           _result = _result;
         }
       }
+      setState(() {
+        _controller.text = input;
+      });
     });
   }
 
@@ -182,7 +185,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                           //   ),
                           // ),
                           TextField(
-                            minLines: 3,
+                            minLines: 2,
                             maxLines: null,
                             controller: _controller,
                             keyboardType: TextInputType
@@ -198,17 +201,19 @@ class _CalculatorPageState extends State<CalculatorPage> {
                               border: InputBorder.none,
                             ),
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.end,
                           ),
                           Text(
                             NumberFormat(
                               "#,###.###",
-                            ).format(double.parse(_result)).toString(),
+                            // ).format(double.parse(_result)).toString(),
+                            ).format(double.tryParse(_result) ?? 0.0).toString(),
                             style: const TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 24,
+                              fontSize: 20,
                             ),
                           ),
                         ],
@@ -243,7 +248,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   ),
                 ],
               )
-            :  UtilityPage(mode: _mode),
+            : UtilityPage(mode: _mode),
       ),
     );
   }

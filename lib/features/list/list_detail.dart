@@ -341,7 +341,7 @@ class _DetailPageState extends State<DetailPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isLightMode ? Colors.white : Colors.transparent,
+                      color:Colors.white,// isLightMode ? Colors.white : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -440,6 +440,7 @@ class _DetailPageState extends State<DetailPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        backgroundColor: Colors.white
                       ),
                       onPressed: () => {
                         setState(() {
@@ -529,6 +530,7 @@ class _DetailPageState extends State<DetailPage> {
               }
               _requireDate = docData['required_date'];
               showRemark = docData['showRemark'];
+              _remarkController.text = docData['remark'] ?? '';
             }
             isInitialized =
                 true; // ล็อคไว้ว่าโหลดมาแล้วนะ ต่อไปนี้จะจัดการเองในเครื่อง

@@ -1,52 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:list_app/app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class PeriodSummaryCard extends StatelessWidget {
-  const PeriodSummaryCard({super.key});
+  final List<DocumentSnapshot> datas;
+  const PeriodSummaryCard({super.key, required this.datas});
 
-  // void findConsecutiveRange(List<Map<String, dynamic>> items) {
-  //   // 1. กรองเฉพาะ isA: true และแปลง Date ให้เป็น DateTime ที่คำนวณได้
-  //   var filtered = items
-  //       .where((item) => item['isA'] == true)
-  //       .map(
-  //         (item) => (item['date'] as Timestamp).toDate(),
-  //       ) // หรือแปลงจาก String/Date ปกติ
-  //       .toList();
+  Map<String, DateTime>? findConsecutiveRange(List<dynamic> items) {
+    var filtered = items
+        .where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return data['data']['periodLevel'] > 0; // != null;
+        })
+        .map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          DateTime d = (data['date'] as Timestamp).toDate();
+          return DateTime(d.year, d.month, d.day);
+        })
+        .toList();
 
-  //   if (filtered.isEmpty) return;
+    if (filtered.isEmpty) {
+      // ไม่พบข้อมูลที่ตรงตามเงื่อนไข
+      return null;
+    }
 
-  //   // 2. เรียงจากใหม่ไปเก่า (Descending)
-  //   filtered.sort((a, b) => b.compareTo(a));
+    filtered.sort((a, b) => b.compareTo(a));
+    // List<DateTime> datesOnly = filtered
+    //     .map((d) => DateTime(d.year, d.month, d.day))
+    //     .toList();
 
-  //   DateTime firstDate = filtered.first; // วันที่ล่าสุด (วันเริ่มส่อง)
-  //   DateTime lastDate = filtered.first; // จะใช้วิ่งถอยหลังไปเรื่อยๆ
+    DateTime firstDate = filtered.first;
+    DateTime lastDate = filtered.first;
 
-  //   // 3. วนลูปถอยหลังเช็ค -1 วัน
-  //   for (int i = 0; i < filtered.length - 1; i++) {
-  //     DateTime current = filtered[i];
-  //     DateTime next = filtered[i + 1];
+    // for (int i = 0; i < datesOnly.length - 1; i++) {
+    //   DateTime current = datesOnly[i];
+    //   DateTime next = datesOnly[i + 1];
+    for (int i = 0; i < filtered.length - 1; i++) {
+      DateTime current = filtered[i];
+      DateTime next = filtered[i + 1];
+      int gap = current.difference(next).inDays;
 
-  //     // เช็คว่าห่างกันแค่ 1 วันพอดีไหม (เอาเวลาออกด้วย .year, .month, .day)
-  //     DateTime currentOnlyDate = DateTime(
-  //       current.year,
-  //       current.month,
-  //       current.day,
-  //     );
-  //     DateTime nextOnlyDate = DateTime(next.year, next.month, next.day);
+      // ถ้าห่างกัน 1 หรือ 2 วัน ให้ถือว่ายังต่อเนื่องกันอยู่
+      if (gap >= 1 && gap <= 2) {
+        // lastDate = filtered[i + 1];
+        firstDate = next;
+      }
+      // ถ้าเป็น 0 แปลว่าเป็นข้อมูลวันเดียวกัน ให้ข้ามไปเช็คตัวถัดไป
+      else if (gap == 0) {
+        continue;
+      }
+      // ถ้าห่างกันตั้งแต่ 3 วันขึ้นไป ถือว่าขาดช่วง (Break)
+      else {
+        break;
+      }
+    }
 
-  //     if (currentOnlyDate.difference(nextOnlyDate).inDays == 1) {
-  //       lastDate =
-  //           next; // ถ้าห่างกัน 1 วันพอดี ให้ขยับวันสุดท้ายของช่วงถอยไปอีก
-  //     } else {
-  //       break; // ถ้าเริ่มแหว่ง (ห่างเกิน 1 วัน) ให้หยุดทันที
-  //     }
-  //   }
-
-  //   print("ช่วงวันที่ต่อเนื่องกันคือ: $firstDate ถึง $lastDate");
-  // }
+    // print("ช่วงวันที่ต่อเนื่องล่าสุดคือ: $firstDate ถึง $lastDate");
+    return {'first': firstDate, 'last': lastDate};
+  }
 
   @override
   Widget build(BuildContext context) {
+   var range = findConsecutiveRange(datas);
+    // print(results);
+    DateFormat formatter = DateFormat('dd MMM yyyy');
+    final DateTime? start = range?['first'];
+final DateTime? end = range?['last'];
+    int days = end!.difference(start!).inDays + 1;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -54,7 +75,7 @@ class PeriodSummaryCard extends StatelessWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
-          BoxShadow(
+          const BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -76,8 +97,8 @@ class PeriodSummaryCard extends StatelessWidget {
             "รอบเดือนล่าสุด",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          const Text(
-            "x - x (กี่วัน)",
+           Text(
+             "${formatter.format(start)}  - ${formatter.format(end)} ($daysวัน)",
             style: TextStyle(color: AppColors.secondary),
           ),
           // const SizedBox(height: 15),

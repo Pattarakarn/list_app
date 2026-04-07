@@ -255,8 +255,13 @@ class _SettingPageState extends State<SettingPage> {
                               ), // ไม้ตายสุดท้าย: สั่งขยับ Title ไปทางซ้าย
                               child: Text("Hide displayname"),
                             ),
-                            value: true, //_isVisible,
-                            onChanged: (bool? value) {
+                            value: bool.tryParse(user?.displayName ?? '') ?? false, //_isVisible,
+                            onChanged: (bool? value) async {
+                              bool isChecked = value ?? false;
+                              String name = isChecked ? "${user?.email?.substring(0, 4)}@" : "";
+                              await user?.updateDisplayName(name);
+                              // ก็ยังไม่ค่อยอัพเดท
+                              await user?.reload();
                               // setState(() {
                               //   _isVisible = value ?? false; // อัปเดตสถานะเมื่อกด
                               // });
