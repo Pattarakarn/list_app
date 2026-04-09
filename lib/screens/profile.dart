@@ -21,88 +21,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (user == null) return Center(child: Text("กรุณาล็อกอินใหม่"));
     Map<String, dynamic> userData = {};
 
-    void _showEditNameDialog() {
-      final controller = TextEditingController(text: userData['displayName']);
-      String? _selectedGender = userData['sex'];
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('แก้ไข'),
-          backgroundColor: Colors.white,
-          content: SingleChildScrollView(
-            // กันหน้าจอล้น
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // ให้ สูงเท่ากับเนื้อหาข้างใน
-              children: [
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: "กรอกชื่อใหม่",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ), // ปรับความโค้งของมน
-                    ),
-                    // focusedBorder: OutlineInputBorder(
-                    //   borderRadius: BorderRadius.circular(12),
-                    //   borderSide: const BorderSide(color: Colors.blue, width: 2),
-                    // ),
-                    // enabledBorder: OutlineInputBorder(
-                    //   borderRadius: BorderRadius.circular(12),
-                    //   borderSide: BorderSide(color: Colors.grey.shade400),
-                    // ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Gap(10), //flutter pub add gap
-                DropdownButtonFormField<String>(
-                  value: _selectedGender,
-                  decoration: InputDecoration(
-                    labelText: 'เพศ',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    // prefixIcon: const Icon(Icons.people),
-                  ),
-                  hint: const Text('เลือกหรือไม่เลือกก็ได้'),
-                  items: const [
-                    DropdownMenuItem(value: 'ชาย', child: Text('ชาย')),
-                    DropdownMenuItem(value: 'หญิง', child: Text('หญิง')),
-                  ],
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedGender = newValue;
-                    });
-                  },
-                  validator: (value) =>
-                      value == null ? 'กรุณาเลือกเพศก่อนบันทึก' : null,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('ยกเลิก'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user!.uid)
-                    .set({
-                      'displayName': controller.text,
-                      'sex': _selectedGender,
-                    });
-                Navigator.pop(context);
-              },
-              child: const Text('บันทึก'),
-            ),
-          ],
-        ),
-      );
-    }
-
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
@@ -138,7 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingPage()),
+                    MaterialPageRoute(builder: (context) => SettingPage( userData)),
                   );
                 },
               ),

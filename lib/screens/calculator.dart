@@ -32,6 +32,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
         } else {
           input = '-$input';
         }
+      } else if (text == "( )") {
+        int openBrackets = '('.allMatches(text).length;
+        int closeBrackets = ')'.allMatches(text).length;
+        if (openBrackets == closeBrackets) {
+          input += 'x(';
+        // if (openBrackets > closeBrackets) {
+        } else {
+          input += ')';
+        }
       } else {
         // ถ้าเริ่มด้วย 0 ให้ทับไปเลย ถ้าไม่ใช่ให้ต่อท้าย
         if (input == "0") {
@@ -70,7 +79,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
   Widget build(BuildContext context) {
     final List<String> buttons = [
       "C",
-      "()",
+      "( )",
       "%",
       "÷",
       "7",
@@ -119,24 +128,6 @@ class _CalculatorPageState extends State<CalculatorPage> {
     return Scaffold(
       // backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        // title: const Text("General"),
-        backgroundColor: const Color(0xFFF3F7F9),
-        // actions: [
-        //   PopupMenuButton<String>(
-        //     onSelected: (value) {
-        //       print("คุณเลือก: $value");
-        //       // ใส่ logic เปลี่ยนหน้าหรือเปลี่ยนสถานะตรงนี้
-        //     },
-        //     itemBuilder: (BuildContext context) {
-        //       return {'Option 1', 'Option 2', 'Settings'}.map((String choice) {
-        //         return PopupMenuItem<String>(
-        //           value: choice,
-        //           child: Text(choice),
-        //         );
-        //       }).toList();
-        //     },
-        //   ),
-        // ],
         centerTitle: true,
         title: ConstrainedBox(
           constraints: const BoxConstraints(), //minWidth: 180),
@@ -201,19 +192,21 @@ class _CalculatorPageState extends State<CalculatorPage> {
                               border: InputBorder.none,
                             ),
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.end,
                           ),
                           Text(
                             NumberFormat(
-                              "#,###.###",
-                            // ).format(double.parse(_result)).toString(),
-                            ).format(double.tryParse(_result) ?? 0.0).toString(),
+                                  "#,###.###",
+                                  // ).format(double.parse(_result)).toString(),
+                                )
+                                .format(double.tryParse(_result) ?? 0.0)
+                                .toString(),
                             style: const TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 20,
+                              fontSize: 22,
                             ),
                           ),
                         ],

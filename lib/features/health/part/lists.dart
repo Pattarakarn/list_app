@@ -291,8 +291,8 @@ class SymptomHistoryList extends StatelessWidget {
             itemBuilder: (context, index) {
               final data = (datas[index].data()) as Map<String, dynamic>;
               data['id'] = datas[index].id;
-              // print(data);
-              final mentallevel = data['data']['mental_level'];
+
+              final mentallevel = data['data']['mental_level'] ?? 0;
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
                 shape: RoundedRectangleBorder(

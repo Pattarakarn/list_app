@@ -21,16 +21,16 @@ class _FuelScreenState extends State<FuelScreen> {
   bool _isExpanded = false; // สถานะ เปิด/ปิด การซ้อน
   final user = FirebaseAuth.instance.currentUser;
 
-  // ตัวแปร State ที่ต้องมีในไฟล์หลัก (หรือในตัว Widget เอง)
   String _selectedPeriod = '30 วัน'; // ค่าเริ่มต้น
   bool _showGraph = false; // สถานะการแสดงกราฟ
   Widget _buildDetailCard({required Map<String, dynamic> data}) {
-    //   double totalMile = (data['last_mileage'] ?? 0).toDouble();
-    // double totalLite = (data['allLites'] ?? 0).toDouble();
-    String consumption = '4323'; //(totalLite > 0)
-    // ? (totalMile / totalLite).toStringAsFixed(2)
-    // : "-";
-
+    double firstMile = 5585;
+    double totalMile = (data['last_mileage'] - firstMile ?? 0).toDouble();
+    double totalLite = (data['allLites'] ?? 0).toDouble();
+    String consumption = (totalLite > 0)
+        ? (totalMile / totalLite).toStringAsFixed(2)
+        : "-";
+    // print(consumption);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
@@ -150,8 +150,8 @@ class _FuelScreenState extends State<FuelScreen> {
     );
   }
 
-  // Helper สร้าง Text สถิติ
   Widget _buildStatItem(String label, String value) {
+    // print(value);
     return Column(
       children: [
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
@@ -249,7 +249,7 @@ class _FuelScreenState extends State<FuelScreen> {
               itemBuilder: (context, index) {
                 final data = docs[index].data() as Map<String, dynamic>;
                 data['id'] = docs[index].id;
-                print(data);
+                // print(data);
 
                 //     // --- ส่วนการคำนวณ ---
                 //     double kml = 0;

@@ -202,9 +202,17 @@ class _ListPageState extends State<ListPage> {
           cancelButton: CupertinoActionSheetAction(
             isDefaultAction: true, // ทำให้ตัวหนา
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'ยกเลิก',
-            ), //  style: TextStyle(color: AppColors.gray)),
+            child: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'ยกเลิก',
+                style: TextStyle(color: AppColors.gray),
+              ),
+            ),
           ),
         ),
       );

@@ -4,9 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../app_colors.dart';
 import 'welcome.dart';
+import '../modal/profile.dart';
+import '../modal/drug.dart';
 
 class SettingPage extends StatefulWidget {
-  const SettingPage({super.key});
+  final Map<String, dynamic> userData;
+
+  const SettingPage(this.userData, {super.key});
 
   @override
   State<SettingPage> createState() => _SettingPageState();
@@ -16,6 +20,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final isVisible = bool.tryParse(user?.displayName ?? '') ?? true;
 
     void _showModal() {
       showDialog(
@@ -125,11 +130,24 @@ class _SettingPageState extends State<SettingPage> {
                         title: "ข้อมูลพื้นฐาน",
                         children: [
                           _buildMiniField(
-                            label: "ชื่อรถ / ยี่ห้อ",
+                            label: "ชื่อรถ",
                             icon: Icons.directions_car_rounded,
                           ),
                           const SizedBox(height: 15),
-                          _buildTypeSelector(), // ส่วนเลือกประเภทรถ
+                          _buildMiniField(
+                            label: "สี",
+                            // icon: Icons.gradient,
+                            icon: Icons.format_color_text,
+                            //  icon: Icons.dashboard_customize,
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            children: [
+                              const Text('ประเภทรถ'),
+                              const SizedBox(width: 25),
+                              Expanded(child: _buildTypeSelector()),
+                            ],
+                          ),
                         ],
                       ),
 
@@ -219,15 +237,33 @@ class _SettingPageState extends State<SettingPage> {
                   child: Column(
                     children: [
                       ListTile(
+                        leading: const Icon(Icons.medical_services),
+                        title: const Text("ยาประจำตัว"),
+                        onTap: () async {
+                          final result = await showDialog(
+                            context: context,
+                            builder: (context) => const AddDrugDialog(),
+                          );
+
+                          if (result != null) {
+                            // 'result' จะได้รับค่า Map ข้อมูลยาที่เรา 'Navigator.pop' ออกมา
+                            print("ได้ข้อมูลยาตัวใหม่: ${result['name']}");
+
+                            // ตรงนี้คุณสามารถเอา result ไปบันทึกลง Firebase ต่อได้เลย!
+                          }
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
                         leading: const Icon(Icons.directions_car_rounded),
-                        title: const Text("Car"),
+                        title: const Text("Add Car"),
                         onTap: () {
                           _showMyCar(context);
                         },
                       ),
                       const Divider(height: 1),
                       ExpansionTile(
-                        title: Text(
+                        title: const Text(
                           "Profile",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -255,10 +291,14 @@ class _SettingPageState extends State<SettingPage> {
                               ), // ไม้ตายสุดท้าย: สั่งขยับ Title ไปทางซ้าย
                               child: Text("Hide displayname"),
                             ),
-                            value: bool.tryParse(user?.displayName ?? '') ?? false, //_isVisible,
+                            value:
+                                bool.tryParse(user?.displayName ?? '') ??
+                                false, //_isVisible,
                             onChanged: (bool? value) async {
                               bool isChecked = value ?? false;
-                              String name = isChecked ? "${user?.email?.substring(0, 4)}@" : "";
+                              String name = isChecked
+                                  ? "${user?.email?.substring(0, 4)}@"
+                                  : "";
                               await user?.updateDisplayName(name);
                               // ก็ยังไม่ค่อยอัพเดท
                               await user?.reload();
@@ -279,17 +319,24 @@ class _SettingPageState extends State<SettingPage> {
                             leading: const Icon(Icons.edit),
                             title: const Text("Edit "),
                             // trailing: const Icon(Icons.chevron_right),
-                            onTap: () {},
+                            onTap: () async {
+                              // Modal.showProfile(context, user);
+                              await showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    ModalProfile(userData: widget.userData),
+                              );
+                            },
                           ),
                         ],
                       ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.contrast_rounded),
-                        title: const Text("Theme"),
-                        onTap: () {},
-                      ),
-                      const Divider(height: 1),
+                      // const Divider(height: 1),
+                      // ListTile(
+                      //   leading: const Icon(Icons.contrast_rounded),
+                      //   title: const Text("Theme"),
+                      //   onTap: () {},
+                      // ),
+                      // const Divider(height: 1),
                     ],
                   ),
                 ),
@@ -332,7 +379,6 @@ class _SettingPageState extends State<SettingPage> {
   }
 }
 
-// 1. วิดเจ็ตกลุ่มการ์ด
 Widget _buildInputGroup({
   required String title,
   required List<Widget> children,
@@ -363,28 +409,48 @@ Widget _buildInputGroup({
   );
 }
 
-// 2. วิดเจ็ตเลือกประเภทรถ (ICE / HEV / EV)
 Widget _buildTypeSelector() {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      _typeButton("น้ำมัน", Icons.local_gas_station, isSelected: true),
-      _typeButton("HEV", Icons.electric_car_outlined),
-      _typeButton("EV", Icons.battery_charging_full_rounded),
+      _typeButton(
+        "น้ำมัน",
+        Icons.local_gas_station,
+        AppColors.secondary,
+        isSelected: true,
+      ),
+      _typeButton(
+        "HEV",
+        Icons.electric_car_outlined,
+        Colors.red,
+        isSelected: true,
+      ),
+      _typeButton(
+        "EV",
+        Icons.battery_charging_full_rounded,
+        Colors.green,
+        isSelected: true,
+      ),
     ],
   );
 }
 
-Widget _typeButton(String label, IconData icon, {bool isSelected = false}) {
-  return Column(
+Widget _typeButton(
+  String label,
+  IconData icon,
+  Color color, {
+  bool isSelected = false,
+}) {
+  return Row(
     children: [
       CircleAvatar(
         radius: 25,
-        backgroundColor: isSelected ? Colors.blueAccent : Colors.white12,
+        backgroundColor: isSelected ? color : Colors.white12,
         child: Icon(icon, color: Colors.white, size: 20),
       ),
-      const SizedBox(height: 4),
+      const SizedBox(width: 10),
       Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+      const SizedBox(width: 20),
     ],
   );
 }

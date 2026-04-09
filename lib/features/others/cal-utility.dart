@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'package:list_app/app_colors.dart';
 
 class UtilityPage extends StatefulWidget {
   final String mode;
@@ -204,7 +205,7 @@ class _UtilityPageState extends State<UtilityPage> {
           child: Text(
             "กำไร/ขาดทุน: ${profitPercent.toStringAsFixed(2)} %",
             style: TextStyle(
-              color: profitPercent >= 0 ? Colors.green : Colors.red,
+              color: profitPercent > 0 ? Colors.green :  profitPercent == 0 ? AppColors.gray : Colors.red,
             ),
           ),
         ),
@@ -238,7 +239,6 @@ class _UtilityPageState extends State<UtilityPage> {
     );
   }
 
-  // --- Helper Widgets ---
   Widget _buildTextField(
     TextEditingController controller,
     String label, {
@@ -252,7 +252,7 @@ class _UtilityPageState extends State<UtilityPage> {
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
-          border: InputBorder.none, // ไม่มีเส้นขอบตามที่ขอ
+          border: InputBorder.none, 
           filled: true,
           fillColor: Colors.grey[100],
         ),

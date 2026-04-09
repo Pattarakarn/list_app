@@ -44,7 +44,10 @@ void main() async {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F172A),
-        // colorScheme: const ColorScheme.dark(primary: Color(0xFFFF6B00)),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFFF6B00),
+          secondary: Color(0xFFFF9E00),
+        ),
       ),
       themeMode: ThemeMode.system,
       home: StreamBuilder<User?>(
@@ -99,13 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback onTap,
   ) {
     bool _isHovered = false;
-    Color baseColor = color is List<Color> ? color[0] : color;
+
     return InkWell(
       onTap: () {
         if (_isExpanded) {
           _isExpanded = false;
-          } else {
-            onTap();
+        } else {
+          onTap();
         }
         setState(() => _selectedIndex = index);
       },
@@ -246,14 +249,18 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("ออกจากแอป?"),
         content: const Text("คุณต้องการออกจากแอปใช่หรือไม่?"),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("ตกลง"),
+          Expanded(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("ตกลง"),
+            ),
           ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
-            child: const Text("ยกเลิก"),
+          Expanded(
+            child: TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
+              child: const Text("ยกเลิก"),
+            ),
           ),
         ],
       ),
@@ -310,7 +317,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(user?.displayName ?? user?.email ?? '',
+                          Text(
+                            user?.displayName ?? user?.email ?? '',
                             // (((user?.email?.length ?? 0) > 4
                             //         // && user?.isAnonymous == true
                             //         ? "${user?.email?.substring(0, 4)}@"
@@ -384,9 +392,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
 
                           child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColors.gray, // สีของเส้นขอบ
+                              ),
+                              borderRadius: BorderRadius.circular(35),
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: _selectedIndex == 0
+                              mainAxisSize: _selectedIndex == 0 || _isExpanded
                                   ? MainAxisSize.max
                                   : MainAxisSize.min,
                               children: _buildFloatingItems(),

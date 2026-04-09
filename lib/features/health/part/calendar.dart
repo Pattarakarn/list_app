@@ -35,6 +35,16 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
     Colors.green,
     Colors.grey,
   ];
+  // FirebaseFirestore.instance
+  //   .collection('users')
+  //   .doc(userId)
+  //   .collection('drugs')
+  //   .get() // ดึงข้อมูลทั้งหมดใน sub-collection ของคนนี้
+  //   .then((querySnapshot) {
+  //     for (var doc in querySnapshot.docs) {
+  //       print(doc.data());
+  //     }
+  //   });
 
   void _showEditDialog(date) {
     Map<String, dynamic> record = {
@@ -85,13 +95,13 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                             Icons.sentiment_very_satisfied,
                           ];
 
-                          bool isSel = record['mental_level'] == (index );
+                          bool isSel = record['mental_level'] == (index);
                           return IconButton(
                             icon: Icon(icons[index]),
                             iconSize: 40,
                             color: isSel ? colors[index] : Colors.grey.shade300,
                             onPressed: () => setDialogState(
-                              () => record['mental_level'] = index ,
+                              () => record['mental_level'] = index,
                             ),
                           );
                         }),
@@ -232,10 +242,53 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                         ],
                       ),
 
-                      // Text(
-                      //     "Excercise:",
-                      //     style: TextStyle(fontWeight: FontWeight.bold),
-                      //   ),
+                      const Text(
+                        "Excercise:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            'label',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              // _buildCircleButton(icon: Icons.remove, onPressed: () {}),
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 8),
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.blue,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "10", // ตัวแปรตัวเลข
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // _buildCircleButton(icon: Icons.add, onPressed: () {}),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(children: [
+
+                        ]
+                          ),
+
                       const SizedBox(height: 30),
                       Row(
                         children: [

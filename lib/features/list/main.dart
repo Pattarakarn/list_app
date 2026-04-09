@@ -7,6 +7,7 @@ import 'package:list_app/features/list/list_detail.dart'; // <--- ต้อง�
 import 'package:list_app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/cupertino.dart';
 
 class MyListsPage extends StatefulWidget {
   const MyListsPage({super.key});
@@ -48,6 +49,33 @@ class _MyListsPageState extends State<MyListsPage> {
     );
   }
 
+  void confirmArchive(BuildContext context, docId, name) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: Text("Are you sure you want to delete '$name'?"),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('lists')
+                  .doc(docId)
+                  .update({'isArchived': true});
+              Navigator.pop(context);
+            },
+            child: const Text('ลบข้อมูล'),
+            isDestructiveAction: true,
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true, // ทำให้ตัวหนา
+          onPressed: () => Navigator.pop(context),
+          child: const Text('ยกเลิก', style: TextStyle(color: Colors.blue)),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -85,9 +113,8 @@ class _MyListsPageState extends State<MyListsPage> {
               final data = docs[index].data() as Map<String, dynamic>;
               final docId = docs[index].id;
               return InkWell(
-                onLongPress: () {
-                  print("กดค้างแล้ว!");
-                  // ลบ
+                onLongPress: () async {
+                  confirmArchive(context, docId, data['name']);
                 },
                 child: Card(
                   margin: const EdgeInsets.symmetric(

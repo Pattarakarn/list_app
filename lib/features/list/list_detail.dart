@@ -80,6 +80,7 @@ class _DetailPageState extends State<DetailPage> {
             'required_date': _requireDate,
             'showRemark': showRemark,
             'remark': _remarkController.text,
+            'isArchived': false
           });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
@@ -341,7 +342,8 @@ class _DetailPageState extends State<DetailPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color:Colors.white,// isLightMode ? Colors.white : Colors.transparent,
+                      color: Colors
+                          .white, // isLightMode ? Colors.white : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -383,7 +385,7 @@ class _DetailPageState extends State<DetailPage> {
                                         size: 18,
                                       ),
                                     ),
-                                  Center(
+                                   if (_type == "Table")  Center(
                                     child: Text(
                                       index == 0 ? "ข้อความ" : "ตัวเลข",
                                       style: TextStyle(
@@ -440,7 +442,7 @@ class _DetailPageState extends State<DetailPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        backgroundColor: Colors.white
+                        backgroundColor: Colors.white,
                       ),
                       onPressed: () => {
                         setState(() {

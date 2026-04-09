@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:list_app/utils/constant.dart'; // อย่าลืมสำหรับ Glass Effect
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
 
 class CreateListFuel extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -35,6 +36,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
     double price = double.tryParse(_pricePerLiterController.text) ?? 0;
     setState(() {
       _totalAmount = liters * price;
+      _amountController.text = (liters * price).toString();
     });
   }
 
@@ -54,6 +56,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.data);
     return Scaffold(
       extendBodyBehindAppBar: true, // ให้พื้นหลังทะลุขึ้นไปหลัง AppBar
       appBar: AppBar(
@@ -66,6 +69,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
       ),
       body: Container(
         // พื้นหลังเป็น Gradient เพื่อให้ Glass Effect ชัดเจน
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -359,7 +363,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                           children: [
                             Expanded(
                               child: _buildTextField(
-                                "จำนวนเงิน (บาท)",
+                                "จำนวนบันทึก",
                                 _amountController,
                                 Icons.payments,
                                 isNumber: true,
@@ -367,11 +371,21 @@ class _CreateListFuelState extends State<CreateListFuel> {
                             ),
                             const SizedBox(width: 15),
                             Expanded(
-                              child: _buildTextField(
-                                "จำนวนลิตร",
-                                _litersController,
-                                Icons.local_gas_station,
-                                isNumber: true,
+                              // _buildTextField(
+                              //   "จำนวนลิตร",
+                              //   _litersController,
+                              //   Icons.local_gas_station,
+                              //   isNumber: true,
+                              // ),
+                              child: TextFormField(
+                                controller: _litersController,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: _inputStyle(
+                                  "จำนวนลิตร",
+                                  Icons.local_gas_station,
+                                ),
+                                onChanged: (value) => _calculateTotal(),
                               ),
                             ),
                           ],
@@ -514,7 +528,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                               'createdAt': FieldValue.serverTimestamp(),
                               'authorId': user?.uid,
                               'carId': widget.data['id'],
-                              // 'amount': _amountController.text,
+                              'amount': _totalAmount,
                               'date_time': _selectedDateTime,
                               'liters': _litersController.text,
                               'location': _locationController.text,
@@ -522,7 +536,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                               'currentMiles': _odometerController.text,
                               'pricePerLiter': _pricePerLiterController.text,
                               'remark': _remarkController.text,
-                              'total_price': _totalAmount,
+                              'total_price': _amountController.text,
                               'fuelType': _fuelType,
                               'station': _station,
                               '_fuelLevel': _fuelLevel * 10,
@@ -537,22 +551,27 @@ class _CreateListFuelState extends State<CreateListFuel> {
                                 .doc(carId)
                                 .collection('fill-ups')
                                 .doc();
-                            batch.set(refuelRef, datas);
+                            // batch.set(refuelRef, datas);
                             // - อัปเดตตัวเลข Sum ที่ตัวรถ (Master)
                             DocumentReference carRef = FirebaseFirestore
                                 .instance
                                 .collection('cars')
                                 .doc(carId);
                             batch.update(carRef, {
-                              'total_spent': FieldValue.increment(_totalAmount),
-                              'last_mileage': _odometerController.text,
+                              'total_spent': FieldValue.increment(
+                                double.tryParse(_amountController.text) ??
+                                    _totalAmount,
+                              ),
+                              'last_mileage': max(
+                                int.parse(widget.data['last_mileage']),
+                                int.parse(_odometerController.text),
+                              ),
                               'refuel_count': FieldValue.increment(1),
                               'allLites': FieldValue.increment(
                                 int.tryParse(_litersController.text) ?? 0,
-                              ),
+                              ), //
                             });
 
-                            // 3. ยิงข้อมูลตูมเดียว!
                             await batch.commit();
 
                             if (mounted) Navigator.pop(context);
