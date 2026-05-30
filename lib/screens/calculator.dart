@@ -19,58 +19,86 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   void _onPressed(String text) {
     String input = _controller.text;
-    setState(() {
-      if (text == "C") {
-        input = "0";
-        _result = "";
-      } else if (text == "=") {
-        input = _result; //ผลลัพธ์มาแทนที่เลขข้างบน
-        _result = "";
-      } else if (text == "+/-") {
-        if (input.startsWith('-')) {
-          input = input.substring(1);
-        } else {
-          input = '-$input';
-        }
-      } else if (text == "( )") {
-        int openBrackets = '('.allMatches(text).length;
-        int closeBrackets = ')'.allMatches(text).length;
-        if (openBrackets == closeBrackets) {
-          input += 'x(';
-        // if (openBrackets > closeBrackets) {
-        } else {
-          input += ')';
-        }
-      } else {
-        // ถ้าเริ่มด้วย 0 ให้ทับไปเลย ถ้าไม่ใช่ให้ต่อท้าย
-        if (input == "0") {
-          input = text;
-        } else {
-          input += text;
-        }
+    final selection = _controller.selection;
 
-        try {
-          // แปลง ÷ เป็น / และ × เป็น * ก่อนส่งไปคำนวณ
-          String mathExpression = input
-              .replaceAll('÷', '/')
-              .replaceAll('×', '*');
+    // หาตำแหน่ง Cursor ปัจจุบัน (ถ้าไม่มีการจิ้ม ให้เริ่มที่ท้ายสุดของข้อความ)
+    int cursorPosition = selection.baseOffset;
+    if (cursorPosition < 0) cursorPosition = input.length;
 
-          // ใช้ Parser จาก math_expressions (ถ้าติดตั้งไว้)
-          Parser p = Parser();
-          Expression exp = p.parse(mathExpression);
-          ContextModel cm = ContextModel();
-          double eval = exp.evaluate(EvaluationType.REAL, cm);
+    String newInput = input;
+    int newCursorOffset = cursorPosition;
 
-          // ถ้าเลขเป็นจำนวนเต็ม (เช่น 10.0) ให้แสดงเป็น 10
-          _result = eval % 1 == 0 ? eval.toInt().toString() : eval.toString();
-        } catch (e) {
-          // ถ้ายังพิมพ์ไม่เสร็จ (เช่น 5 +) ให้ข้ามไปก่อน ไม่ต้องโชว์ Error
-          _result = _result;
-        }
+    if (text == "C") {
+      // 1. กดลบ (Backspace): ลบตัวอักษรก่อนหน้าตำแหน่ง Cursor 1 ตัว
+      if (input.isNotEmpty && cursorPosition > 0) {
+        newInput =
+            input.substring(0, cursorPosition - 1) +
+            input.substring(cursorPosition);
+        newCursorOffset = cursorPosition - 1; // เลื่อน Cursor ถอยหลัง 1 ช่อง
       }
-      setState(() {
-        _controller.text = input;
-      });
+    } else if (text == "=") {
+      newInput = _result.isNotEmpty ? _result : input;
+      _result = "";
+      newCursorOffset = newInput.length; // เลื่อน Cursor ไปท้ายสุด
+    } else if (text == "+/-") {
+      if (input.startsWith('-')) {
+        newInput = input.substring(1);
+        newCursorOffset = (cursorPosition - 1).clamp(0, newInput.length);
+      } else {
+        newInput = '-$input';
+        newCursorOffset = cursorPosition + 1;
+      }
+    } else if (text == "( )") {
+      int openBrackets = '('.allMatches(input).length;
+      int closeBrackets = ')'.allMatches(input).length;
+
+      String bracketToInsert = (openBrackets == closeBrackets) ? '(' : ')';
+
+      newInput =
+          input.substring(0, cursorPosition) +
+          bracketToInsert +
+          input.substring(cursorPosition);
+      newCursorOffset = cursorPosition + 1;
+    } else {
+      if (input == "0") {
+        newInput = text;
+        newCursorOffset = text.length;
+      } else {
+        newInput =
+            input.substring(0, cursorPosition) +
+            text +
+            input.substring(cursorPosition);
+        newCursorOffset =
+            cursorPosition + text.length; // เลื่อน Cursor ไปข้างหลังตัวที่แทรก
+      }
+    }
+
+    try {
+      if (newInput.isEmpty || newInput == "0") {
+        _result = "";
+      } else {
+        String mathExpression = newInput
+            .replaceAll('÷', '/')
+            .replaceAll('×', '*');
+        Parser p = Parser();
+        Expression exp = p.parse(mathExpression);
+        ContextModel cm = ContextModel();
+        double eval = exp.evaluate(EvaluationType.REAL, cm);
+
+        _result = eval % 1 == 0 ? eval.toInt().toString() : eval.toString();
+      }
+    } catch (e) {
+      // ถ้าสูตรยังพิมพ์ไม่สมบูรณ์ (เช่น 5 +) ให้คงผลลัพธ์เดิมไว้ ไม่ต้องโชว์ Error
+    }
+
+    setState(() {
+      // อัปเดตข้อความและรักษาตำแหน่ง Cursor ด้วย TextEditingValue
+      _controller.value = TextEditingValue(
+        text: newInput,
+        selection: TextSelection.fromPosition(
+          TextPosition(offset: newCursorOffset),
+        ),
+      );
     });
   }
 
@@ -142,7 +170,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   value: value,
                   child: Text(
                     value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(
+                      color: isLightMode ? Colors.black : Colors.grey,
+                    ),
                   ),
                 );
               }).toList(),
@@ -180,7 +210,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                             maxLines: null,
                             controller: _controller,
                             keyboardType: TextInputType
-                                .text, // ใช้ text เพื่อให้พิมพ์เครื่องหมายได้ง่าย
+                                .multiline, // ใช้ text เพื่อให้พิมพ์เครื่องหมายได้ง่าย
                             inputFormatters: [
                               // ถ้าอยากคุมแค่ตัวอักษรเบื้องต้นใช้ตัวนี้
                               FilteringTextInputFormatter.allow(
@@ -280,6 +310,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
           ),
         ),
       ),
+      onLongPress: () => {
+        if (text == "C")
+          setState(() {
+            _controller.text = "0";
+            _result = "";
+          }),
+      },
     );
   }
 }

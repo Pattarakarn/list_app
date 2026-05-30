@@ -21,6 +21,7 @@ class _ListPageState extends State<ListPage> {
   // สร้าง List ใหม่จากการก๊อปปี้ข้อมูลต้นฉบับ
   late final List<dynamic> allItems = List.from(widget.data["items"]);
   bool onPopup = false;
+  int timer = 3;
 
   void showRandomResult(winner, randomIndex) {
     setState(() {
@@ -79,9 +80,9 @@ class _ListPageState extends State<ListPage> {
                     foregroundColor: Colors.red,
                     side: const BorderSide(color: Colors.red),
                     padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    // shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(12),
+                    // ),
                   ),
                   // _items.length == 1 ? "เคลียร์และปิด" : "ปิด"
                   child: const Text("ปิด"),
@@ -136,7 +137,7 @@ class _ListPageState extends State<ListPage> {
       ),
     );
 
-    if (_items.length > 1) await Future.delayed(const Duration(seconds: 3));
+    if (_items.length > 1) await Future.delayed( Duration(seconds: timer));
 
     if (!mounted) return;
     Navigator.pop(context);
@@ -158,6 +159,7 @@ class _ListPageState extends State<ListPage> {
     void _addItem() {
       if (_controller.text.trim().isNotEmpty) {
         setState(() {
+          _items.add(_controller.text.trim());
           allItems.add(_controller.text.trim());
           _controller.clear();
         });
@@ -204,10 +206,10 @@ class _ListPageState extends State<ListPage> {
             onPressed: () => Navigator.pop(context),
             child: Container(
               padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              // decoration: BoxDecoration(
+              //   color: const Color(0xFF0F172A).withOpacity(0.2),
+              //   borderRadius: BorderRadius.circular(8),
+              // ),
               child: const Text(
                 'ยกเลิก',
                 style: TextStyle(color: AppColors.gray),
@@ -283,7 +285,7 @@ class _ListPageState extends State<ListPage> {
                         textInputAction: TextInputAction
                             .done, // เปลี่ยนปุ่มบนคีย์บอร์ดเป็นรูปติ๊กถูกหรือ Done
                         onSubmitted: (value) {
-                          _addItem(); // เมื่อกด Enter ให้เรียกฟังก์ชันเพิ่มรายการทันที
+                          _addItem();
                         },
                       ),
                     ),
@@ -344,9 +346,9 @@ class _ListPageState extends State<ListPage> {
                         size: 20,
                         color: AppColors.rand,
                       ),
-                      label: const Text(
-                        "เวลา: 3 s",
-                        style: TextStyle(color: AppColors.rand),
+                      label:  Text(
+                        "เวลา: $timer s",
+                        style:const TextStyle(color: AppColors.rand),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF00E5FF)),

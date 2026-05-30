@@ -43,27 +43,30 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void _addRow() async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
+    DateTime? pickedDate;
+    if (_requireDate)
+      pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+      );
 
-    if (pickedDate != null) {
-      Map<String, dynamic> dynamicCells = {};
-      for (int i = 0; i < headers.length; i++) {
-        dynamicCells['col${i + 1}'] = {'text': '', 'num': ''};
-      }
-      Map<String, dynamic> newRow = {
-        'date': DateFormat('dd/MM/yyyy').format(pickedDate),
-        'note': '',
-      };
-      newRow.addAll(dynamicCells);
-      setState(() {
-        rows.add({...newRow});
-      });
+    // if (pickedDate != null) {
+    Map<String, dynamic> dynamicCells = {};
+    for (int i = 0; i < headers.length; i++) {
+      dynamicCells['col${i + 1}'] = {'text': '', 'num': ''};
     }
+    Map<String, dynamic> newRow = {
+      'date': pickedDate != null
+          ? DateFormat('dd/MM/yyyy').format(pickedDate)
+          : '',
+      'note': '',
+    };
+    newRow.addAll(dynamicCells);
+    setState(() {
+      rows.add({...newRow});
+    });
   }
 
   void _saveToFirebase() async {
@@ -80,7 +83,7 @@ class _DetailPageState extends State<DetailPage> {
             'required_date': _requireDate,
             'showRemark': showRemark,
             'remark': _remarkController.text,
-            'isArchived': false
+            'isArchived': false,
           });
       setState(() => _isSuccess = true);
       ScaffoldMessenger.of(context)
@@ -251,7 +254,8 @@ class _DetailPageState extends State<DetailPage> {
                         isLightMode: isLightMode,
                       ),
                       const SizedBox(width: 12),
-                      _buildCustomToggle(
+                        if (_type != "Table" || headers.length<=1)
+                        _buildCustomToggle(
                         label: "Checklist",
                         icon: Icons.checklist,
                         isSelected: type == 'Checklist',
@@ -342,8 +346,7 @@ class _DetailPageState extends State<DetailPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors
-                          .white, // isLightMode ? Colors.white : Colors.transparent,
+                      color:  isLightMode ? Colors.white : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -385,19 +388,20 @@ class _DetailPageState extends State<DetailPage> {
                                         size: 18,
                                       ),
                                     ),
-                                   if (_type == "Table")  Center(
-                                    child: Text(
-                                      index == 0 ? "ข้อความ" : "ตัวเลข",
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.black
-                                            : Colors.grey,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                                  if (_type == "Table")
+                                    Center(
+                                      child: Text(
+                                        index == 0 ? "ข้อความ" : "ตัวเลข",
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.black
+                                              : Colors.grey,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
                                       ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -517,7 +521,7 @@ class _DetailPageState extends State<DetailPage> {
 
           if (!isInitialized) {
             var docData = snapshot.data?.data() as Map<String, dynamic>?;
-            print(docData);
+            // print(docData);
             if (docData != null) {
               _type = docData['type'] ?? 'Table';
               if (docData['data'] != null) {
@@ -531,7 +535,7 @@ class _DetailPageState extends State<DetailPage> {
                 );
               }
               _requireDate = docData['required_date'];
-              showRemark = docData['showRemark'];
+              showRemark = docData['showRemark'] ?? false;
               _remarkController.text = docData['remark'] ?? '';
             }
             isInitialized =
@@ -545,7 +549,7 @@ class _DetailPageState extends State<DetailPage> {
           //     children: [
           return (_type == "Checklist"
               ? CheckList(
-                  data: rows,
+                  data: rows,// rows.map(row => row.col1.text),
                   type: _type,
                   requireDate: _requireDate,
                   addText: (val) {

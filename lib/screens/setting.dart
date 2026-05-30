@@ -41,6 +41,7 @@ class _SettingPageState extends State<SettingPage> {
                       ), //, style: TextStyle(color: Colors.grey)),
                     ),
                   ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -245,12 +246,6 @@ class _SettingPageState extends State<SettingPage> {
                             builder: (context) => const AddDrugDialog(),
                           );
 
-                          if (result != null) {
-                            // 'result' จะได้รับค่า Map ข้อมูลยาที่เรา 'Navigator.pop' ออกมา
-                            print("ได้ข้อมูลยาตัวใหม่: ${result['name']}");
-
-                            // ตรงนี้คุณสามารถเอา result ไปบันทึกลง Firebase ต่อได้เลย!
-                          }
                         },
                       ),
                       const Divider(height: 1),

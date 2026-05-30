@@ -22,6 +22,7 @@ class _DetailPageState extends State<DetailPage> {
 
   void _updateData() async {
     try {
+      print(content);
       await FirebaseFirestore.instance
           .collection('notes')
           .doc(widget.docId)
@@ -110,6 +111,7 @@ class _DetailPageState extends State<DetailPage> {
                       borderSide: BorderSide(color: AppColors.gray, width: 1.0),
                     ),
                   ),
+                      onChanged: (val) => name = val,
                 ),
                 const SizedBox(height: 10),
                 // textarea
@@ -125,6 +127,7 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   controller: TextEditingController(text: content),
+                    onChanged: (val) => content = val,
                 ),
                 // RichText(
                 //   text: TextSpan(

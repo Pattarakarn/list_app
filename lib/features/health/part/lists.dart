@@ -24,15 +24,18 @@ class SymptomHistoryList extends StatelessWidget {
       'dd MMMM yyyy',
     ).format(data['date'].toDate());
     Map<String, dynamic> record = data['data'];
-    print(data);
-
+    // print(data);
+    final TextEditingController _controller = TextEditingController();
+    final TextEditingController _amountController = TextEditingController(
+      text: record['minExercise']?.toString() ?? '',
+    );
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       isScrollControlled: true, //
-      backgroundColor: AppColors.gray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
@@ -94,6 +97,7 @@ class SymptomHistoryList extends StatelessWidget {
                     maxLines: 3,
                     onChanged: (val) =>
                         setModalState(() => record['symptoms'] = val),
+                    controller: TextEditingController(text: record['symptoms']),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -212,11 +216,95 @@ class SymptomHistoryList extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Excercise:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: Colors.grey,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              int currentValue =
+                                  int.tryParse(_amountController.text) ?? 10;
+                              if (currentValue > 0) {
+                                setModalState(() {
+                                  _amountController.text = (currentValue + 1)
+                                      .toString();
+                                });
+                              }
+                            },
+                          ),
 
-                  // Text(
-                  //     "Excercise:",
-                  //     style: TextStyle(fontWeight: FontWeight.bold),
-                  //   ),
+                          SizedBox(
+                            width: 80, 
+                            child: TextField(
+                              controller: _amountController,
+                              keyboardType: TextInputType
+                                  .number, 
+                              textAlign: TextAlign
+                                  .center, 
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                if (value.isEmpty) {
+                                  _amountController.text = '0';
+                                  _amountController.selection =
+                                      TextSelection.fromPosition(
+                                        TextPosition(
+                                          offset: _amountController.text.length,
+                                        ),
+                                      );
+                                }
+                              },
+                            ),
+                          ),
+
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.blue,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              int currentValue =
+                                  int.tryParse(_amountController.text) ?? 10;
+                              // int currentValue = record['minExercise'];
+                              setModalState(() {
+                                _amountController.text = (currentValue + 1)
+                                    .toString();
+                                // record['minExercise'] =
+                                //     (currentValue + 1).toString();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+
+                      // _buildCircleButton(icon: Icons.add, onPressed: () {}),
+                    ],
+                  ),
+
                   const SizedBox(height: 30),
                   Row(
                     children: [
@@ -241,7 +329,7 @@ class SymptomHistoryList extends StatelessWidget {
                                 .collection('health')
                                 .doc(data['id'])
                                 .update({
-                                  // 'date': 
+                                  // 'date':
                                   'data': record,
                                   'updateddAt': FieldValue.serverTimestamp(),
                                 });
@@ -270,6 +358,14 @@ class SymptomHistoryList extends StatelessWidget {
       Timestamp dateB = b['date'];
       return dateB.compareTo(dateA);
     });
+    List<Color> colors = [
+      Colors.red,
+      Colors.orange,
+      Colors.yellow.shade700,
+      Colors.lightGreen,
+      Colors.green,
+      Colors.grey,
+    ];
     //   return SizedBox(
     // height: MediaQuery.of(context).size.height * 0.8,
     //   // FractionallySizedBox(heightFactor: 0.8, // 80%
@@ -293,6 +389,11 @@ class SymptomHistoryList extends StatelessWidget {
               data['id'] = datas[index].id;
 
               final mentallevel = data['data']['mental_level'] ?? 0;
+              DateTime thirtyDaysAgo = DateTime.now().subtract(
+                const Duration(days: 31),
+              ); // if(DateTime.parse(data['date']).isAfter(thirtyDaysAgo))
+              if ((data['date'] as Timestamp).toDate().isBefore(thirtyDaysAgo))
+                return null;
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
                 shape: RoundedRectangleBorder(
@@ -311,7 +412,6 @@ class SymptomHistoryList extends StatelessWidget {
                   },
                   child: ListTile(
                     leading: CircleAvatar(
-                      // backgroundColor: Colors.transparent,
                       child: Icon(
                         mentallevel == 0
                             ? Icons.sentiment_very_dissatisfied
@@ -326,7 +426,7 @@ class SymptomHistoryList extends StatelessWidget {
                             : Icons.warning_amber_rounded,
                         color: mentallevel < 0
                             ? Colors.white
-                            : Theme.of(context).primaryColor,
+                            : colors[mentallevel].withValues(alpha: 0.8),
                       ),
                     ),
                     title: Text(

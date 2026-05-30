@@ -29,6 +29,7 @@ class CheckList extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isLightMode =
         MediaQuery.of(context).platformBrightness == Brightness.light;
+    print('data'); //[{col1: {text: , num: }, note: , date: 22/05/2026}]
     final pendingItems = requireDate
         ? data.where((item) => !item['isDone']).toList()
         : data;
@@ -51,7 +52,6 @@ class CheckList extends StatelessWidget {
       }
     }
 
-    // print(data);
     // print(completedGroups);
 
     void setDate(unique, type) async {
@@ -239,7 +239,7 @@ class CheckList extends StatelessWidget {
                   ...group.value.map(
                     (item) => Card(
                       // color: Theme.of(context).cardColor,
-                      color: AppColors.gray,
+                      color: isLightMode ? AppColors.gray : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                         // side: BorderSide(

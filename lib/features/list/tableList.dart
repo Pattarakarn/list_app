@@ -195,7 +195,10 @@ class TableList extends StatelessWidget {
                 ],
                 //  rows.map(r => r.date)
                 // rows: (isDateY ? rows : headers).map((rowData) {
-                rows: rows.map((rowData) {
+                rows: rows.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  Map<String, dynamic> rowData = entry.value;
+                  // rows: rows.map((rowData) {
                   // final headersObj = headers.map((h)) ({date: h}));
 
                   return DataRow(
@@ -232,7 +235,9 @@ class TableList extends StatelessWidget {
                                 String formattedDate = DateFormat(
                                   'dd/MM/yyyy',
                                 ).format(pickedDate);
-                                // setRows();
+                                final row = [...rows];
+                                row[index]['date'] = formattedDate;
+                                setRows(row);
                                 // setState(() {
                                 //   rowData['date'] = formattedDate;
                                 // });
@@ -263,9 +268,6 @@ class TableList extends StatelessWidget {
                         // ดึงข้อมูลมาตรวจสอบกัน Null
                         var cellData = rowData[colKey];
                         // var cellData = rows[index];
-
-                        print('----');
-                        print(rows[index]);
 
                         // ถ้าในแถวนี้มีข้อมูลคอลัมน์นี้ ให้ส่งเข้าฟังก์ชัน build ของคุณ
                         if (cellData != null) {
