@@ -95,9 +95,7 @@ class _SettingPageState extends State<SettingPage> {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             decoration: BoxDecoration(
-              color: Colors.grey[900]!.withOpacity(
-                0.95,
-              ), // สีพื้นหลังกึ่งโปร่งแสง
+              color:const Color(0xFF334155),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
@@ -144,8 +142,8 @@ class _SettingPageState extends State<SettingPage> {
                           const SizedBox(height: 15),
                           Row(
                             children: [
-                              const Text('ประเภทรถ'),
-                              const SizedBox(width: 25),
+                              // const Text('ประเภทรถ'),
+                              // const SizedBox(width: 25),
                               Expanded(child: _buildTypeSelector()),
                             ],
                           ),

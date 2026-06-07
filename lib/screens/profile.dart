@@ -5,6 +5,7 @@ import '../../app_colors.dart';
 import 'calculator.dart';
 import 'setting.dart';
 import 'fuel.dart';
+import 'last will.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -147,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CalculatorPage(),
+                                  builder: (context) => WillPage(),
                                 ),
                               );
                             },

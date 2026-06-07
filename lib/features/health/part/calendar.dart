@@ -28,9 +28,17 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   );
 
   Stream<QuerySnapshot>? myDrugs;
+  late Map<String, bool> medTimes = {
+    'morning': false,
+    'noon': false,
+    'evening': false,
+    'bedtime': false,
+  };
+
   @override
   void initState() {
     super.initState();
+
     myDrugs = FirebaseFirestore.instance
         .collection('users')
         .doc(user?.uid)
@@ -74,7 +82,40 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   //     }
   //   });
 
-  void _showEditDialog(date) {
+  // Widget _buildMedicationTile(String label, IconData icon, String key) {
+  //   // bool isSelected = selectedTimes[key] ?? false;
+
+  //   return Tooltip(
+  //     message: label,
+  //     child: IconButton(
+  //       icon: Icon(icon),
+  //       // ถ้าเลือกอยู่ให้เป็นสีหลัก (เช่น สีน้ำเงิน/ส้ม) ถ้าไม่เลือกให้เป็นสีเทา
+  //       color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400],
+  //       iconSize: 22,
+  //       constraints:
+  //           const BoxConstraints(), // ช่วยให้ปุ่มไม่กินพื้นที่กว้างเกินไป
+  //       padding: const EdgeInsets.symmetric(horizontal: 4),
+  //       onPressed: () {
+  //         setState(() {
+  //           selectedTimes[key] = !isSelected;
+  //         });
+  //         // ส่งค่า Map ชุดใหม่กลับไปให้ Widget หลักเพื่อเตรียมบันทึกลง Firestore
+  //         // widget.onTimeChanged(selectedTimes);
+  //       },
+  //     ),
+  //   );
+  // }
+
+  void _showEditDialog(date) async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .collection('drugs')
+        .where('amount', isGreaterThan: 0)
+        .get();
+
+    List<DocumentSnapshot> dataDrug = snapshot.docs;
+    print(dataDrug);
     Map<String, dynamic> record = {
       "symptoms": "",
       "pain_level": 0,
@@ -107,402 +148,633 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            //  scrollable: true,
             content:
                 // Row(  children:
                 SizedBox(
                   width: double
                       .maxFinite, // กำหนดขนาดกว้างเพื่อไม่ให้ ListView พัง
-                  // child: StreamBuilder<QuerySnapshot>(
-                  //   stream: FirebaseFirestore.instance
-                  //       .collection('users')
-                  //       .doc(user?.uid)
-                  //       .collection('drugs')
-                  //       .where('amount', isGreaterThan: 0)
-                  //       .snapshots(),
-                  child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user?.uid)
-                        .collection('drugs')
-                        .doc('8qvmRslHfE68HCwFxeo2')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      // if (snapshot.hasError) {
-                      //   return Center(
-                      //     child: Text(
-                      //       'Firebase ฟ้องว่า: ${snapshot.error}',
-                      //       style: TextStyle(color: Colors.red, fontSize: 16),
-                      //     ),
-                      //   );
-                      // }
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        // print(user?.uid);
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      // if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      //   return const Center(child: Text('ไม่มีข้อมูลยา'));
-                      // }
+                  // height: MediaQuery.of(context).size.height * 0.5,
+                  child: SingleChildScrollView(
+                    child: FutureBuilder<QuerySnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user?.uid)
+                          .collection('drugs')
+                          .where('amount', isGreaterThan: 0)
+                          .get(),
+                      // child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      //   stream: FirebaseFirestore.instance
+                      //       .collection('users')
+                      //       .doc(user?.uid)
+                      //       .collection('drugs')
+                      //       .doc('8qvmRslHfE68HCwFxeo2')
+                      //       .snapshots(),
+                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        // if (snapshot.hasError) {
+                        //   return Center(
+                        //     child: Text(
+                        //       'Firebase ฟ้องว่า: ${snapshot.error}',
+                        //       style: TextStyle(color: Colors.red, fontSize: 16),
+                        //     ),
+                        //   );
+                        // }
+                        // if (snapshot.connectionState == ConnectionState.waiting) {
+                        //   // print(user?.uid);
+                        //   return const Center(child: CircularProgressIndicator());
+                        // }
+                        // // if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        // if (!snapshot.hasData) {
+                        //   return const Center(child: Text('ไม่มีข้อมูลยา'));
+                        // }
 
-                      // final docs = snapshot.data!.docs;
-                      // var doc = snapshot.data!.docs;
-                      // Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                      // print(doc);
-                      // print(snapshot.data);
-                      print('. . . .');
-                      return SizedBox(
-                        width: double
-                            .maxFinite, // ให้กว้างเท่าที่ Dialog จะยอมให้กว้างได้
-                        child: Column(
-                          mainAxisSize: MainAxisSize
-                              .min, // สำคัญ! เพื่อให้ Dialog ไม่สูงเต็มจอ
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(5, (index) {
-                                List<IconData> icons = [
-                                  Icons.sentiment_very_dissatisfied,
-                                  Icons.sentiment_dissatisfied,
-                                  Icons.sentiment_neutral,
-                                  Icons.sentiment_satisfied,
-                                  Icons.sentiment_very_satisfied,
-                                ];
+                        // // final docs = snapshot.data!.docs;
+                        // var doc = snapshot.data!.docs;
+                        // // print(doc);
+                        // // Map<String, dynamic> data =  snapshot.data!.data() as Map<String, dynamic>;
+                        // Map<String, dynamic> data =  doc!.data() as Map<String, dynamic>;
+                        // print(data);
+                        // print('. . . .');
+                        return SizedBox(
+                          width: double
+                              .maxFinite, // ให้กว้างเท่าที่ Dialog จะยอมให้กว้างได้
+                          child: Column(
+                            mainAxisSize: MainAxisSize
+                                .min, // สำคัญ! เพื่อให้ Dialog ไม่สูงเต็มจอ
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: List.generate(5, (index) {
+                                  List<IconData> icons = [
+                                    Icons.sentiment_very_dissatisfied,
+                                    Icons.sentiment_dissatisfied,
+                                    Icons.sentiment_neutral,
+                                    Icons.sentiment_satisfied,
+                                    Icons.sentiment_very_satisfied,
+                                  ];
 
-                                bool isSel = record['mental_level'] == (index);
-                                return IconButton(
-                                  icon: Icon(icons[index]),
-                                  iconSize: 40,
-                                  color: isSel
-                                      ? colors[index]
-                                      : Colors.grey.shade300,
-                                  onPressed: () => setDialogState(
-                                    () => record['mental_level'] = index,
-                                  ),
-                                );
-                              }),
-                            ),
-                            const SizedBox(height: 10),
-                            TextField(
-                              decoration: const InputDecoration(
-                                labelText: "Symptom . . .",
-                                border: OutlineInputBorder(),
-                              ),
-                              maxLines: 3,
-                              onChanged: (val) => setDialogState(
-                                () => record['symptoms'] = val,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                const Text(
-                                  "Level of discomfort:",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Expanded(
-                                  child: Slider(
-                                    value: record['pain_level'].toDouble(),
-                                    min: 0,
-                                    max: 10,
-                                    divisions: 10,
-                                    label: record['pain_level'].toString(),
-                                    onChanged: (val) => setDialogState(
-                                      () => record['pain_level'] = val.toInt(),
+                                  bool isSel =
+                                      record['mental_level'] == (index);
+                                  return IconButton(
+                                    icon: Icon(icons[index]),
+                                    iconSize: 40,
+                                    color: isSel
+                                        ? colors[index]
+                                        : Colors.grey.shade300,
+                                    onPressed: () => setDialogState(
+                                      () => record['mental_level'] = index,
                                     ),
-                                    // activeColor: Color(0xFFF06292), // AppColors.pink,
-                                    activeColor: Color.lerp(
-                                      AppColors.pink,
-                                      const Color(0xFFF06292),
-                                      record['pain_level'].toDouble() / 10,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(),
-                            Column(
-                              children: [
-                                // Expanded( child:
-                                // StreamBuilder<QuerySnapshot>(
-                                //   stream: myDrugs,
-                                //   builder: (context, snapshot) {
-                                //     print('snapshot');
-                                //     if (snapshot.hasError) {
-                                //       print(snapshot);
-                                //       return const Center(
-                                //         child: Text(
-                                //           'เกิดข้อผิดพลาดในการโหลดข้อมูล',
-                                //         ),
-                                //       );
-                                //     }
-
-                                //     if (snapshot.connectionState ==
-                                //         ConnectionState.waiting) {
-                                //       return const Center(
-                                //         child: CircularProgressIndicator(),
-                                //       );
-                                //     }
-
-                                //     final List<DocumentSnapshot> documents =
-                                //         snapshot.data!.docs; //array
-                                //     print('documents');
-                                //     print(documents);
-                                //     return const Text('null');
-                                //     // return ListView.builder(
-                                //     //   // ข้างในเป็น ListView ได้ตามปกติแล้ว
-                                //     //   itemCount: documents.length,
-                                //     //   itemBuilder: (context, index) => ListTile(),
-                                //     // );
-                                //   },
-                                // ),
-
-                                // ),
-                                ...record['medications'].asMap().entries.map((
-                                  entry,
-                                ) {
-                                  int idx = entry.key;
-                                  var med = entry.value;
-                                  return Row(
-                                    children: [
-                                      // Expanded(child: DropdownButton( /* เลือกยาจาก Firebase Master */ )),
-                                      // // ไอคอน เช้า กลางวัน เย็น ก่อนนอน (ใช้ IconButton หรือ FilterChip)
-                                      // _buildTimeChip(idx, 'morning', Icons.wb_sunny_outlined),
-                                      // _buildTimeChip(idx, 'noon', Icons.wb_sunny),
-                                      // _buildTimeChip(idx, 'evening', Icons.dark_mode_outlined),
-                                      // _buildTimeChip(idx, 'night', Icons.bedtime),
-                                    ],
                                   );
                                 }),
-                                TextButton.icon(
-                                  onPressed: () => setDialogState(
-                                    () => record['medications'].add({
-                                      "name": "",
-                                      "morning": false,
-                                      "noon": false,
-                                      "evening": false,
-                                      "night": false,
-                                    }),
-                                  ),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text("เพิ่มยา"),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFFBA68C8),
-                                  ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                decoration: const InputDecoration(
+                                  labelText: "Symptom . . .",
+                                  border: OutlineInputBorder(),
                                 ),
-                              ],
-                            ),
-                            const Divider(height: 20),
-                            // if (isFemale)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment
-                                  .start, // ให้ชื่อ "ประจำเดือน" ชิดซ้าย
-                              children: [
-                                const Text(
-                                  "Period:",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                maxLines: 3,
+                                onChanged: (val) => setDialogState(
+                                  () => record['symptoms'] = val,
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(5, (index) {
-                                    int level = index + 1;
-                                    bool isSelected =
-                                        record['periodLevel'] >= level;
-
-                                    double iconSize = 20.0 + (index * 5);
-
-                                    return GestureDetector(
-                                      onTap: () {
-                                        // อย่าลืมใช้ setDialogState หากอยู่ใน AlertDialog
-                                        setDialogState(() {
-                                          record['periodLevel'] = level;
-                                        });
-                                      },
-                                      onHorizontalDragUpdate: (details) {
-                                        // double renderBoxWidth = _iconSize * 5;
-                                        double position =
-                                            details.localPosition.dx;
-
-                                        setDialogState(() {
-                                          // ปรับค่าให้อยู่ในช่วง 1-5 และปัดเศษขึ้น
-                                          record['periodLevel'] =
-                                              (position / iconSize)
-                                                  .clamp(0, 5)
-                                                  .toDouble();
-                                          // ถ้าอยากให้เป็นเลขเต็ม 1, 2, 3, 4, 5 ให้ใช้ .ceilToDouble()
-                                        });
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 4,
-                                        ),
-                                        child: Icon(
-                                          Icons.water_drop, // รูปหยดเลือด
-                                          size: iconSize,
-                                          color: isSelected
-                                              ? Color.lerp(
-                                                  Colors.red.shade500,
-                                                  Colors.red.shade900,
-                                                  index / 4,
-                                                ) // ไล่สีแดงอ่อนไปเข้ม
-                                              : Colors
-                                                    .grey
-                                                    .shade300, // ถ้าไม่เลือกเป็นสีเทา
-                                        ),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Level of discomfort:",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Slider(
+                                      value: record['pain_level'].toDouble(),
+                                      min: 0,
+                                      max: 10,
+                                      divisions: 10,
+                                      label: record['pain_level'].toString(),
+                                      onChanged: (val) => setDialogState(
+                                        () =>
+                                            record['pain_level'] = val.toInt(),
                                       ),
+                                      // activeColor: Color(0xFFF06292), // AppColors.pink,
+                                      activeColor: Color.lerp(
+                                        AppColors.pink,
+                                        const Color(0xFFF06292),
+                                        record['pain_level'].toDouble() / 10,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                              Column(
+                                children: [
+                                  // Expanded( child:
+                                  // StreamBuilder<QuerySnapshot>(
+                                  //   stream: myDrugs,
+                                  //   builder: (context, snapshot) {
+                                  //     print('snapshot');
+                                  //     if (snapshot.hasError) {
+                                  //       print(snapshot);
+                                  //       return const Center(
+                                  //         child: Text(
+                                  //           'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+                                  //         ),
+                                  //       );
+                                  //     }
+
+                                  //     if (snapshot.connectionState ==
+                                  //         ConnectionState.waiting) {
+                                  //       return const Center(
+                                  //         child: CircularProgressIndicator(),
+                                  //       );
+                                  //     }
+
+                                  //     final List<DocumentSnapshot> documents =
+                                  //         snapshot.data!.docs; //array
+                                  //     print('documents');
+                                  //     print(documents);
+                                  //     return const Text('null');
+                                  //     // return ListView.builder(
+                                  //     //   // ข้างในเป็น ListView ได้ตามปกติแล้ว
+                                  //     //   itemCount: documents.length,
+                                  //     //   itemBuilder: (context, index) => ListTile(),
+                                  //     // );
+                                  //   },
+                                  // ),
+
+                                  // ),
+                                  ...record['medications'].asMap().entries.map((
+                                    entry,
+                                  ) {
+                                    int idx = entry.key;
+                                    var med = entry.value;
+                                    return Row(
+                                      children: [
+                                        // Expanded(child: DropdownButton( /* เลือกยาจาก Firebase Master */ )),
+                                        // // ไอคอน เช้า กลางวัน เย็น ก่อนนอน (ใช้ IconButton หรือ FilterChip)
+                                        // _buildTimeChip(idx, 'morning', Icons.wb_sunny_outlined),
+                                        // _buildTimeChip(idx, 'noon', Icons.wb_sunny),
+                                        // _buildTimeChip(idx, 'evening', Icons.dark_mode_outlined),
+                                        // _buildTimeChip(idx, 'night', Icons.bedtime),
+                                      ],
                                     );
                                   }),
-                                ),
-                              ],
-                            ),
-  const SizedBox(height: 20),
-                            const Text(
-                              "Excercise:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Column(
-                              children: [
-                                SizedBox(height: 8),
-                                // 1. ประกาศ Controller ไว้ก่อนเปิด Dialog หรือในจุดเริ่มต้น
+                                  Row(
+                                    children: [
+                                      // TextField(
+                                      //   controller: TextEditingController(text: data['amount']?.toString() ?? ''),
+                                      //   decoration: InputDecoration(
+                                      //     // labelText: "${data['amount']}",
+                                      //     border: OutlineInputBorder(),
+                                      //   ),
+                                      //   onChanged: (val) => setDialogState(
+                                      //     () => record['amount'] = data['amount'] - val,
+                                      //   ),
+                                      // ),
 
-                                // 2. โค้ด Widget สำหรับเอาไปแปะในหน้าจอ หรือใน Dialog
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: Colors.grey,
-                                        size: 30,
-                                      ),
-                                      onPressed: () {
-                                        int currentValue =
-                                            int.tryParse(
-                                              _amountController.text,
-                                            ) ??
-                                            10;
-                                        if (currentValue > 0) {
-                                          setDialogState(() {
-                                            _amountController.text =
-                                                (currentValue + 1).toString();
-                                          });
-                                        }
-                                      },
-                                    ),
+                                      // TextButton.icon(
+                                      //   onPressed: () => setDialogState(
+                                      //     () => record['medications'].add({
+                                      //       "name": "",
+                                      //       "morning": false,
+                                      //       "noon": false,
+                                      //       "evening": false,
+                                      //       "night": false,
+                                      //     }),
+                                      //   ),
+                                      //   icon: const Icon(Icons.add),
+                                      //   label: const Text("เพิ่มยา"),
+                                      //   style: OutlinedButton.styleFrom(
+                                      //     foregroundColor: const Color(
+                                      //       0xFFBA68C8,
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: dataDrug.length,
+                                itemBuilder: (context, index) {
+                                  // var doc = snapshot.data!.docs[index];
+                                  var doc = dataDrug[index];
+                                  Map<String, dynamic> data =
+                                      doc.data() as Map<String, dynamic>;
+                                  String docId = doc.id;
 
-                                    SizedBox(
-                                      width: 80, // จำกัดความกว้างช่องกรอก
-                                      child: TextField(
-                                        controller: _amountController,
-                                        keyboardType: TextInputType
-                                            .number, // บังคับให้คีย์บอร์ดขึ้นเฉพาะตัวเลข
-                                        textAlign: TextAlign
-                                            .center, // จัดตัวเลขให้อยู่ตรงกลางช่อง
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        decoration: InputDecoration(
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                vertical: 8,
-                                              ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              10,
+                                  List<String> activeTimes = [];
+                                  data['schedule'].forEach((
+                                    timeName,
+                                    isActive,
+                                  ) {
+                                    if (isActive == true) {
+                                      activeTimes.add(
+                                        timeName,
+                                      ); // ถ้าอันไหนเป็น true จะเก็บชื่อช่วงเวลานั้นไว้
+                                    }
+                                  });
+
+                                  return Column(
+                                    children: activeTimes.map((timeLabel) {
+                                      return Wrap(
+                                        alignment: WrapAlignment.spaceBetween,
+                                        runSpacing: 8,
+                                        children: [
+                                          ListTile(
+                                            leading: Icon(
+                                              timeLabel == 'เช้า'
+                                                  ? Icons.wb_sunny_outlined
+                                                  : timeLabel == 'กลางวัน'
+                                                  ? Icons.wb_sunny
+                                                  : timeLabel == 'เย็น'
+                                                  ? Icons.dark_mode_outlined
+                                                  : Icons.bedtime,
                                             ),
+                                            // color: isSelected
+                                            //     ? Colors.orange
+                                            //     : Colors.grey.shade400, // ส้มถ้าเลือก เทาถ้าไม่เลือก
+                                            // onPressed: () {
+                                            //   // setState(() {
+                                            //   //   // สลับค่า true/false ใน List ของยาตาม index
+                                            //   //   record['medications'][index][timeKey] = !isSelected;
+                                            //   // });
+                                            // },
+                                            // tooltip: timeLabel,
+                                            title: Text(data['name']),
+                                            subtitle: Text(data['desc']),
+                                          ),
+                                          // trailing:
+                                          Row(
+                                            mainAxisSize: MainAxisSize
+                                                .min, // จำกัดขนาดของ Row ไม่ให้ยาวดึงพื้นที่ ListTile
+                                            children: [
+                                              const Text('จำนวนที่เหลือ'),
+                                              const SizedBox(width: 8),
+                                              SizedBox(
+                                                width: 80,
+                                                // TextFormField(  initialValue:
+                                                child: TextField(
+                                                  // controller: TextEditingController(
+                                                  //   text:
+                                                  //       data['amount']
+                                                  //           ?.toString() ??
+                                                  //       '',
+                                                  // ),
+                                                  decoration: InputDecoration(
+                                                    hintText:
+                                                        (data['amount'] ?? '')
+                                                            .toString(),
+                                                    // labelText: "${data['amount']}",
+                                                    border:
+                                                        OutlineInputBorder(),
+                                                  ),
+                                                  onChanged: (val) => {
+                                                    setDialogState(() {
+                                                      List<dynamic>
+                                                      currentList = List.from(
+                                                        record['medications'] ??
+                                                            [],
+                                                      );
+
+                                                      int targetIndex = 3;
+
+                                                      while (currentList
+                                                              .length <=
+                                                          index) {
+                                                        currentList.add(null);
+                                                      }
+
+                                                      currentList[index] = {
+                                                        'id': docId,
+                                                        'name': data['name'],
+                                                        'amount':
+                                                            data['amount'] -
+                                                            int.parse((val)),
+                                                        'skip': false,
+                                                      };
+
+                                                      record['medications'] =
+                                                          currentList;
+
+                                                      //  record['medications'][index] = data;
+                                                      // record['medications'] = [
+                                                      //   ...record['medications'],
+                                                      //   {
+                                                      //     'id': data['id'],
+                                                      //     'name': data['name'],
+                                                      //     'amount':
+                                                      //         data['amount'] -
+                                                      //         int.parse((val)),
+                                                      //   },
+                                                      // ];
+                                                      // List<dynamic> currentList =
+                                                      //     List.from(
+                                                      //       record['medication'],
+                                                      //     );
+
+                                                      // currentList.add({
+                                                      //   'name': data['name'],
+                                                      //   'id': data['id'],
+                                                      //   'amount':
+                                                      //       data['amount'] - val,
+                                                      //   'label': timeLabel,
+                                                      // });
+
+                                                      // record['medication'] =
+                                                      //     currentList;
+                                                    }),
+                                                    //                              if (value.isNotEmpty) {
+                                                    //   setState(() {
+                                                    //     isSkipSelected = false; // ✨ ถ้าเริ่มพิมพ์ตัวเลข ให้ปลดสีปุ่ม Skip ออก
+                                                    //   });
+                                                    //   _saveData(); // อัปเดตค่าเข้า List ทันทีเมื่อพิมพ์
+                                                    // }
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  // backgroundColor: isSkipSelected
+                                                  //     ? primaryColor
+                                                  //     : Colors.grey[300],
+                                                  foregroundColor: const Color(
+                                                    0xFFBA68C8,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  // setState(() {
+                                                  //   isSkipSelected = true;
+                                                  //   _amountController
+                                                  //       .clear(); // กด Skip แล้วให้ล้างค่าใน Input ออก
+                                                  // });
+                                                  setDialogState(() {
+                                                    List<dynamic>
+                                                    currentList = List.from(
+                                                      record['medications'] ??
+                                                          [],
+                                                    );
+
+                                                    while (currentList.length <=
+                                                        index) {
+                                                      currentList.add(null);
+                                                    }
+
+                                                    currentList[index] = {
+                                                      'id': docId,
+                                                      'name': data['name'],
+                                                      'amount': data['amount'],
+                                                      'skip': true,
+                                                    };
+
+                                                    record['medications'] =
+                                                        currentList;
+                                                  });
+                                                },
+                                                child: const Text('Skip'),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  );
+                                },
+                              ),
+                              const Divider(height: 20),
+                              // if (isFemale)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .start, // ให้ชื่อ "ประจำเดือน" ชิดซ้าย
+                                children: [
+                                  const Text(
+                                    "Period:",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(5, (index) {
+                                      int level = index + 1;
+                                      bool isSelected =
+                                          record['periodLevel'] >= level;
+
+                                      double iconSize = 20.0 + (index * 5);
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          // อย่าลืมใช้ setDialogState หากอยู่ใน AlertDialog
+                                          setDialogState(() {
+                                            record['periodLevel'] = level;
+                                          });
+                                        },
+                                        onHorizontalDragUpdate: (details) {
+                                          // double renderBoxWidth = _iconSize * 5;
+                                          double position =
+                                              details.localPosition.dx;
+
+                                          setDialogState(() {
+                                            // ปรับค่าให้อยู่ในช่วง 1-5 และปัดเศษขึ้น
+                                            record['periodLevel'] =
+                                                (position / iconSize)
+                                                    .clamp(0, 5)
+                                                    .toDouble();
+                                            // ถ้าอยากให้เป็นเลขเต็ม 1, 2, 3, 4, 5 ให้ใช้ .ceilToDouble()
+                                          });
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          child: Icon(
+                                            Icons.water_drop, // รูปหยดเลือด
+                                            size: iconSize,
+                                            color: isSelected
+                                                ? Color.lerp(
+                                                    Colors.red.shade500,
+                                                    Colors.red.shade900,
+                                                    index / 4,
+                                                  ) // ไล่สีแดงอ่อนไปเข้ม
+                                                : Colors
+                                                      .grey
+                                                      .shade300, // ถ้าไม่เลือกเป็นสีเทา
                                           ),
                                         ),
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                "Excercise:",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Column(
+                                children: [
+                                  SizedBox(height: 8),
+                                  // 1. ประกาศ Controller ไว้ก่อนเปิด Dialog หรือในจุดเริ่มต้น
 
-                                        onChanged: (value) {
-                                          if (value.isEmpty) {
-                                            _amountController.text = '0';
-                                            _amountController.selection =
-                                                TextSelection.fromPosition(
-                                                  TextPosition(
-                                                    offset: _amountController
-                                                        .text
-                                                        .length,
-                                                  ),
-                                                );
+                                  // 2. โค้ด Widget สำหรับเอาไปแปะในหน้าจอ หรือใน Dialog
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: Colors.grey,
+                                          size: 30,
+                                        ),
+                                        onPressed: () {
+                                          if (record['minExercise'] > 0) {
+                                            setDialogState(() {
+                                              record['minExercise'] =
+                                                  (record['minExercise'] - 1);
+                                            });
                                           }
                                         },
                                       ),
-                                    ),
 
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                        color: Colors.blue,
-                                        size: 30,
+                                      SizedBox(
+                                        width: 80, // จำกัดความกว้างช่องกรอก
+                                        child: TextField(
+                                          // controller: _amountController,
+                                          controller: TextEditingController(
+                                            text: record['minExercise']
+                                                ?.toString(),
+                                          ),
+                                          keyboardType: TextInputType
+                                              .number, // บังคับให้คีย์บอร์ดขึ้นเฉพาะตัวเลข
+                                          textAlign: TextAlign
+                                              .center, // จัดตัวเลขให้อยู่ตรงกลางช่อง
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          decoration: InputDecoration(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+
+                                          onChanged: (value) {
+                                            record['minExercise'] = int.parse(
+                                              value,
+                                            );
+                                          },
+                                        ),
                                       ),
-                                      onPressed: () {
-                                        int currentValue =
-                                            int.tryParse(
-                                              _amountController.text,
-                                            ) ??
-                                            10;
-                                        // int currentValue = record['minExercise'];
-                                        setDialogState(() {
-                                          _amountController.text =
-                                              (currentValue + 1).toString();
-                                          // record['minExercise'] =
-                                          //     (currentValue + 1).toString();
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
 
-                                // _buildCircleButton(icon: Icons.add, onPressed: () {}),
-                              ],
-                            ),
-
-                            const SizedBox(height: 30),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text(
-                                      'ยกเลิก',
-                                    ), //, style: TextStyle(color: Colors.grey)),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(
-                                        context,
-                                      ).primaryColor,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      FirebaseFirestore.instance
-                                          .collection('health')
-                                          .add({
-                                            'date': date,
-                                            'data': record,
-                                            'authorId': user
-                                                ?.uid, //auth.currentUser?.uid,
-                                            'createdAt':
-                                                FieldValue.serverTimestamp(),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.add_circle_outline,
+                                          color: Colors.blue,
+                                          size: 30,
+                                        ),
+                                        onPressed: () {
+                                          int currentValue =
+                                              int.tryParse(
+                                                _amountController.text,
+                                              ) ??
+                                              10;
+                                          // int currentValue = record['minExercise'];
+                                          setDialogState(() {
+                                            // _amountController.text =
+                                            //     (currentValue + 1).toString();
+                                            record['minExercise'] =
+                                                record['minExercise'] + 1;
                                           });
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('บันทึก'),
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+
+                                  // _buildCircleButton(icon: Icons.add, onPressed: () {}),
+                                ],
+                              ),
+
+                              const SizedBox(height: 30),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        'ยกเลิก',
+                                      ), //, style: TextStyle(color: Colors.grey)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).primaryColor,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      onPressed: () async {
+                                        FirebaseFirestore.instance
+                                            .collection('health')
+                                            .add({
+                                              'date': date,
+                                              'data': record,
+                                              'authorId': user
+                                                  ?.uid, //auth.currentUser?.uid,
+                                              'createdAt':
+                                                  FieldValue.serverTimestamp(),
+                                            });
+
+                                        CollectionReference medicationRef =
+                                            FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(user?.uid)
+                                                .collection('drugs');
+                                        try {
+                                          for (Map<String, dynamic> data
+                                              in record['medications']) {
+                                            print(data);
+                                            if (data['skip'])
+                                              continue; //skip: true จะข้ามข้างล่าง
+                                            await medicationRef
+                                                .doc(data['id'])
+                                                .update({
+                                                  'amount': data['amount'],
+                                                  'updatedAt':
+                                                      FieldValue.serverTimestamp(),
+                                                });
+                                          }
+                                        } catch (e) {
+                                          print("❌ อัปเดตล้มเหลว: $e");
+                                        }
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('บันทึก'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-
             // actions: [
             // ],
           );

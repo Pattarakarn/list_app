@@ -36,6 +36,7 @@ class _UtilityPageState extends State<UtilityPage> {
   double newAvg = 0;
   double profitPercent = 0;
   double sumprice = 0;
+     
   @override
   void initState() {
     super.initState();
@@ -244,6 +245,8 @@ class _UtilityPageState extends State<UtilityPage> {
     String label, {
     Function(String)? onChanged,
   }) {
+     bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
@@ -254,7 +257,7 @@ class _UtilityPageState extends State<UtilityPage> {
           labelText: label,
           border: InputBorder.none, 
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: isLightMode ? Colors.grey[100]: Theme.of(context).scaffoldBackgroundColor,
         ),
       ),
     );

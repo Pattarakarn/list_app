@@ -248,19 +248,17 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: const Text("ออกจากแอป?"),
         content: const Text("คุณต้องการออกจากแอปใช่หรือไม่?"),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [
-          Expanded(
-            child: TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("ตกลง"),
-            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("ตกลง"),
           ),
-          Expanded(
-            child: TextButton(
-              onPressed: () =>
-                  Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
-              child: const Text("ยกเลิก"),
-            ),
+
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(context, false), // ส่งค่า false (ไม่ออก)
+            child: const Text("ยกเลิก"),
           ),
         ],
       ),
@@ -285,15 +283,21 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        // backgroundColor: AppColors.gray,
         body: SafeArea(
           child: Stack(
             children: [
               Positioned.fill(
-                top: _selectedIndex == 0 ? 0 : 50,
+                // top: _selectedIndex == 0 ? 0 : 50,
                 // bottom: 78,
-                child: SafeArea(child: _pages[_selectedIndex]),
+                // child: SafeArea(child: _pages[_selectedIndex]),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: _selectedIndex == 0 ? 0 : 50,
+                    ), // เว้นระยะด้านบนหลบแถบสีเทาของคุณ (ปรับตามเหมาะสม)
+                    child: _pages[_selectedIndex],
+                  ),
+                ),
               ),
               // Visibility(  visible: index != 0,
               if (_selectedIndex != 0)
@@ -303,7 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(24, 5, 24, 3),
-                    color: Colors.grey[200],
+                    color:
+                        MediaQuery.of(context).platformBrightness ==
+                            Brightness.light
+                        ? Colors.grey[200]
+                        : Colors.black.withOpacity(0.5),
                     child: GestureDetector(
                       onTap: () => {setState(() => _selectedIndex = 0)},
                       child: Row(

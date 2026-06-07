@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../app_colors.dart';
+import 'package:intl/intl.dart';
 
 // class MenuItem {
 //   final String label;
@@ -77,3 +78,7 @@ class Options {
 //     Colors.grey,
 //   ];
 // }
+
+String formatNumber(num value) {
+  return NumberFormat('#,###.##').format(value);
+}

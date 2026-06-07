@@ -36,7 +36,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
     double price = double.tryParse(_pricePerLiterController.text) ?? 0;
     setState(() {
       _totalAmount = liters * price;
-      _amountController.text = (liters * price).toString();
+      _amountController.text = (liters * price).toStringAsFixed(3);
     });
   }
 
@@ -331,7 +331,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "ยอดรวม: ${_totalAmount.toStringAsFixed(2)} บาท",
+                                    "ยอดรวม: ${formatNumber(_totalAmount)} บาท",
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -563,13 +563,17 @@ class _CreateListFuelState extends State<CreateListFuel> {
                                     _totalAmount,
                               ),
                               'last_mileage': max(
-                                int.parse(widget.data['last_mileage']),
+                                (widget.data['last_mileage']),
                                 int.parse(_odometerController.text),
                               ),
                               'refuel_count': FieldValue.increment(1),
                               'allLites': FieldValue.increment(
                                 int.tryParse(_litersController.text) ?? 0,
                               ), //
+                              'first_mileage':
+                                  widget.data['first_mileage'] ??
+                                  int.parse(_odometerController.text),
+                              'last_update': FieldValue.serverTimestamp(),
                             });
 
                             await batch.commit();

@@ -34,6 +34,7 @@ class _DetailPageState extends State<DetailPage> {
   final TextEditingController _checkController = TextEditingController(
     text: "false",
   );
+// String _title = widget.title;
 
   @override
   void initState() {
@@ -145,6 +146,9 @@ class _DetailPageState extends State<DetailPage> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
+                setState(() {
+                // widget.title =  editController.text;
+                });
                 FirebaseFirestore.instance
                     .collection('lists')
                     .doc(widget.docId)
@@ -586,10 +590,10 @@ class _DetailPageState extends State<DetailPage> {
                   requireDate: _requireDate,
                   setHeaders: setHeaders,
                   setRows: (updatedRows) {
-                    print(updatedRows);
-                    // setState(() {
-                    //     rowData['date'] =  updatedRows;
-                    // });
+                    setState(() {
+                        rows =  updatedRows;
+                        // rowData['date'] =  updatedRows;
+                    });
                   },
                   addRow: _addRow,
                   isHideBox: _isHideBox,

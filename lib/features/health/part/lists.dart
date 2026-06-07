@@ -89,7 +89,8 @@ class SymptomHistoryList extends StatelessWidget {
                     }),
                   ),
                   const SizedBox(height: 10),
-                  TextField(
+                  // TextField(
+                  TextFormField(
                     decoration: const InputDecoration(
                       labelText: "Symptom . . .",
                       border: OutlineInputBorder(),
@@ -97,7 +98,8 @@ class SymptomHistoryList extends StatelessWidget {
                     maxLines: 3,
                     onChanged: (val) =>
                         setModalState(() => record['symptoms'] = val),
-                    controller: TextEditingController(text: record['symptoms']),
+                    // controller: TextEditingController(text: record['symptoms']),
+                    initialValue: record['symptoms'],
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -132,33 +134,103 @@ class SymptomHistoryList extends StatelessWidget {
                       ...record['medications'].asMap().entries.map((entry) {
                         int idx = entry.key;
                         var med = entry.value;
-                        return Row(
-                          children: [
-                            // Expanded(child: DropdownButton( /* เลือกยาจาก Firebase Master */ )),
-                            // // ไอคอน เช้า กลางวัน เย็น ก่อนนอน (ใช้ IconButton หรือ FilterChip)
-                            // _buildTimeChip(idx, 'morning', Icons.wb_sunny_outlined),
-                            // _buildTimeChip(idx, 'noon', Icons.wb_sunny),
-                            // _buildTimeChip(idx, 'evening', Icons.dark_mode_outlined),
-                            // _buildTimeChip(idx, 'night', Icons.bedtime),
-                          ],
+
+                        return ListTile(
+                          // leading: Icon(
+                          //   med.label == 'เช้า'
+                          //       ? Icons.wb_sunny_outlined
+                          //       : med.label == 'กลางวัน'
+                          //       ? Icons.wb_sunny
+                          //       : med.label == 'เย็น'
+                          //       ? Icons.dark_mode_outlined
+                          //       : Icons.bedtime,
+                          // ),
+                          title: Text(med['name']),
+
+                          // subtitle: Text(data['desc']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('จำนวนที่เหลือ'),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 80,
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText: (med['amount'] ?? '').toString(),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (val) => {
+                                    setModalState(() {
+                                      List<dynamic> currentList = List.from(
+                                        record['medications'] ?? [],
+                                      );
+
+                                      while (currentList.length <= idx) {
+                                        currentList.add(null);
+                                      }
+
+                                      currentList[idx] = {
+                                        'id': med['id'],
+                                        'name': med['name'],
+                                        'amount': int.parse((val)),
+                                        'skip': false,
+                                      };
+
+                                      record['medications'] = currentList;
+                                    }),
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: med['skip']
+                                      ? Colors.grey
+                                      : const Color(0xFFBA68C8),
+                                ),
+                                onPressed: () {
+                                  setModalState(() {
+                                    List<dynamic> currentList = List.from(
+                                      record['medications'] ?? [],
+                                    );
+
+                                    while (currentList.length <= idx) {
+                                      currentList.add(null);
+                                    }
+
+                                    currentList[idx] = {
+                                      'id': med['id'],
+                                      'name': med['name'],
+                                      'amount': med['amount'],
+                                      'skip': true,
+                                    };
+
+                                    record['medications'] = currentList;
+                                  });
+                                },
+                                child: const Text('Skip'),
+                              ),
+                            ],
+                          ),
                         );
                       }),
-                      TextButton.icon(
-                        onPressed: () => setModalState(
-                          () => record['medications'].add({
-                            "name": "",
-                            "morning": false,
-                            "noon": false,
-                            "evening": false,
-                            "night": false,
-                          }),
-                        ),
-                        icon: const Icon(Icons.add),
-                        label: const Text("เพิ่มยา"),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFBA68C8),
-                        ),
-                      ),
+                      // TextButton.icon(
+                      //   onPressed: () => setModalState(
+                      //     () => record['medications'].add({
+                      //       "name": "",
+                      //       "morning": false,
+                      //       "noon": false,
+                      //       "evening": false,
+                      //       "night": false,
+                      //     }),
+                      //   ),
+                      //   icon: const Icon(Icons.add),
+                      //   label: const Text("เพิ่มยา"),
+                      //   style: OutlinedButton.styleFrom(
+                      //     foregroundColor: const Color(0xFFBA68C8),
+                      //   ),
+                      // ),
                     ],
                   ),
                   const Divider(height: 20),
@@ -222,38 +294,18 @@ class SymptomHistoryList extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 8),
                       Row(
                         // mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              color: Colors.grey,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              int currentValue =
-                                  int.tryParse(_amountController.text) ?? 10;
-                              if (currentValue > 0) {
-                                setModalState(() {
-                                  _amountController.text = (currentValue + 1)
-                                      .toString();
-                                });
-                              }
-                            },
-                          ),
-
                           SizedBox(
-                            width: 80, 
+                            width: 80,
                             child: TextField(
                               controller: _amountController,
-                              keyboardType: TextInputType
-                                  .number, 
-                              textAlign: TextAlign
-                                  .center, 
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -267,37 +319,12 @@ class SymptomHistoryList extends StatelessWidget {
                                 ),
                               ),
                               onChanged: (value) {
-                                if (value.isEmpty) {
-                                  _amountController.text = '0';
-                                  _amountController.selection =
-                                      TextSelection.fromPosition(
-                                        TextPosition(
-                                          offset: _amountController.text.length,
-                                        ),
-                                      );
-                                }
+                                record['minExercise'] = int.parse(value);
                               },
                             ),
                           ),
-
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_circle_outline,
-                              color: Colors.blue,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              int currentValue =
-                                  int.tryParse(_amountController.text) ?? 10;
-                              // int currentValue = record['minExercise'];
-                              setModalState(() {
-                                _amountController.text = (currentValue + 1)
-                                    .toString();
-                                // record['minExercise'] =
-                                //     (currentValue + 1).toString();
-                              });
-                            },
-                          ),
+                          const SizedBox(width: 5),
+                          const Text('นาที'),
                         ],
                       ),
 
@@ -324,7 +351,7 @@ class SymptomHistoryList extends StatelessWidget {
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             FirebaseFirestore.instance
                                 .collection('health')
                                 .doc(data['id'])
@@ -333,6 +360,23 @@ class SymptomHistoryList extends StatelessWidget {
                                   'data': record,
                                   'updateddAt': FieldValue.serverTimestamp(),
                                 });
+
+                            CollectionReference medicationRef =
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(data['authorId'])
+                                    .collection('drugs');
+                            try {
+                              for (Map<String, dynamic> data
+                                  in record['medications']) {
+                                await medicationRef.doc(data['id']).update({
+                                  'amount': data['amount'],
+                                  'updatedAt': FieldValue.serverTimestamp(),
+                                });
+                              }
+                            } finally {
+                              print('final');
+                            }
                             Navigator.pop(context);
                           },
                           child: const Text('บันทึก'),
@@ -388,7 +432,7 @@ class SymptomHistoryList extends StatelessWidget {
               final data = (datas[index].data()) as Map<String, dynamic>;
               data['id'] = datas[index].id;
 
-              final mentallevel = data['data']['mental_level'] ?? 0;
+              final mentallevel = data['data']['mental_level'] ?? -1;
               DateTime thirtyDaysAgo = DateTime.now().subtract(
                 const Duration(days: 31),
               ); // if(DateTime.parse(data['date']).isAfter(thirtyDaysAgo))
@@ -411,24 +455,28 @@ class SymptomHistoryList extends StatelessWidget {
                     _showEditSheet(context, data);
                   },
                   child: ListTile(
-                    leading: CircleAvatar(
-                      child: Icon(
-                        mentallevel == 0
-                            ? Icons.sentiment_very_dissatisfied
-                            : mentallevel == 1
-                            ? Icons.sentiment_dissatisfied
-                            : mentallevel == 2
-                            ? Icons.sentiment_neutral
-                            : mentallevel == 3
-                            ? Icons.sentiment_satisfied
-                            : mentallevel == 4
-                            ? Icons.sentiment_very_satisfied
-                            : Icons.warning_amber_rounded,
-                        color: mentallevel < 0
-                            ? Colors.white
-                            : colors[mentallevel].withValues(alpha: 0.8),
-                      ),
-                    ),
+                    leading: mentallevel == -1
+                        ? null
+                        : CircleAvatar(
+                            child: Icon(
+                              mentallevel == 0
+                                  ? Icons.sentiment_very_dissatisfied
+                                  : mentallevel == 1
+                                  ? Icons.sentiment_dissatisfied
+                                  : mentallevel == 2
+                                  ? Icons.sentiment_neutral
+                                  : mentallevel == 3
+                                  ? Icons.sentiment_satisfied
+                                  : mentallevel == 4
+                                  ? Icons.sentiment_very_satisfied
+                                  : mentallevel == 5
+                                  ? Icons.warning_amber_rounded
+                                  : null,
+                              color: mentallevel < 0
+                                  ? Colors.white
+                                  : colors[mentallevel].withValues(alpha: 0.8),
+                            ),
+                          ),
                     title: Text(
                       data['data']['symptoms'].split('\n').first ?? 'บันทึก',
                     ),

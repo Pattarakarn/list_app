@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/logo.png',
+                  'assets/icon.png',
                   width: 50,
                   height: 50,
                   // fit: BoxFit.contain

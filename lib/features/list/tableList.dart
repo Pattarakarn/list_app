@@ -7,9 +7,9 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 class TableList extends StatelessWidget {
   final bool requireDate;
   final List<String> headers;
-  final Function(List) setHeaders;
+  final Function(List<String>) setHeaders;
   final List<Map<String, dynamic>> rows;
-  final Function(List) setRows;
+  final Function(List<Map<String, dynamic>>) setRows;
   final Function() addRow;
   final bool isHideBox;
   final bool showRemark;
@@ -52,15 +52,16 @@ class TableList extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: TextField(
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
-                    CurrencyTextInputFormatter.currency(
-                      locale: 'ko',
-                      symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
-                      decimalDigits: 2,
-                    ),
-                  ],
+                  // keyboardType: TextInputType.number,
+                  // inputFormatters: [
+                  //   //   // FilteringTextInputFormatter.digitsOnly, // พิมพ์ได้เฉพาะตัวเลข
+                  //   CurrencyTextInputFormatter.currency(
+                  //     locale: 'ko',
+                  //     symbol: '', // ถ้าไม่อยากให้มีเครื่องหมาย $ หรือ ฿ นำหน้า
+                  //     decimalDigits: 2,
+                  //   ),
+                  // ],
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   textAlign: TextAlign.right,
                   controller:
                       TextEditingController(
