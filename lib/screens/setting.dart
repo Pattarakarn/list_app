@@ -75,9 +75,10 @@ class _SettingPageState extends State<SettingPage> {
         await FirebaseFirestore.instance.collection('cars').add({
           'authorId': user?.uid,
           'car_name': '',
+          'color': '',
           // 'capacity': double.tryParse(capacity) ?? 0.0,
           'type': '',
-          'station': '',
+          // 'station': '',
           'oil': '',
           // cc
         });
@@ -95,7 +96,7 @@ class _SettingPageState extends State<SettingPage> {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             decoration: BoxDecoration(
-              color:const Color(0xFF334155),
+              color: const Color(0xFF334155),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
@@ -236,20 +237,8 @@ class _SettingPageState extends State<SettingPage> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.medical_services),
-                        title: const Text("ยาประจำตัว"),
-                        onTap: () async {
-                          final result = await showDialog(
-                            context: context,
-                            builder: (context) => const AddDrugDialog(),
-                          );
-
-                        },
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
                         leading: const Icon(Icons.directions_car_rounded),
-                        title: const Text("Add Car"),
+                        // title: const Text("Add Car"),
                         onTap: () {
                           _showMyCar(context);
                         },
@@ -323,13 +312,57 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                         ],
                       ),
-                      // const Divider(height: 1),
+
+                      const Divider(height: 1),
                       // ListTile(
                       //   leading: const Icon(Icons.contrast_rounded),
                       //   title: const Text("Theme"),
                       //   onTap: () {},
                       // ),
-                      // const Divider(height: 1),
+                      ExpansionTile(
+                        title: const Text(
+                          "ยาประจำตัว",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        textColor: AppColors.primary,
+                        iconColor: AppColors.secondary,
+                        tilePadding: EdgeInsets.zero,
+                        children: [
+                          const Text(". . ."), //ตอนนี้มียาอะไรบ้าง
+                          ListTile(
+                            leading: const Icon(Icons.medical_services),
+                            title: const Text("เพิ่ม "),
+                            onTap: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (context) => const AddDrugDialog(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 1),
+                      ExpansionTile(
+                        title: const Text(
+                          "Export",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        textColor: AppColors.primary,
+                        iconColor: AppColors.secondary,
+                        tilePadding: EdgeInsets.zero,
+                        children: [
+                          ListTile(
+                            // leading: const Icon(Icons.edit),
+                            title: const Text("Car "),
+                            onTap: () async {},
+                          ),
+                          ListTile(
+                            // leading: const Icon(Icons.edit),
+                            title: const Text("Health "),
+                            onTap: () async {},
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -410,19 +443,19 @@ Widget _buildTypeSelector() {
         "น้ำมัน",
         Icons.local_gas_station,
         AppColors.secondary,
-        isSelected: true,
+        isSelected: !true,
       ),
       _typeButton(
         "HEV",
         Icons.electric_car_outlined,
         Colors.red,
-        isSelected: true,
+        isSelected: !true,
       ),
       _typeButton(
         "EV",
         Icons.battery_charging_full_rounded,
         Colors.green,
-        isSelected: true,
+        isSelected: !true,
       ),
     ],
   );

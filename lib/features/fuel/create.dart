@@ -62,7 +62,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
       appBar: AppBar(
         title: Text(
           "Fuel Log - ${widget.data['car_name']}",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -518,11 +518,6 @@ class _CreateListFuelState extends State<CreateListFuel> {
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           try {
-                            // await FirebaseFirestore.instance
-                            //     .collection('fill-ups')
-                            //     .add({
-
-                            //     });
                             final carId = widget.data['id'];
                             final datas = {
                               'createdAt': FieldValue.serverTimestamp(),
@@ -541,6 +536,11 @@ class _CreateListFuelState extends State<CreateListFuel> {
                               'station': _station,
                               '_fuelLevel': _fuelLevel * 10,
                             };
+                            await FirebaseFirestore.instance
+                                .collection('cars')
+                                .doc(carId)
+                                .collection('fill-ups')
+                                .add(datas);
                             WriteBatch batch = FirebaseFirestore.instance
                                 .batch();
 
@@ -568,7 +568,7 @@ class _CreateListFuelState extends State<CreateListFuel> {
                               ),
                               'refuel_count': FieldValue.increment(1),
                               'allLites': FieldValue.increment(
-                                int.tryParse(_litersController.text) ?? 0,
+                                double.tryParse(_litersController.text) ?? 0,
                               ), //
                               'first_mileage':
                                   widget.data['first_mileage'] ??

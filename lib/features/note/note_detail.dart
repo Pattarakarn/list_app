@@ -19,10 +19,10 @@ class _DetailPageState extends State<DetailPage> {
   String content = '';
   bool isLock = false;
   String _update = '';
+  List<Map<String, dynamic>> conversation = [];
 
   void _updateData() async {
     try {
-      print(content);
       await FirebaseFirestore.instance
           .collection('notes')
           .doc(widget.docId)
@@ -31,6 +31,7 @@ class _DetailPageState extends State<DetailPage> {
             'content': content,
             'lock': isLock,
             'updatedAt': FieldValue.serverTimestamp(),
+            'conversation': conversation,
           });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,6 +81,16 @@ class _DetailPageState extends State<DetailPage> {
               _update = DateFormat(
                 'dd MMM yyyy',
               ).format(docData['updatedAt'].toDate());
+
+            print(conversation);
+            if (docData['conversation'] != null) {
+              print(docData['conversation']);
+              conversation = List<Map<String, dynamic>>.from(
+                (docData['conversation'] as List).map(
+                  (item) => Map<String, dynamic>.from(item),
+                ),
+              );
+            }
           }
           isInitialized = true;
         }
@@ -111,7 +122,7 @@ class _DetailPageState extends State<DetailPage> {
                       borderSide: BorderSide(color: AppColors.gray, width: 1.0),
                     ),
                   ),
-                      onChanged: (val) => name = val,
+                  onChanged: (val) => name = val,
                 ),
                 const SizedBox(height: 10),
                 // textarea
@@ -127,8 +138,9 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   controller: TextEditingController(text: content),
-                    onChanged: (val) => content = val,
+                  onChanged: (val) => content = val,
                 ),
+
                 // RichText(
                 //   text: TextSpan(
                 //     style: TextStyle(color: Colors.black, fontSize: 18), // สไตล์หลัก
@@ -142,6 +154,68 @@ class _DetailPageState extends State<DetailPage> {
                 //     ],
                 //   ),
                 // ),
+                for (int i = 0; i < conversation.length; i++) ...[
+                  Builder(
+                    builder: (context) {
+                      var entry = conversation[i];
+                      String val = conversation[i]['value'] ?? '';
+
+                      return Container(
+                        margin: EdgeInsets.fromLTRB(
+                          entry['side'] == "right" ? 25 : 0,
+                          10,
+                          entry['side'] == "left" ? 25 : 0,
+                          0,
+                        ),
+                        child: TextField(
+                          maxLines: 10,
+                          minLines: 3,
+                          keyboardType: TextInputType.multiline,
+
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.gray,
+                                width: 1.0,
+                              ),
+                            ),
+                          ),
+                          controller: TextEditingController(text: val),
+                          onChanged: (val) => {
+                            setState(() {
+                              conversation[i]['value'] = val;
+                            }),
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          conversation.add({'value': "", 'side': "left"});
+                        });
+                      },
+                      child: const Icon(Icons.add, color: Colors.grey),
+                    ),
+
+                    TextButton(
+                      child: const Icon(Icons.add, color: Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          conversation.add({'value': "", 'side': "right"});
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

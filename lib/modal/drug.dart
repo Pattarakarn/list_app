@@ -183,6 +183,7 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
                 child: const Text('ยกเลิก'),
               ),
             ),
+            const SizedBox(width: 5), 
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {

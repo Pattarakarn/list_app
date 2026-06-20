@@ -20,10 +20,10 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _focusedDay = DateTime.now();
   final user = FirebaseAuth.instance.currentUser;
-  late DateTime _firstDayC = DateTime(_focusedDay.year, _focusedDay.month, 1);
+  late DateTime _firstDayC = DateTime(_focusedDay.year, 1, 1);
   late DateTime _lastDayC = DateTime(
     _focusedDay.year,
-    _focusedDay.month + 1,
+    _focusedDay.month + 3,
     0,
   );
 
@@ -130,6 +130,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
       ],
       "periodLevel": 0,
       "minExercise": 10,
+      "typeEx": "",
     };
     final TextEditingController _amountController = TextEditingController(
       text: record['minExercise'].toString(),
@@ -615,19 +616,39 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              const Text(
-                                "Excercise:",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
+
+                              const Divider(),
                               Column(
                                 children: [
                                   SizedBox(height: 8),
-                                  // 1. ประกาศ Controller ไว้ก่อนเปิด Dialog หรือในจุดเริ่มต้น
 
-                                  // 2. โค้ด Widget สำหรับเอาไปแปะในหน้าจอ หรือใน Dialog
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
+                                      const Text(
+                                        "Excercise:",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      SizedBox(
+                                        width: 120, // จำกัดความกว้างช่องกรอก
+                                        child: TextField(
+                                          // controller: _amountController,
+                                          controller: TextEditingController(
+                                            text: record['typeEx']?.toString(),
+                                          ),
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+
+                                          onChanged: (value) {
+                                            record['typeEx'] = value;
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 15),
                                       IconButton(
                                         icon: const Icon(
                                           Icons.remove_circle_outline,
@@ -788,6 +809,7 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
     DateTime now = DateTime.now();
     DateTime lastDayOfWeek = now.add(Duration(days: 6 - now.weekday));
     DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+
     return Column(
       children: [
         AnimatedContainer(
@@ -808,9 +830,9 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
             children: [
               TableCalendar(
                 firstDay: DateTime.utc(2025, 1, 1),
-                lastDay: _calendarFormat == CalendarFormat.week
-                    ? lastDayOfWeek
-                    : lastDayOfMonth,
+                // lastDay: _calendarFormat == CalendarFormat.week
+                //     ? lastDayOfWeek
+                lastDay: lastDayOfMonth,
                 focusedDay: _focusedDay,
                 onDaySelected: (selectedDay, focusedDay) {
                   // setState(() {
@@ -826,13 +848,10 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                     _firstDayC = DateTime(focusedDay.year, focusedDay.month, 1);
                     _lastDayC = DateTime(
                       focusedDay.year,
-                      focusedDay.month + 1,
+                      focusedDay.month + 2,
                       0,
                     );
                   });
-
-                  print("ปฏิทินเปลี่ยนหน้ามาที่เดือน: ${focusedDay.month}");
-                  print("เริ่มที่: $_firstDayC ถึง: $_lastDayC");
                 },
                 // selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onHeaderTapped: (focusedDay) {

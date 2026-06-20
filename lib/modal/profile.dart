@@ -19,9 +19,11 @@ class _ModalProfileState extends State<ModalProfile> {
     );
     String? _selectedGender = widget.userData['sex'] ?? 'ชาย';
 
+  bool isLightMode =
+        MediaQuery.of(context).platformBrightness == Brightness.light;
     return AlertDialog(
       title: const Text('แก้ไข'),
-      backgroundColor: Colors.white,
+      backgroundColor:  isLightMode ? Colors.white :  Colors.black ,
 
       content: ConstrainedBox(
         constraints: BoxConstraints(

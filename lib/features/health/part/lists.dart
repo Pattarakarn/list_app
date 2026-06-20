@@ -29,6 +29,9 @@ class SymptomHistoryList extends StatelessWidget {
     final TextEditingController _amountController = TextEditingController(
       text: record['minExercise']?.toString() ?? '',
     );
+    final TextEditingController _typeExController = TextEditingController(
+      text: record['typeEx']?.toString() ?? '',
+    );
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -233,7 +236,7 @@ class SymptomHistoryList extends StatelessWidget {
                       // ),
                     ],
                   ),
-                  const Divider(height: 20),
+                 if(record['medications'].length > 0) const Divider(height: 20),
                   // if (isFemale)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,6 +303,20 @@ class SymptomHistoryList extends StatelessWidget {
                       Row(
                         // mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          SizedBox(
+                            width: 120, // จำกัดความกว้างช่องกรอก
+                            child: TextField(
+                              controller: _typeExController,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                              ),
+
+                              onChanged: (value) {
+                                record['typeEx'] = value;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
                           SizedBox(
                             width: 80,
                             child: TextField(
@@ -423,116 +440,141 @@ class SymptomHistoryList extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         if (datas.isNotEmpty)
-          // Expanded( child:
-          ListView.builder(
-            shrinkWrap: true, // สำคัญ! เพื่อให้อยู่ใน SingleChildScrollView ได้
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: datas.length,
-            itemBuilder: (context, index) {
-              final data = (datas[index].data()) as Map<String, dynamic>;
-              data['id'] = datas[index].id;
+          Row(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap:
+                      true, // สำคัญ! เพื่อให้อยู่ใน SingleChildScrollView ได้
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: datas.length,
+                  itemBuilder: (context, index) {
+                    final data = (datas[index].data()) as Map<String, dynamic>;
+                    data['id'] = datas[index].id;
 
-              final mentallevel = data['data']['mental_level'] ?? -1;
-              DateTime thirtyDaysAgo = DateTime.now().subtract(
-                const Duration(days: 31),
-              ); // if(DateTime.parse(data['date']).isAfter(thirtyDaysAgo))
-              if ((data['date'] as Timestamp).toDate().isBefore(thirtyDaysAgo))
-                return null;
-              return Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  side: const BorderSide(
-                    color: AppColors.blue, // สีขอบ
-                  ),
-                ),
-                color: isLightMode ? Colors.white : Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(
-                    15,
-                  ), // ปรับให้โค้งเท่ากับ Card
-                  onTap: () {
-                    _showEditSheet(context, data);
+                    final mentallevel = data['data']['mental_level'] ?? -1;
+                    DateTime thirtyDaysAgo = DateTime.now().subtract(
+                      const Duration(days: 31),
+                    ); // if(DateTime.parse(data['date']).isAfter(thirtyDaysAgo))
+                    if ((data['date'] as Timestamp).toDate().isBefore(
+                      thirtyDaysAgo,
+                    ))
+                      return null;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: const BorderSide(
+                          color: AppColors.blue, // สีขอบ
+                        ),
+                      ),
+                      color: isLightMode ? Colors.white : Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(
+                          15,
+                        ), // ปรับให้โค้งเท่ากับ Card
+                        onTap: () {
+                          _showEditSheet(context, data);
+                        },
+                        child: ListTile(
+                          leading: mentallevel == -1
+                              ? null
+                              : CircleAvatar(
+                                  child: Icon(
+                                    mentallevel == 0
+                                        ? Icons.sentiment_very_dissatisfied
+                                        : mentallevel == 1
+                                        ? Icons.sentiment_dissatisfied
+                                        : mentallevel == 2
+                                        ? Icons.sentiment_neutral
+                                        : mentallevel == 3
+                                        ? Icons.sentiment_satisfied
+                                        : mentallevel == 4
+                                        ? Icons.sentiment_very_satisfied
+                                        : mentallevel == 5
+                                        ? Icons.warning_amber_rounded
+                                        : null,
+                                    color: mentallevel < 0
+                                        ? Colors.white
+                                        : colors[mentallevel].withValues(
+                                            alpha: 0.8,
+                                          ),
+                                  ),
+                                  backgroundColor: Colors.transparent,
+                                ),
+                          title: Text(
+                            data['data']['symptoms'].split('\n').first ??
+                                'บันทึก',
+                          ),
+                          subtitle: Text(
+                            DateFormat(
+                              'dd MMMM yyyy',
+                            ).format(data['date'].toDate()),
+                            // (data['date'] != null)
+                            //     ? DateFormat(
+                            //         'dd MMMM yyyy',
+                            //       ).format(data['date'] | data['createdAt]).toString()
+                            //     : "29 มี.ค. 2026",
+                            style: const TextStyle(fontSize: 12),
+                          ),
+
+                          trailing: Wrap(
+                            spacing: 4, // ระยะห่างระหว่างไอคอน
+                            crossAxisAlignment: WrapCrossAlignment.end,
+                            children: [
+                              if (data['data']['pain_level'] > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFF06292,
+                                    ).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "${data['data']['pain_level']}/10",
+                                    style: const TextStyle(
+                                      color: Color(0xFFF06292),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              if ((data['data']['minExercise'] ?? 0) > 0)
+                                Icon(
+                                  Icons.accessibility_new,
+                                  color: data['data']['minExercise'] >= 30
+                                      ? Colors.blue
+                                      : data['data']['minExercise'] >= 10
+                                      ? Colors.blue[300]
+                                      : Colors.blue[100],
+                                ),
+                              if (data['data']['medications'].isNotEmpty)
+                                Icon(
+                                  Icons.medical_services,
+                                  color: data['data']['medications'][0]['skip']
+                                      ? Colors.grey
+                                      : Color(0xFFBA68C8),
+                                ),
+                              if (data['data']['periodLevel'] > 0)
+                                Icon(
+                                  Icons.water_drop,
+                                  color: AppColors.danger,
+                                  size: 20.0 + (data['data']['periodLevel']),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   },
-                  child: ListTile(
-                    leading: mentallevel == -1
-                        ? null
-                        : CircleAvatar(
-                            child: Icon(
-                              mentallevel == 0
-                                  ? Icons.sentiment_very_dissatisfied
-                                  : mentallevel == 1
-                                  ? Icons.sentiment_dissatisfied
-                                  : mentallevel == 2
-                                  ? Icons.sentiment_neutral
-                                  : mentallevel == 3
-                                  ? Icons.sentiment_satisfied
-                                  : mentallevel == 4
-                                  ? Icons.sentiment_very_satisfied
-                                  : mentallevel == 5
-                                  ? Icons.warning_amber_rounded
-                                  : null,
-                              color: mentallevel < 0
-                                  ? Colors.white
-                                  : colors[mentallevel].withValues(alpha: 0.8),
-                            ),
-                          ),
-                    title: Text(
-                      data['data']['symptoms'].split('\n').first ?? 'บันทึก',
-                    ),
-                    subtitle: Text(
-                      DateFormat('dd MMMM yyyy').format(data['date'].toDate()),
-                      // (data['date'] != null)
-                      //     ? DateFormat(
-                      //         'dd MMMM yyyy',
-                      //       ).format(data['date'] | data['createdAt]).toString()
-                      //     : "29 มี.ค. 2026",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-
-                    trailing: Wrap(
-                      spacing: 4, // ระยะห่างระหว่างไอคอน
-                      crossAxisAlignment: WrapCrossAlignment.end,
-                      children: [
-                        if (data['data']['pain_level'] > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFF06292,
-                              ).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              "${data['data']['pain_level']}/10",
-                              style: const TextStyle(
-                                color: Color(0xFFF06292),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        if (data['data']['periodLevel'] > 0)
-                          Icon(
-                            Icons.water_drop,
-                            color: AppColors.danger,
-                            size: 20.0 + (index * data['data']['periodLevel']),
-                          ),
-                        if (data['data']['medications'].isNotEmpty)
-                          const Icon(
-                            Icons.medical_services,
-                            color: Color(0xFFBA68C8),
-                          ),
-                      ],
-                    ),
-                  ),
+                  // ),
                 ),
-              );
-            },
-            // ),
+              ),
+            ],
           ),
       ],
       // ),
