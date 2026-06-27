@@ -6,7 +6,14 @@ import 'package:intl/intl.dart';
 
 class SymptomHistoryList extends StatelessWidget {
   final List<DocumentSnapshot> datas;
-  const SymptomHistoryList({super.key, required this.datas});
+  final DateTime firstDayC;
+  final DateTime lastDayC;
+  const SymptomHistoryList({
+    super.key,
+    required this.datas,
+    required this.firstDayC,
+    required this.lastDayC,
+  });
 
   void _showEditSheet(BuildContext context, Map<String, dynamic> data) {
     List<Color> colors = [
@@ -236,7 +243,8 @@ class SymptomHistoryList extends StatelessWidget {
                       // ),
                     ],
                   ),
-                 if(record['medications'].length > 0) const Divider(height: 20),
+                  if (record['medications'].length > 0)
+                    const Divider(height: 20),
                   // if (isFemale)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +443,7 @@ class SymptomHistoryList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "อาการล่าสุด", //ช่องแล้วก็แสดงวันตามที่ปฏิทินโชว์
+          "บันทึกที่ผ่านมา",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
@@ -456,10 +464,13 @@ class SymptomHistoryList extends StatelessWidget {
                     DateTime thirtyDaysAgo = DateTime.now().subtract(
                       const Duration(days: 31),
                     ); // if(DateTime.parse(data['date']).isAfter(thirtyDaysAgo))
-                    if ((data['date'] as Timestamp).toDate().isBefore(
-                      thirtyDaysAgo,
-                    ))
-                      return null;
+                    
+                    // if ((data['date'] as Timestamp).toDate().isBefore(firstDayC) 
+                    //    || (data['date'] as Timestamp).toDate().isAfter(
+                    //       DateTime(firstDayC.year, firstDayC.month + 1, 0),
+                    //     )
+                    //     )
+                    //   return null;
                     return Card(
                       margin: const EdgeInsets.only(bottom: 10),
                       shape: RoundedRectangleBorder(

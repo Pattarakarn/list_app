@@ -4,7 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AddDrugDialog extends StatefulWidget {
-  const AddDrugDialog({super.key});
+  final Map<String, dynamic>? data;
+  final String? docId;
+
+  const AddDrugDialog({super.key, this.data, this.docId});
 
   @override
   State<AddDrugDialog> createState() => _AddDrugDialogState();
@@ -28,6 +31,20 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
   DateTime? expiryDate;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.data != null) {
+      nameController.text = widget.data!['name'];
+      descController.text = widget.data!['desc'];
+      amountController.text = widget.data!['amount'].toString();
+      doseController.text = widget.data!['dose'].toString();
+      mealTime = widget.data!['mealTime'];
+      // schedule = widget.data!['schedule'];
+      expiryDate = widget.data!['expiryDate'];
+    }
+  }
+
+  @override
   void dispose() {
     nameController.dispose();
     descController.dispose();
@@ -37,9 +54,10 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.data);
     return AlertDialog(
-      title: const Text(
-        'เพิ่มข้อมูลยา',
+      title: Text(
+        (widget.data != null) ? 'แก้ไขข้อมูลยา' : 'เพิ่มข้อมูลยา',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       scrollable: true,
@@ -167,6 +185,7 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
                     firstDate: DateTime.now(),
                     lastDate: DateTime(2035),
                   );
+                  print(picked);
                   if (picked != null) setState(() => expiryDate = picked);
                 },
               ),
@@ -183,7 +202,7 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
                 child: const Text('ยกเลิก'),
               ),
             ),
-            const SizedBox(width: 5), 
+            const SizedBox(width: 5),
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
@@ -197,14 +216,28 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
                     'expiry': expiryDate,
                     'created_at': DateTime.now(),
                   };
-                  FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(user?.uid)
-                      .collection('drugs')
-                      .add(drugData);
+                  if (widget.data == null) {
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user?.uid)
+                        .collection('drugs')
+                        .add(drugData);
+                  } else {
+                     final docRef = FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user?.uid)
+                        .collection('drugs');
+
+                    await docRef.doc(widget.docId).update({
+                      ...drugData,
+                      'updatedAt':
+                          FieldValue.serverTimestamp(), // เก็บเวลาแก้ไขล่าสุด
+                    });
+                  }
+
                   Navigator.pop(context, drugData);
                 },
-                child: const Text('สร้าง'),
+                child:  Text(widget.docId == null ? 'สร้าง' : 'บันทึก'),
               ),
             ),
           ],

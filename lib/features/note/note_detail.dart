@@ -20,6 +20,7 @@ class _DetailPageState extends State<DetailPage> {
   bool isLock = false;
   String _update = '';
   List<Map<String, dynamic>> conversation = [];
+  bool showOption = false;
 
   void _updateData() async {
     try {
@@ -107,116 +108,201 @@ class _DetailPageState extends State<DetailPage> {
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: TextEditingController(text: name),
-                  decoration: const InputDecoration(
-                    labelText: 'ชื่อ',
-                    border: OutlineInputBorder(),
-                    // filled: true,
-                    // fillColor: AppColors.gray,
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.gray, width: 1.0),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: TextEditingController(text: name),
+                    decoration: const InputDecoration(
+                      labelText: 'ชื่อ',
+                      border: OutlineInputBorder(),
+                      // filled: true,
+                      // fillColor: AppColors.gray,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                      ),
                     ),
+                    onChanged: (val) => name = val,
                   ),
-                  onChanged: (val) => name = val,
-                ),
-                const SizedBox(height: 10),
-                // textarea
-                TextField(
-                  maxLines: 15,
-                  minLines: 5,
-                  keyboardType: TextInputType.multiline,
-                  decoration: InputDecoration(
-                    hintText: 'Note here',
-                    border: OutlineInputBorder(),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.gray, width: 1.0),
+                  const SizedBox(height: 10),
+                  // textarea
+                  TextField(
+                    maxLines: 15,
+                    minLines: 5,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      hintText: 'Note here',
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                      ),
                     ),
+                    controller: TextEditingController(text: content),
+                    onChanged: (val) => content = val,
                   ),
-                  controller: TextEditingController(text: content),
-                  onChanged: (val) => content = val,
-                ),
 
-                // RichText(
-                //   text: TextSpan(
-                //     style: TextStyle(color: Colors.black, fontSize: 18), // สไตล์หลัก
-                //     children: [
-                //       TextSpan(text: 'Hello '),
-                //       TextSpan(
-                //         text: 'Flutter',
-                //         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                //       ),
-                //       TextSpan(text: ' Developer!'),
-                //     ],
-                //   ),
-                // ),
-                for (int i = 0; i < conversation.length; i++) ...[
-                  Builder(
-                    builder: (context) {
-                      var entry = conversation[i];
-                      String val = conversation[i]['value'] ?? '';
+                  // RichText(
+                  //   text: TextSpan(
+                  //     style: TextStyle(color: Colors.black, fontSize: 18), // สไตล์หลัก
+                  //     children: [
+                  //       TextSpan(text: 'Hello '),
+                  //       TextSpan(
+                  //         text: 'Flutter',
+                  //         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  //       ),
+                  //       TextSpan(text: ' Developer!'),
+                  //     ],
+                  //   ),
+                  // ),
+                  for (int i = 0; i < conversation.length; i++) ...[
+                    Builder(
+                      builder: (context) {
+                        var entry = conversation[i];
+                        String val = conversation[i]['value'] ?? '';
 
-                      return Container(
-                        margin: EdgeInsets.fromLTRB(
-                          entry['side'] == "right" ? 25 : 0,
-                          10,
-                          entry['side'] == "left" ? 25 : 0,
-                          0,
-                        ),
-                        child: TextField(
-                          maxLines: 10,
-                          minLines: 3,
-                          keyboardType: TextInputType.multiline,
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment
+                              .start, // ให้ปุ่มเริ่มจากด้านบนพร้อม TextField
+                          children: [
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.fromLTRB(
+                                  entry['side'] == "right" ? 30 : 0,
+                                  10,
+                                  entry['side'] == "left" ? 30 : 0,
+                                  0,
+                                ),
+                                child: TextField(
+                                  maxLines: 10,
+                                  minLines: 3,
+                                  keyboardType: TextInputType.multiline,
 
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
 
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.gray,
-                                width: 1.0,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppColors.gray,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  // controller: TextEditingController(text:  conversation[i]['value']),
+                                  controller: conversation[i]['controller'],
+                                  onChanged: (val) => {
+                                    // setState(() {
+                                      conversation[i]['value'] = val
+                                    // }),
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                          controller: TextEditingController(text: val),
-                          onChanged: (val) => {
-                            setState(() {
-                              conversation[i]['value'] = val;
-                            }),
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          conversation.add({'value': "", 'side': "left"});
-                        });
-                      },
-                      child: const Icon(Icons.add, color: Colors.grey),
-                    ),
-
-                    TextButton(
-                      child: const Icon(Icons.add, color: Colors.grey),
-                      onPressed: () {
-                        setState(() {
-                          conversation.add({'value': "", 'side': "right"});
-                        });
+                            SizedBox(width: !showOption ? 20 : 5),
+                            if (showOption)
+                              Transform.translate(
+                                // คีย์หลักตรงนี้: x: -8.0 คือการเลื่อนไปทางซ้าย 8 พิกัด (เทียบเท่าประมาณ -translate-x-2)
+                                // ถ้าอยากให้เลื่อนเฉพาะตอน show == true ก็ใช้เงื่อนไขเช็กได้ เช่น show ? -8.0 : 0.0
+                                offset: Offset(
+                                  entry['side'] == 'left' ? -20 : 0.0,
+                                  0.0,
+                                ),
+                                child: Column(
+                                  // mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // ElevatedButton(on smugglers, onPressed: () {}, child: const Text('ปุ่ม 1')),
+                                    const SizedBox(height: 15),
+                                    TextButton(
+                                      child: Icon(
+                                        Icons.close,
+                                        color: conversation.length == 1
+                                            ? AppColors.gray
+                                            : AppColors.danger,
+                                      ),
+                                      onPressed: () {
+                                        // if (i >= 0 && i < conversation.length) {
+                                        setState(() {
+                                          if (conversation.length > 1) {
+                                            conversation.removeAt(i);
+                                          } else {
+                                            conversation[i]['value'] = '';
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    const SizedBox(height: 25),
+                                    if (i == conversation.length - 1)
+                                      TextButton(
+                                        child: const Icon(
+                                          Icons.add,
+                                          color: AppColors.note,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            conversation.add({
+                                              'value': "",
+                                              'side': entry['side'],
+                                            });
+                                          });
+                                        },
+                                        // style: TextButton.styleFrom(
+                                        //   backgroundColor: AppColors.gray,
+                                        // ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        );
                       },
                     ),
                   ],
-                ),
-              ],
+                 
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // TextButton(
+                      //   onPressed: () {
+                      //     setState(() {
+                      //       conversation.add({'value': "", 'side': "left"});
+                      //     });
+                      //   },
+                      //   child: const Icon(Icons.add, color: Colors.grey),
+                      // ),
+                      if(conversation.length > 0)
+                      TextButton(
+                        child: Transform.flip(
+                          flipX:
+                              conversation[conversation.length - 1]['side'] ==
+                                  "right"
+                              ? true
+                              : false,
+                          child: const Icon(
+                            Icons.add_comment,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            conversation.add({
+                              'value': "",
+                              'side':
+                                  conversation[conversation.length -
+                                          1]['side'] ==
+                                      "left"
+                                  ? "right"
+                                  : "left",
+                            });
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
           floatingActionButton: isKeyboardOpen
@@ -249,7 +335,27 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                       ),
                     ),
-                    // const SizedBox(width: 16),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextButton(
+                        child: const Text('Manage'),
+                        onPressed: () {
+                          setState(() => showOption = !showOption);
+                        },
+                        style: TextButton.styleFrom(
+                          // side: showOption
+                          //     ? const BorderSide(color: AppColors.primary)
+                          //     : BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          backgroundColor: showOption
+                              ? AppColors.gray
+                              : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.5,
                       child: FloatingActionButton.extended(

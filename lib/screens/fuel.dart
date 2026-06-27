@@ -138,7 +138,7 @@ class _FuelScreenState extends State<FuelScreen> {
           if (_showGraph)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: 300,
+              height: 150,
               margin: const EdgeInsets.only(top: 10),
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.05),
@@ -173,7 +173,7 @@ class _FuelScreenState extends State<FuelScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Vehicles",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -213,15 +213,25 @@ class _FuelScreenState extends State<FuelScreen> {
         //   ),
         // ],
       ),
-      body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
+      body:
+          // Scaffold(
+          //   body: Stack(
+          // children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0F2027),
+                  Color(0xFF203A43),
+                  Color(0xFF2C5364),
+                ],
+              ),
             ),
-          ),
 
+            // child: SafeArea(
+            //   child: SingleChildScrollView(
             child: Column(
               children: [
                 Expanded(
@@ -248,8 +258,10 @@ class _FuelScreenState extends State<FuelScreen> {
                       final docs = snapshot.data!.docs;
                       // var doc = snapshot.data!.docs.first;
                       //             Map<String, dynamic> carData = doc.data() as Map<String, dynamic>;
+                      //             SafeArea(
+                      // child:
                       return ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(15, 100, 15, 20),
+                        padding: const EdgeInsets.fromLTRB(15, 80, 15, 20),
                         itemCount: docs.length,
                         itemBuilder: (context, index) {
                           final data =
@@ -363,7 +375,12 @@ class _FuelScreenState extends State<FuelScreen> {
                 ),
               ],
             ),
-        ),
+            //   ),
+            // ),
+          ),
+      // ],
+      //   ),
+      // ),
     );
   }
 }

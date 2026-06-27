@@ -61,7 +61,9 @@ class TableList extends StatelessWidget {
                   //     decimalDigits: 2,
                   //   ),
                   // ],
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   textAlign: TextAlign.right,
                   controller:
                       TextEditingController(
@@ -188,6 +190,15 @@ class TableList extends StatelessWidget {
                         // setState(() {
                         //   headers = [...headers, '${headers.length + 1}'];
                         // });
+                        for (int i = 0; i < rows.length; i++) {
+                          final row = [...rows];
+                          row[i]['col${headers.length + 1}'] = {
+                            'text': '',
+                            'num': '',
+                          };
+                          setRows(row);
+                        }
+                        // return _buildDoubleInputCell({'text': '', 'num': ''});
                       },
                       tooltip: 'เพิ่มคอลัมน์',
                     ),

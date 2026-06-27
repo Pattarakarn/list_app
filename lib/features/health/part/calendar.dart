@@ -9,8 +9,17 @@ import 'package:collection/collection.dart';
 class MoodCalendarWidget extends StatefulWidget {
   //  final Map<String, dynamic> data;
   final List<DocumentSnapshot> data; //array
+  final DateTime firstDayC;
+  final DateTime lastDayC;
+  final Function(DateTime, DateTime) setDates;
   // final Map<DateTime, Map<String, dynamic>> data;
-  const MoodCalendarWidget({super.key, required this.data});
+  const MoodCalendarWidget({
+    super.key,
+    required this.data,
+    required this.firstDayC,
+    required this.lastDayC,
+    required this.setDates,
+  });
 
   @override
   State<MoodCalendarWidget> createState() => _MoodCalendarWidgetState();
@@ -20,12 +29,6 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _focusedDay = DateTime.now();
   final user = FirebaseAuth.instance.currentUser;
-  late DateTime _firstDayC = DateTime(_focusedDay.year, 1, 1);
-  late DateTime _lastDayC = DateTime(
-    _focusedDay.year,
-    _focusedDay.month + 3,
-    0,
-  );
 
   Stream<QuerySnapshot>? myDrugs;
   late Map<String, bool> medTimes = {
@@ -38,13 +41,6 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   @override
   void initState() {
     super.initState();
-
-    myDrugs = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .collection('drugs')
-        .where('amount', isGreaterThan: 0)
-        .snapshots();
 
     //   if (isLoading && dialogDrugList.isEmpty) {
     //   FirebaseFirestore.instance
@@ -62,6 +58,19 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
     //   });
     // }
   }
+
+  @override
+void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
+  // super.didUpdateWidget(oldWidget);
+  // // ถ้าหน้าหลักส่งค่าวันใหม่มา ไม่เท่ากับค่าเดิม
+  // if (widget.firstDayC != oldWidget.firstDayC) {
+  //   setState(() {
+  //     // เอาตัวแปรภายในปฏิทินของคุณ (สมมติว่าชื่อ _selectedDay) มาเท่ากับค่าใหม่ที่ส่งมา
+  //     // _focusedDay = widget.firstDayC; 
+  //     // _selectedDay = widget.lastDayC; 
+  //   });
+  // }
+}
 
   List<Color> colors = [
     Colors.red,
@@ -111,7 +120,8 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
         .collection('users')
         .doc(user?.uid)
         .collection('drugs')
-        .where('amount', isGreaterThan: 0)
+        .where('isDelete', isNotEqualTo: true)
+        // .where('amount', isGreaterThanOrEqualTo: 0)
         .get();
 
     List<DocumentSnapshot> dataDrug = snapshot.docs;
@@ -505,9 +515,13 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                                                   // backgroundColor: isSkipSelected
                                                   //     ? primaryColor
                                                   //     : Colors.grey[300],
-                                                  foregroundColor: const Color(
-                                                    0xFFBA68C8,
-                                                  ),
+                                                  foregroundColor:
+                                                      (record['medications']
+                                                              .isNotEmpty &&
+                                                          record['medications'][index]['skip'] ==
+                                                              true)
+                                                      ? AppColors.danger
+                                                      : Color(0xFFBA68C8),
                                                 ),
                                                 onPressed: () {
                                                   // setState(() {
@@ -839,19 +853,37 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
                   //   _focusedDay =
                   //       focusedDay; // อัปเดตหน้าปฏิทินให้เลื่อนตาม (ถ้าจำเป็น)
                   // });
-                  _showEditDialog(selectedDay);
+                  var filt = widget.data
+                      .map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        DateTime d = (data['date'] as Timestamp).toDate();
+                        return DateTime(d.year, d.month, d.day);
+                      })
+                      .where((d) {
+                        return d ==
+                            DateTime(
+                              selectedDay.year,
+                              selectedDay.month,
+                              selectedDay.day,
+                            );
+                      })
+                      .toList();
+               if(filt.isEmpty)   _showEditDialog(selectedDay);
                 },
                 onPageChanged: (focusedDay) {
                   setState(() {
                     _focusedDay = focusedDay;
-                    // คำนวณวันแรกและวันสุดท้ายของเดือนที่แสดงอยู่ใหม่
-                    _firstDayC = DateTime(focusedDay.year, focusedDay.month, 1);
-                    _lastDayC = DateTime(
-                      focusedDay.year,
-                      focusedDay.month + 2,
-                      0,
-                    );
+                    // _firstDayC = DateTime(focusedDay.year, focusedDay.month, 1);
+                    // _lastDayC = DateTime(
+                    //   focusedDay.year,
+                    //   focusedDay.month + 2,
+                    //   0,
+                    // );
                   });
+                  widget.setDates(
+                    DateTime(focusedDay.year, focusedDay.month, 1),
+                    DateTime(focusedDay.year, focusedDay.month + 2, 0),
+                  );
                 },
                 // selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onHeaderTapped: (focusedDay) {

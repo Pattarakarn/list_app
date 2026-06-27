@@ -19,19 +19,58 @@ class _HealthPageState extends State<HealthPage> {
   final user = FirebaseAuth.instance.currentUser;
 
   Stream<QuerySnapshot>? _healthRecord;
+  //calendar
+  DateTime _focusedDay = DateTime.now();
+  late DateTime _firstDayC = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    1,
+  );
+  late DateTime _lastDayC = DateTime(
+    DateTime.now().year,
+    DateTime.now().month + 3,
+    0,
+  );
+  //   อยากได้โค้ดหน้าใหม่
+
+  // บันทึกข้อมูลไปที่ collection test
+
+  // โดยมีฟิลด์ อีเมล์[]
+
+  // คือต้องกดปุ่มข้อมูลก่อน แล้วก็+ได้เรื่อยๆ
+
+  // ธนาคาร[]
+
+  // ก็กดปุ่มเพิ่ม แล้วก็มีฟิลด์ ใส่เลขบัญชี ชื่อบช  สาขา  USERNAMEของแอป สักสี่ช่องก่อนก็ได้
 
   // initState เพื่อกำหนดค่าเริ่มต้นให้ Stream
   @override
   void initState() {
     super.initState();
     // สร้าง Stream ครั้งเดียวตอนโหลดหน้า เพื่อลดภาระเครื่องและป้องกัน Error
-    _healthRecord = FirebaseFirestore.instance
+    // _healthRecord = FirebaseFirestore.instance
+    //     .collection('health')
+    //     .where('authorId', isEqualTo: user?.uid)
+    //     .limit(69)
+    //     .snapshots();
+  }
+
+  Stream<QuerySnapshot> fetchFirestoreData(DateTime selectedDay) {
+    // void fetchFirestoreData() {
+    return FirebaseFirestore.instance
         .collection('health')
         .where('authorId', isEqualTo: user?.uid)
-        // .where('date',isNotEqualTo: null)
         // .orderBy('date', descending: true)
-        .limit(69)
+        .where('date', isGreaterThanOrEqualTo: _firstDayC)
+        .where('date', isLessThanOrEqualTo: _lastDayC)
         .snapshots();
+
+    // .get()
+    // .then((querySnapshot) {
+    //   setState(() {
+    //     _healthRecord = querySnapshot.docs;
+    //   });
+    // });
   }
 
   // สีตามระดับความมากน้อย (4 ระดับ)
@@ -76,53 +115,52 @@ class _HealthPageState extends State<HealthPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).cardColor,
-      body: _healthRecord == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            ) // ถ้ายัง null ให้หมุนรอ
-          // : StreamBuilder<QuerySnapshot>(
-          : StreamBuilder<QuerySnapshot>(
-              stream: _healthRecord,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(
-                    child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'),
-                  );
-                }
+      body:
+          // _healthRecord == null
+          //     ? const Center(
+          //         child: CircularProgressIndicator(),
+          //       ) // ถ้ายัง null ให้หมุนรอ
+          //     :
+          StreamBuilder<QuerySnapshot>(
+            // stream: _healthRecord,
+            stream: fetchFirestoreData(_firstDayC),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล'),
+                );
+              }
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              final List<DocumentSnapshot> documents =
+                  snapshot.data!.docs; //array
+              //     if (documents.isEmpty) return Text("ไม่มีข้อมูล");
+              //     Map<String, dynamic> data = documents[0].data() as Map<String, dynamic>;
+              final Map<DateTime, Map<String, dynamic>> _calendar = {};
 
-                final List<DocumentSnapshot> documents =
-                    snapshot.data!.docs; //array
-                //     if (documents.isEmpty) return Text("ไม่มีข้อมูล");
-                //     Map<String, dynamic> data = documents[0].data() as Map<String, dynamic>;
-                final Map<DateTime, Map<String, dynamic>> _calendar = {};
+              for (var doc in documents) {
+                final data = doc.data() as Map<String, dynamic>;
+                //                   // DateTime dateValue = (data['date'] as Timestamp).toDate();
+                //                   DateTime dateValue = (data['createdAt'] as Timestamp)
+                //                       .toDate();
 
-                for (var doc in documents) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  //                   // DateTime dateValue = (data['date'] as Timestamp).toDate();
-                  //                   DateTime dateValue = (data['createdAt'] as Timestamp)
-                  //                       .toDate();
+                //                   DateTime dayKey = DateTime.utc(
+                //                     dateValue.year,
+                //                     dateValue.month,
+                //                     dateValue.day,
+                //                   );
+                // // print(dayKey);
+                //                   _calendar[dayKey] = data;
 
-                  //                   DateTime dayKey = DateTime.utc(
-                  //                     dateValue.year,
-                  //                     dateValue.month,
-                  //                     dateValue.day,
-                  //                   );
-                  // // print(dayKey);
-                  //                   _calendar[dayKey] = data;
-
-                  // _calendar[dayKey] = {
-                  //   'symptoms': data['symptoms'],
-                  //   'pain_level': data['painLevel'],
-                  //   'medications': data['medications'],
-                  //   'periodLevel': data['periodLevel'],
-                  //   'mental_level': data['mental_level'],
-                  //   // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
-                  // };
-                }
+                // _calendar[dayKey] = {
+                //   'symptoms': data['symptoms'],
+                //   'pain_level': data['painLevel'],
+                //   'medications': data['medications'],
+                //   'periodLevel': data['periodLevel'],
+                //   'mental_level': data['mental_level'],
+                //   // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
+                // };
+              }
+              if (snapshot.hasData) {
                 return Scaffold(
                   // backgroundColor: Colors.grey[50],
                   body: Stack(
@@ -155,15 +193,31 @@ class _HealthPageState extends State<HealthPage> {
                             children: [
                               const SizedBox(height: 15),
                               // --- ส่วนที่ 1: Period Tracker ---
-                               PeriodSummaryCard(datas: documents),
+                              PeriodSummaryCard(datas: documents),
 
                               const SizedBox(height: 10),
 
                               // MoodCalendarWidget(data: _calendar),
-                              MoodCalendarWidget(data: documents),
+                              MoodCalendarWidget(
+                                data: documents,
+                                firstDayC: _firstDayC,
+                                lastDayC: _lastDayC,
+                                setDates: (firstD, lastD) {
+                                  setState(() {
+                                    _firstDayC = firstD;
+                                    _lastDayC = lastD;
+                                    // _focusedDay = lastD;
+                                  });
+                                  // fetchFirestoreData();
+                                },
+                              ),
                               const SizedBox(height: 25),
                               // --- ส่วนที่ 3: Recent Symptoms ---
-                              SymptomHistoryList(datas: documents),
+                              SymptomHistoryList(
+                                datas: documents,
+                                firstDayC: _firstDayC,
+                                lastDayC: _lastDayC,
+                              ),
 
                               const SizedBox(height: 100), // เผื่อระยะล่าง
                             ],
@@ -173,8 +227,15 @@ class _HealthPageState extends State<HealthPage> {
                     ],
                   ),
                 );
-              },
-            ),
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return const Center(child: Text('ไม่มีข้อมูล'));
+            },
+          ),
     );
   }
 

@@ -17,6 +17,9 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+  Stream<QuerySnapshot>? myDrugs;
+  List<TextEditingController> _controllers = [];
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -327,8 +330,142 @@ class _SettingPageState extends State<SettingPage> {
                         textColor: AppColors.primary,
                         iconColor: AppColors.secondary,
                         tilePadding: EdgeInsets.zero,
+                        onExpansionChanged: (bool isExpanded) {
+                          if (isExpanded) {
+                            setState(() {
+                              myDrugs = FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user?.uid)
+                                  .collection('drugs')
+                                  .snapshots();
+                            });
+                          }
+                        },
                         children: [
-                          const Text(". . ."), //ตอนนี้มียาอะไรบ้าง
+                          // เอา StreamBuilder มาครอบครอบท่อน้ำ (myD)
+                          StreamBuilder<QuerySnapshot>(
+                            stream: myDrugs, // ตัวแปร myD ที่เป็น Stream ของคุณ
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              final docs = snapshot.data!.docs;
+                              print(docs);
+                              // ตั้งค่าเตรียมความพร้อมให้ Controller
+                              // if (_controllers.length != docs.length) {
+                              //   _controllers = List.generate(
+                              //     docs.length,
+                              //     (_) => TextEditingController(),
+                              //   );
+                              // }
+
+                              // วาด Column และทำการ .map() ข้อมูล
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 8.0,
+                                ),
+                                child: Column(
+                                  // แปลง docs จากตัวแปร myD ของคุณมาเป็นลิสต์ของ Widget
+                                  children: () {
+                                    // final docs = myDrugs.docs;
+
+                                    // ใช้ .asMap().entries.map() เพื่อให้ได้ทั้งตัวข้อมูล (doc) และลำดับแถว (index)
+                                    return docs.asMap().entries.map((entry) {
+                                      int index = entry.key;
+                                      var doc = entry.value;
+
+                                      final data =
+                                          doc.data() as Map<String, dynamic>;
+                                      final String medicineName =
+                                          data['name'] ?? '. . .';
+
+                                      // ตรวจสอบและเตรียมจำนวน Controller ให้เท่ากับจำนวนข้อมูลที่ดึงมาได้
+                                      // if (_controllers.length != docs.length) {
+                                      //   _controllers = List.generate(
+                                      //     docs.length,
+                                      //     (_) => TextEditingController(
+                                      //       text: data['amount'].toString(),
+                                      //     ),
+                                      //   );
+                                      // }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0,
+                                          vertical: 6.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            // ด้านซ้าย: ชื่อยา
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                medicineName,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+
+                                            // const SizedBox(width: 10),
+
+                                            // // ด้านขวา: ช่อง Input สำหรับกรอกข้อมูล
+                                            // Expanded(
+                                            //   flex: 2,
+                                            //   child: SizedBox(
+                                            //     height: 20,
+                                            //     child: TextField(
+                                            //       // 👈 ผูกเข้ากับ Controller ประจำแถว (ดึงตาม index)
+                                            //       controller:
+                                            //           _controllers[index],
+                                            //       decoration: InputDecoration(
+                                            //         hintText: 'จำนวน',
+                                            //         contentPadding:
+                                            //             const EdgeInsets.symmetric(
+                                            //               horizontal: 10,
+                                            //             ),
+                                            //         border: OutlineInputBorder(
+                                            //           borderRadius:
+                                            //               BorderRadius.circular(
+                                            //                 8,
+                                            //               ),
+                                            //         ),
+                                            //       ),
+                                            //       keyboardType:
+                                            //           TextInputType.number,
+                                            //     ),
+                                            //   ),
+                                            // ),
+                                            const SizedBox(width: 8),
+
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons
+                                                    .edit, 
+                                              ),
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                       AddDrugDialog(data: data, docId: doc.id),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(); // แปลงผลลัพธ์กลับเป็น List<Widget> ส่งให้ Column
+                                  }(), // 👈 เติม () เพื่อสั่งให้ฟังก์ชันนี้ทำงานทันทีในช่อง children
+                                ),
+                              );
+                            },
+                          ),
+
                           ListTile(
                             leading: const Icon(Icons.medical_services),
                             title: const Text("เพิ่ม "),

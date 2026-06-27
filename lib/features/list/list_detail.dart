@@ -34,7 +34,7 @@ class _DetailPageState extends State<DetailPage> {
   final TextEditingController _checkController = TextEditingController(
     text: "false",
   );
-// String _title = widget.title;
+  late String _title = widget.title;
 
   @override
   void initState() {
@@ -115,7 +115,7 @@ class _DetailPageState extends State<DetailPage> {
 
   void _showEditDialog() {
     final TextEditingController editController = TextEditingController(
-      text: widget.title,
+      text: _title,
     );
 
     showDialog(
@@ -127,7 +127,7 @@ class _DetailPageState extends State<DetailPage> {
             controller: editController,
             autofocus: true, // ให้คีย์บอร์ดเด้งขึ้นมาทันที
             decoration: InputDecoration(
-              hintText: widget.title,
+              hintText: _title,
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
@@ -146,9 +146,6 @@ class _DetailPageState extends State<DetailPage> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
-                setState(() {
-                // widget.title =  editController.text;
-                });
                 FirebaseFirestore.instance
                     .collection('lists')
                     .doc(widget.docId)
@@ -156,6 +153,9 @@ class _DetailPageState extends State<DetailPage> {
                       'name': editController.text,
                       'updatedAt': FieldValue.serverTimestamp(),
                     });
+                setState(() {
+                  _title = editController.text;
+                });
                 Navigator.pop(context);
               },
               child: const Text('บันทึก'),
@@ -258,14 +258,14 @@ class _DetailPageState extends State<DetailPage> {
                         isLightMode: isLightMode,
                       ),
                       const SizedBox(width: 12),
-                        if (_type != "Table" || headers.length<=1)
+                      if (_type != "Table" || headers.length <= 1)
                         _buildCustomToggle(
-                        label: "Checklist",
-                        icon: Icons.checklist,
-                        isSelected: type == 'Checklist',
-                        onTap: () => setModalState(() => type = 'Checklist'),
-                        isLightMode: isLightMode,
-                      ),
+                          label: "Checklist",
+                          icon: Icons.checklist,
+                          isSelected: type == 'Checklist',
+                          onTap: () => setModalState(() => type = 'Checklist'),
+                          isLightMode: isLightMode,
+                        ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -350,7 +350,7 @@ class _DetailPageState extends State<DetailPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color:  isLightMode ? Colors.white : Colors.transparent,
+                      color: isLightMode ? Colors.white : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -453,14 +453,41 @@ class _DetailPageState extends State<DetailPage> {
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () => {
+                        if (isDateY)
+                          {
+                            setState(() {
+                              headers = ['list'];
+                            }),
+                            if (rows[0]['isDone'] != null)
+                              {
+                                for (int i = 0; i < rows.length; i++)
+                                  {
+                                    setState(() {
+                                      rows[i] = {
+                                        'col1': {
+                                          'num': '',
+                                          'text': rows[i]['text'],
+                                        },
+                                        'date': rows[i]['due_date'] != null
+                                            ? DateFormat('dd/MM/yyyy').format(
+                                                (rows[i]['due_date']).toDate(),
+                                              )
+                                            : '',
+                                        'note': rows[i]['isDone'] ? '/' : '',
+                                      };
+                                    }),
+                                  },
+                              },
+                          },
                         setState(() {
                           _type = type;
                           showRemark = showRemark;
                           isDateY = isDateY;
-                          _requireDate = requireDate;
+                          _requireDate = rows[0]['due_date']
+                              ? false
+                              : requireDate;
                           _isHideBox = hideEmpty;
                         }),
-                        // if(isDateY)
                         Navigator.pop(context),
                       },
                       child: const Text("Apply"),
@@ -489,7 +516,7 @@ class _DetailPageState extends State<DetailPage> {
       appBar: AppBar(
         title: Row(
           children: [
-            Text(widget.title),
+            Text(_title),
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.edit, size: 18, color: Colors.grey),
@@ -525,7 +552,6 @@ class _DetailPageState extends State<DetailPage> {
 
           if (!isInitialized) {
             var docData = snapshot.data?.data() as Map<String, dynamic>?;
-            // print(docData);
             if (docData != null) {
               _type = docData['type'] ?? 'Table';
               if (docData['data'] != null) {
@@ -553,7 +579,7 @@ class _DetailPageState extends State<DetailPage> {
           //     children: [
           return (_type == "Checklist"
               ? CheckList(
-                  data: rows,// rows.map(row => row.col1.text),
+                  data: rows, // rows.map(row => row.col1.text),
                   type: _type,
                   requireDate: _requireDate,
                   addText: (val) {
@@ -591,8 +617,8 @@ class _DetailPageState extends State<DetailPage> {
                   setHeaders: setHeaders,
                   setRows: (updatedRows) {
                     setState(() {
-                        rows =  updatedRows;
-                        // rowData['date'] =  updatedRows;
+                      rows = updatedRows;
+                      // rowData['date'] =  updatedRows;
                     });
                   },
                   addRow: _addRow,
