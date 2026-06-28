@@ -5,6 +5,7 @@ import 'package:list_app/utils/constant.dart';
 import 'dart:ui';
 import '../features/fuel/create.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../features/fuel/detail.dart';
 
 // class FuelScreen extends StatelessWidget {
 //   const FuelScreen({super.key});
@@ -114,7 +115,39 @@ class _FuelScreenState extends State<FuelScreen> {
 
           const Spacer(),
 
-          SizedBox(
+          // SizedBox(
+          //   width: double.infinity,
+          //   child: OutlinedButton.icon(
+          //     onPressed: () {
+          //       setState(() {
+          //         _showGraph = !_showGraph;
+          //       });
+          //     },
+          //     icon: Icon(_showGraph ? Icons.close : Icons.bar_chart),
+          //     label: Text(_showGraph ? "ปิดกราฟ" : "แสดงกราฟแนวโน้ม"),
+          //     style: OutlinedButton.styleFrom(
+          //       foregroundColor: Colors.blueAccent,
+          //       side: const BorderSide(color: Colors.blueAccent),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
+          // if (_showGraph)
+          //   AnimatedContainer(
+          //     duration: const Duration(milliseconds: 300),
+          //     height: 150,
+          //     margin: const EdgeInsets.only(top: 10),
+          //     decoration: BoxDecoration(
+          //       color: Colors.blue.withOpacity(0.05),
+          //       borderRadius: BorderRadius.circular(15),
+          //     ),
+          //     child: const Center(child: Text("📊 [ กราฟเส้นแสดงที่นี่ ]")),
+          //   ),
+
+            SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
@@ -122,8 +155,7 @@ class _FuelScreenState extends State<FuelScreen> {
                   _showGraph = !_showGraph;
                 });
               },
-              icon: Icon(_showGraph ? Icons.close : Icons.bar_chart),
-              label: Text(_showGraph ? "ปิดกราฟ" : "แสดงกราฟแนวโน้ม"),
+              label: const Text('ดูทั้งหมด'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.blueAccent,
                 side: const BorderSide(color: Colors.blueAccent),
@@ -133,19 +165,6 @@ class _FuelScreenState extends State<FuelScreen> {
               ),
             ),
           ),
-
-          // --- ส่วนแสดงกราฟ (จะโผล่มาเมื่อ _showGraph เป็น true) ---
-          if (_showGraph)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 150,
-              margin: const EdgeInsets.only(top: 10),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Center(child: Text("📊 [ กราฟเส้นแสดงที่นี่ ]")),
-            ),
         ],
       ),
     );
@@ -213,11 +232,8 @@ class _FuelScreenState extends State<FuelScreen> {
         //   ),
         // ],
       ),
-      body:
-          // Scaffold(
-          //   body: Stack(
-          // children: [
-          Container(
+      body: Container(
+
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -230,157 +246,168 @@ class _FuelScreenState extends State<FuelScreen> {
               ),
             ),
 
-            // child: SafeArea(
-            //   child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    // ดึงข้อมูลเรียงตามเวลาล่าสุดขึ้นก่อน
-                    stream: FirebaseFirestore.instance
-                        .collection('cars')
-                        .where('authorId', isEqualTo: user?.uid)
-                        // .collection('fill-ups')
-                        // .orderBy('timestamp', descending: true)
-                        // .limit(1)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError)
-                        return const Center(
-                          child: Text(
-                            "เกิดข้อผิดพลาด",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        );
-                      if (snapshot.connectionState == ConnectionState.waiting)
-                        return const Center(child: CircularProgressIndicator());
+            child: SafeArea(
+            // child: SingleChildScrollView( \\ไม่ได้
+              child: Column(
+                children: [
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      // ดึงข้อมูลเรียงตามเวลาล่าสุดขึ้นก่อน
+                      stream: FirebaseFirestore.instance
+                          .collection('cars')
+                          .where('authorId', isEqualTo: user?.uid)
+                          // .collection('fill-ups')
+                          // .orderBy('timestamp', descending: true)
+                          // .limit(1)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError)
+                          return const Center(
+                            child: Text(
+                              "เกิดข้อผิดพลาด",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          );
+                        if (snapshot.connectionState == ConnectionState.waiting)
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
 
-                      final docs = snapshot.data!.docs;
-                      // var doc = snapshot.data!.docs.first;
-                      //             Map<String, dynamic> carData = doc.data() as Map<String, dynamic>;
-                      //             SafeArea(
-                      // child:
-                      return ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(15, 80, 15, 20),
-                        itemCount: docs.length,
-                        itemBuilder: (context, index) {
-                          final data =
-                              docs[index].data() as Map<String, dynamic>;
-                          data['id'] = docs[index].id;
-                          // print(data);
+                        final docs = snapshot.data!.docs;
+                        // var doc = snapshot.data!.docs.first;
+                        //             Map<String, dynamic> carData = doc.data() as Map<String, dynamic>;
+                        //             SafeArea(
+                        // child:
+                        return ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(15, 80, 15, 20),
+                          itemCount: docs.length,
+                          itemBuilder: (context, index) {
+                            final data =
+                                docs[index].data() as Map<String, dynamic>;
+                            data['id'] = docs[index].id;
+                            // print(data);
 
-                          //     // --- ส่วนการคำนวณ ---
-                          //     double kml = 0;
-                          //     if (index < docs.length - 1) {
-                          //       final prevData =
-                          //           docs[index + 1].data() as Map<String, dynamic>;
-                          //       double dist = (data['odometer'] - prevData['odometer'])
-                          //           .toDouble();
-                          //       double liters = data['liters'].toDouble();
-                          //       kml =
-                          //           dist /
-                          //           liters; // สูตร: (ไมล์ใหม่ - ไมล์เก่า) / ลิตรที่เติม
-                          //     }
-                          //     return _buildHistoryCard(data, kml);
-                          return GestureDetector(
-                            onTap: () =>
-                                setState(() => _isExpanded = !_isExpanded),
-                            child: Column(
-                              children: [
-                                Stack(
-                                  alignment: Alignment.topCenter,
-                                  children: [
-                                    // --- Card 3: Graph (อยู่หลังสุด) ---
-                                    // _buildSubCard(
-                                    //   index: 2,
-                                    //   isExpanded: _isExpanded,
-                                    //   child: _buildGraphContent(),
-                                    //   color: Colors.white.withOpacity(0.6),
-                                    //   context: context,
-                                    // ),
-                                    // // --- Card 2: Summary (อยู่กลาง) ---
-                                    // _buildSubCard(
-                                    //   index: 1,
-                                    //   isExpanded: _isExpanded,
-                                    //   child: _buildSummaryContent(),
-                                    //   color: Colors.white.withOpacity(0.9),
-                                    //   context: context,
-                                    // ),
-                                    _buildSubCard(
-                                      index: 1,
-                                      isExpanded: _isExpanded,
-                                      child: _buildDetailCard(data: data),
-                                      // color: Colors.white.withOpacity(0.9),
-                                      context: context,
-                                    ),
-                                    // --- Card 1: Main Car Info (อยู่หน้าสุด) ---
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 15),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 10,
-                                            sigmaY: 10,
+                            //     // --- ส่วนการคำนวณ ---
+                            //     double kml = 0;
+                            //     if (index < docs.length - 1) {
+                            //       final prevData =
+                            //           docs[index + 1].data() as Map<String, dynamic>;
+                            //       double dist = (data['odometer'] - prevData['odometer'])
+                            //           .toDouble();
+                            //       double liters = data['liters'].toDouble();
+                            //       kml =
+                            //           dist /
+                            //           liters; // สูตร: (ไมล์ใหม่ - ไมล์เก่า) / ลิตรที่เติม
+                            //     }
+                            //     return _buildHistoryCard(data, kml);
+                            // return GestureDetector(
+                            //   onTap: () =>
+                            //       setState(() => _isExpanded = !_isExpanded),
+                            //   child:
+                            return   Column(
+                                children: [
+                                  Stack(
+                                    alignment: Alignment.topCenter,
+                                    children: [
+                                      // --- Card 3: Graph (อยู่หลังสุด) ---
+                                      // _buildSubCard(
+                                      //   index: 2,
+                                      //   isExpanded: _isExpanded,
+                                      //   child: _buildGraphContent(),
+                                      //   color: Colors.white.withOpacity(0.6),
+                                      //   context: context,
+                                      // ),
+                                      // // --- Card 2: Summary (อยู่กลาง) ---
+                                      // _buildSubCard(
+                                      //   index: 1,
+                                      //   isExpanded: _isExpanded,
+                                      //   child: _buildSummaryContent(),
+                                      //   color: Colors.white.withOpacity(0.9),
+                                      //   context: context,
+                                      // ),
+                                      _buildSubCard(
+                                        index: index,
+                                        isExpanded: _isExpanded,
+                                        child: _buildDetailCard(data: data),
+                                        // color: Colors.white.withOpacity(0.9),
+                                        context: context,
+                                      ),
+                                      // --- Card 1: Main Car Info (อยู่หน้าสุด) ---
+                                      Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 15,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
                                           ),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(15),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(
-                                                0.1,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              border: Border.all(
-                                                color: Colors.white.withOpacity(
-                                                  0.2,
-                                                ),
-                                              ),
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 10,
+                                              sigmaY: 10,
                                             ),
                                             child: Container(
-                                              width: double.infinity,
-                                              padding: const EdgeInsets.all(20),
+                                              padding: const EdgeInsets.all(15),
                                               decoration: BoxDecoration(
-                                                color: _isExpanded
-                                                    ? AppColors.secondary
-                                                    : Colors.transparent,
+                                                color: Colors.white.withOpacity(
+                                                  0.1,
+                                                ),
                                                 borderRadius:
-                                                    BorderRadius.circular(25),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.1),
-                                                    blurRadius: 15,
-                                                    offset: const Offset(0, 8),
-                                                  ),
-                                                ],
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.2),
+                                                ),
                                               ),
-                                              child: _buildMainCarHeader(
-                                                data: data,
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: const EdgeInsets.all(
+                                                  20,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: _isExpanded
+                                                      ? AppColors.secondary
+                                                      : Colors.transparent,
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 15,
+                                                      offset: const Offset(
+                                                        0,
+                                                        8,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: _buildMainCarHeader(
+                                                  data: data,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
+
+                                      // SizedBox(height: _isExpanded ? 150 : 10),
+                                    ],
+                                  ),
+                                ],
+                              // ),
+
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            //   ),
             // ),
           ),
-      // ],
-      //   ),
-      // ),
     );
   }
 }

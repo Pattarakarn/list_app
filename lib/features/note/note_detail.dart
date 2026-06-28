@@ -189,8 +189,8 @@ class _DetailPageState extends State<DetailPage> {
                                       ),
                                     ),
                                   ),
-                                  // controller: TextEditingController(text:  conversation[i]['value']),
-                                  controller: conversation[i]['controller'],
+                                  controller: TextEditingController(text:  conversation[i]['value']),
+                                  // controller: conversation[i]['controller'],
                                   onChanged: (val) => {
                                     // setState(() {
                                       conversation[i]['value'] = val

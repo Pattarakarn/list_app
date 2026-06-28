@@ -6,6 +6,7 @@ import 'calculator.dart';
 import 'setting.dart';
 import 'fuel.dart';
 import 'last will.dart';
+import '../features/others/testament.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -140,10 +141,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           ListTile(
                             leading: const Icon(
-                              Icons.favorite,
-                              color: Colors.pink,
+                              Icons.favorite_outline,
+                                  color: Colors.red,
                             ),
-                            title: const Text('Last will'),
+                            title: const Text('Secret'),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -186,6 +187,22 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       child: Column(
                         children: [
+                            ListTile(
+                            leading: const Icon(
+                              Icons.favorite,
+                              color: Colors.pink,
+                            ),
+                            title: const Text('Last will'),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PersonalPage(),
+                                ),
+                              );
+                            },
+                          ),
+                            const Divider(height: 1),
                           ListTile(
                             leading: const Icon(
                               Icons.calculate,
@@ -223,6 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
+                          const SizedBox(height: 100)
                 ],
               ),
             ),

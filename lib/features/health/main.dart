@@ -31,19 +31,7 @@ class _HealthPageState extends State<HealthPage> {
     DateTime.now().month + 3,
     0,
   );
-  //   อยากได้โค้ดหน้าใหม่
 
-  // บันทึกข้อมูลไปที่ collection test
-
-  // โดยมีฟิลด์ อีเมล์[]
-
-  // คือต้องกดปุ่มข้อมูลก่อน แล้วก็+ได้เรื่อยๆ
-
-  // ธนาคาร[]
-
-  // ก็กดปุ่มเพิ่ม แล้วก็มีฟิลด์ ใส่เลขบัญชี ชื่อบช  สาขา  USERNAMEของแอป สักสี่ช่องก่อนก็ได้
-
-  // initState เพื่อกำหนดค่าเริ่มต้นให้ Stream
   @override
   void initState() {
     super.initState();

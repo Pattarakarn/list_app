@@ -125,7 +125,7 @@ void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
         .get();
 
     List<DocumentSnapshot> dataDrug = snapshot.docs;
-    print(dataDrug);
+
     Map<String, dynamic> record = {
       "symptoms": "",
       "pain_level": 0,
@@ -172,7 +172,8 @@ void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
                           .collection('users')
                           .doc(user?.uid)
                           .collection('drugs')
-                          .where('amount', isGreaterThan: 0)
+                            // .where('isDelete', isNotEqualTo: true)
+                          // .where('amount', isGreaterThan: 0)
                           .get(),
                       // child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                       //   stream: FirebaseFirestore.instance

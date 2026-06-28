@@ -96,7 +96,7 @@ class _NotesPageState extends State<NotesPage> {
                   .collection('notes')
                   .doc(id)
                   .update({
-                    'isActive': true,
+                    'isActive': false,
                     'updatedAt': FieldValue.serverTimestamp(),
                   });
               Navigator.pop(context);

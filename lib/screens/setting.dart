@@ -6,6 +6,8 @@ import '../app_colors.dart';
 import 'welcome.dart';
 import '../modal/profile.dart';
 import '../modal/drug.dart';
+import '../features/fuel/create.dart';
+import '../features/fuel/detail.dart';
 
 class SettingPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -20,6 +22,7 @@ class _SettingPageState extends State<SettingPage> {
   Stream<QuerySnapshot>? myDrugs;
   List<TextEditingController> _controllers = [];
 
+  Stream<QuerySnapshot>? myVehicle;
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -207,6 +210,41 @@ class _SettingPageState extends State<SettingPage> {
       );
     }
 
+    void _deleteDrug({required String id, String? name}) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('ยืนยันการลบ'),
+          content: const Text('คุณต้องการลบรายการยานี้หรือไม่'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'ยกเลิก',
+                style: TextStyle(color: AppColors.gray),
+              ),
+            ),
+            // ElevatedButton(
+            TextButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user?.uid)
+                    .collection('drugs')
+                    .doc(id)
+                    .update({
+                      'isDelete': true,
+                      'updatedAt': FieldValue.serverTimestamp(),
+                    });
+                Navigator.pop(context);
+              },
+              child: const Text('ตกลง'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("ตั้งค่าผู้ใช้"), centerTitle: true),
       body: SafeArea(
@@ -239,13 +277,6 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                   child: Column(
                     children: [
-                      ListTile(
-                        leading: const Icon(Icons.directions_car_rounded),
-                        // title: const Text("Add Car"),
-                        onTap: () {
-                          _showMyCar(context);
-                        },
-                      ),
                       const Divider(height: 1),
                       ExpansionTile(
                         title: const Text(
@@ -270,11 +301,11 @@ class _SettingPageState extends State<SettingPage> {
                           // ),
                           CheckboxListTile(
                             title: Transform.translate(
-                              offset: Offset(
+                              offset: const Offset(
                                 -8,
                                 0,
                               ), // ไม้ตายสุดท้าย: สั่งขยับ Title ไปทางซ้าย
-                              child: Text("Hide displayname"),
+                              child: const Text("Hide displayname"),
                             ),
                             value:
                                 bool.tryParse(user?.displayName ?? '') ??
@@ -324,6 +355,135 @@ class _SettingPageState extends State<SettingPage> {
                       // ),
                       ExpansionTile(
                         title: const Text(
+                          "รถ",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        textColor: Colors.blue,
+                        iconColor: AppColors.secondary,
+                        tilePadding: EdgeInsets.zero,
+                        onExpansionChanged: (bool isExpanded) {
+                          if (isExpanded) {
+                            setState(() {
+                              myVehicle = FirebaseFirestore.instance
+                                  .collection('cars')
+                                  .where('authorId', isEqualTo: user?.uid)
+                                  .snapshots();
+                            });
+                          }
+                        },
+                        children: [
+                          StreamBuilder<QuerySnapshot>(
+                            stream: myVehicle,
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              final docs = snapshot.data!.docs;
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 8.0,
+                                ),
+                                child: Column(
+                                  children: () {
+                                    return docs.asMap().entries.map((entry) {
+                                      int index = entry.key;
+                                      var doc = entry.value;
+
+                                      final data =
+                                          doc.data() as Map<String, dynamic>;
+
+                                      double firstMile =
+                                          (data['first_mileage']);
+                                      double totalMile =
+                                          (data['last_mileage'] - firstMile ??
+                                                  0)
+                                              .toDouble();
+                                      double totalLite = (data['allLites'] ?? 0)
+                                          .toDouble();
+                                      String consumption = (totalLite > 0)
+                                          ? ((totalMile) / totalLite)
+                                                .toStringAsFixed(2)
+                                          : "-";
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0,
+                                          vertical: 6.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            // ด้านซ้าย: ชื่อยา
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                "${data['car_name']}   $consumption km/l",
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+
+                                            const SizedBox(width: 8),
+
+                                            // Text((data['total_spent'])),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.add_circle_outline,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CreateListFuel(
+                                                          data: data,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.list_alt),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        FuelLogPage(
+                                                          data: data,
+                                                          carId: doc.id,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(); // แปลงผลลัพธ์กลับเป็น List<Widget> ส่งให้ Column
+                                  }(), // 👈 เติม () เพื่อสั่งให้ฟังก์ชันนี้ทำงานทันทีในช่อง children
+                                ),
+                              );
+                            },
+                          ),
+
+                          ListTile(
+                            leading: const Icon(Icons.directions_car_rounded),
+                            title: const Text("เพิ่ม "),
+                            onTap: () async {
+                              _showMyCar(context);
+                            },
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 1),
+                      ExpansionTile(
+                        title: const Text(
                           "ยาประจำตัว",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -337,6 +497,7 @@ class _SettingPageState extends State<SettingPage> {
                                   .collection('users')
                                   .doc(user?.uid)
                                   .collection('drugs')
+                                  .where('isDelete', isNotEqualTo: true)
                                   .snapshots();
                             });
                           }
@@ -353,7 +514,7 @@ class _SettingPageState extends State<SettingPage> {
                               }
 
                               final docs = snapshot.data!.docs;
-                              print(docs);
+
                               // ตั้งค่าเตรียมความพร้อมให้ Controller
                               // if (_controllers.length != docs.length) {
                               //   _controllers = List.generate(
@@ -444,15 +605,26 @@ class _SettingPageState extends State<SettingPage> {
                                             const SizedBox(width: 8),
 
                                             IconButton(
-                                              icon: const Icon(
-                                                Icons
-                                                    .edit, 
-                                              ),
+                                              icon: const Icon(Icons.edit),
                                               onPressed: () {
                                                 showDialog(
                                                   context: context,
                                                   builder: (context) =>
-                                                       AddDrugDialog(data: data, docId: doc.id),
+                                                      AddDrugDialog(
+                                                        data: data,
+                                                        docId: doc.id,
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete_forever,
+                                              ),
+                                              onPressed: () {
+                                                _deleteDrug(
+                                                  id: doc.id,
+                                                  name: medicineName,
                                                 );
                                               },
                                             ),
