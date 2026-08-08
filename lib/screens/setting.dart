@@ -34,7 +34,6 @@ class _SettingPageState extends State<SettingPage> {
         builder: (context) {
           return AlertDialog(
             title: const Text('ยืนยันการออกจากระบบ?'),
-
             // content: const Text(''),
             actions: [
               Row(
@@ -131,6 +130,8 @@ class _SettingPageState extends State<SettingPage> {
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.all(20),
+                    shrinkWrap: true, // สำคัญ: ให้ห่อความสูงตามเนื้อหาจริง
+                    physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildInputGroup(
                         title: "ข้อมูลพื้นฐาน",
@@ -150,7 +151,6 @@ class _SettingPageState extends State<SettingPage> {
                           Row(
                             children: [
                               // const Text('ประเภทรถ'),
-                              // const SizedBox(width: 25),
                               Expanded(child: _buildTypeSelector()),
                             ],
                           ),
@@ -416,7 +416,6 @@ class _SettingPageState extends State<SettingPage> {
                                         ),
                                         child: Row(
                                           children: [
-                                            // ด้านซ้าย: ชื่อยา
                                             Expanded(
                                               flex: 3,
                                               child: Text(
@@ -431,9 +430,17 @@ class _SettingPageState extends State<SettingPage> {
 
                                             // Text((data['total_spent'])),
                                             const SizedBox(width: 8),
-                                            IconButton(
+                                            // IconButton(
+                                            ElevatedButton.icon(
                                               icon: const Icon(
                                                 Icons.add_circle_outline,
+                                              ),
+                                              label: const Text(
+                                                'Log',
+                                                // style: TextStyle(color: Colors.white),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.gray,
                                               ),
                                               onPressed: () {
                                                 Navigator.push(
@@ -447,8 +454,11 @@ class _SettingPageState extends State<SettingPage> {
                                                 );
                                               },
                                             ),
-                                            IconButton(
+
+                                            ElevatedButton.icon(
                                               icon: const Icon(Icons.list_alt),
+                                              label: const Text('List'),
+
                                               onPressed: () {
                                                 Navigator.push(
                                                   context,

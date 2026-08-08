@@ -82,8 +82,10 @@ class _NotesPageState extends State<NotesPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก',
-            style: TextStyle(color: AppColors.gray, ),),
+            child: const Text(
+              'ยกเลิก',
+              style: TextStyle(color: AppColors.gray),
+            ),
           ),
           // ElevatedButton(
           TextButton(
@@ -137,80 +139,83 @@ class _NotesPageState extends State<NotesPage> {
           if (docs.isEmpty) {
             return const Center(child: Text('-'));
           }
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              final docId = docs[index].id;
-              String itemName = data['name'] ?? 'Unnamed';
-              bool isLock = data['lock'] ?? false;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 85),
+            child: ListView.builder(
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final data = docs[index].data() as Map<String, dynamic>;
+                final docId = docs[index].id;
+                String itemName = data['name'] ?? 'Unnamed';
+                bool isLock = data['lock'] ?? false;
 
-              return Slidable(
-                key: ValueKey(index),
-                startActionPane: ActionPane(
-                  motion: //DrawerMotion(),
-                      const ScrollMotion(), // BehindMotion
-                  extentRatio: 0.15,
-                  children: [
-                    const SizedBox(width: 10),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => _deleteItem(id: docId, name: itemName),
-                      // hoverColor: AppColors.danger,
-                      highlightColor: AppColors.danger.withOpacity(0.2),
-                      color: AppColors.danger,
-                      // mouseCursor: SystemMouseCursors.click,
-                      iconSize: 18,
-                    ),
-                  ],
-                ),
-                child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  clipBehavior: Clip
-                      .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
-                  child: InkWell(
-                    // !ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
-                    hoverColor: AppColors.note.withOpacity(0.1),
-                    child: ListTile(
-                      // leading: const CircleAvatar(child: Icon(Icons.delete)),
-                      title: Text(data['name'] ?? 'ไม่มีชื่อ'),
-                      subtitle: Text(
-                        DateFormat(
-                          'dd/MM/yyyy HH:mm',
-                        ).format((data['createdAt'] as Timestamp).toDate()),
-                        style: const TextStyle(fontSize: 12),
+                return Slidable(
+                  key: ValueKey(index),
+                  startActionPane: ActionPane(
+                    motion: //DrawerMotion(),
+                        const ScrollMotion(), // BehindMotion
+                    extentRatio: 0.15,
+                    children: [
+                      const SizedBox(width: 10),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => _deleteItem(id: docId, name: itemName),
+                        // hoverColor: AppColors.danger,
+                        highlightColor: AppColors.danger.withOpacity(0.2),
+                        color: AppColors.danger,
+                        // mouseCursor: SystemMouseCursors.click,
+                        iconSize: 18,
                       ),
-                      onTap: () {
-                        if (isLock) {
-                          AuthService().authenticateUser(
-                            context,
-                            itemName,
-                            docId,
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DetailPage(title: itemName, docId: docId),
-                            ),
-                          );
-                        }
-                      },
-                      // trailing: IconButton(
-                      //   // icon: const Icon(Icons.delete, color: Colors.red),
-                      // ),
-                      trailing: isLock
-                          ? const Icon(Icons.lock, color: AppColors.primary)
-                          : null,
+                    ],
+                  ),
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    clipBehavior: Clip
+                        .antiAlias, // สำคัญ: เพื่อให้สี Hover ไม่ทะลุขอบมนของ Card
+                    child: InkWell(
+                      // !ต้องมี onTap เพื่อให้เอฟเฟกต์ Hover ทำงาน
+                      hoverColor: AppColors.note.withOpacity(0.1),
+                      child: ListTile(
+                        // leading: const CircleAvatar(child: Icon(Icons.delete)),
+                        title: Text(data['name'] ?? 'ไม่มีชื่อ'),
+                        subtitle: Text(
+                          DateFormat(
+                            'dd/MM/yyyy HH:mm',
+                          ).format((data['createdAt'] as Timestamp).toDate()),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onTap: () {
+                          if (isLock) {
+                            AuthService().authenticateUser(
+                              context,
+                              itemName,
+                              docId,
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailPage(title: itemName, docId: docId),
+                              ),
+                            );
+                          }
+                        },
+                        // trailing: IconButton(
+                        //   // icon: const Icon(Icons.delete, color: Colors.red),
+                        // ),
+                        trailing: isLock
+                            ? const Icon(Icons.lock, color: AppColors.primary)
+                            : null,
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

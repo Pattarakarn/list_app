@@ -137,7 +137,7 @@ class _ListPageState extends State<ListPage> {
       ),
     );
 
-    if (_items.length > 1) await Future.delayed( Duration(seconds: timer));
+    if (_items.length > 1) await Future.delayed(Duration(seconds: timer));
 
     if (!mounted) return;
     Navigator.pop(context);
@@ -346,9 +346,9 @@ class _ListPageState extends State<ListPage> {
                         size: 20,
                         color: AppColors.rand,
                       ),
-                      label:  Text(
+                      label: Text(
                         "เวลา: $timer s",
-                        style:const TextStyle(color: AppColors.rand),
+                        style: const TextStyle(color: AppColors.rand),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF00E5FF)),

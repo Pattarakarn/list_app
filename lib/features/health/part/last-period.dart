@@ -21,7 +21,6 @@ class PeriodSummaryCard extends StatelessWidget {
         .toList();
 
     if (filtered.isEmpty) {
-      // ไม่พบข้อมูลที่ตรงตามเงื่อนไข
       return null;
     }
 
@@ -56,18 +55,17 @@ class PeriodSummaryCard extends StatelessWidget {
       }
     }
 
-    // print("ช่วงวันที่ต่อเนื่องล่าสุดคือ: $firstDate ถึง $lastDate");
     return {'first': firstDate, 'last': lastDate};
   }
 
   @override
   Widget build(BuildContext context) {
-   var range = findConsecutiveRange(datas);
+    var range = findConsecutiveRange(datas);
     // print(results);
     DateFormat formatter = DateFormat('dd MMM yyyy');
     final DateTime? start = range?['first'];
-final DateTime? end = range?['last'];
-    int days = end!.difference(start!).inDays + 1;
+    final DateTime? end = range?['last'];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -84,7 +82,6 @@ final DateTime? end = range?['last'];
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Row(
           //   children: [
@@ -97,10 +94,10 @@ final DateTime? end = range?['last'];
             "รอบเดือนล่าสุด",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-           Text(
-             "${formatter.format(start)}  - ${formatter.format(end)} ($daysวัน)",
-            style: TextStyle(color: AppColors.secondary),
+          Text(
+            "${start != null ? formatter.format(start) : ""} - ${end != null ? formatter.format(end) : ""} (${(end != null ? end.difference(start!).inDays + 1 : 0)}วัน)",
           ),
+
           // const SizedBox(height: 15),
 
           // Icons.add_circle_outline

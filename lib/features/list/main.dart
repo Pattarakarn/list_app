@@ -17,37 +17,6 @@ class MyListsPage extends StatefulWidget {
 }
 
 class _MyListsPageState extends State<MyListsPage> {
-  void _showAddDialog() {
-    String inputText = "";
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('สร้างรายการใหม่'),
-        content: TextField(
-          autofocus: true,
-          decoration: const InputDecoration(hintText: "กรอกชื่อลิสต์ที่นี่..."),
-          onChanged: (value) => inputText = value,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (inputText.isNotEmpty) {
-                // setState(() {
-                //   _items.add(inputText); // เพิ่มข้อมูลลงในตัวแปร
-                // });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('สร้าง'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void confirmArchive(BuildContext context, docId, name) {
     showCupertinoModalPopup(
@@ -107,79 +76,84 @@ class _MyListsPageState extends State<MyListsPage> {
             return const Center(child: Text('ยังไม่มีรายการ'));
           }
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              final docId = docs[index].id;
-              return InkWell(
-                onLongPress: () async {
-                  confirmArchive(context, docId, data['name']);
-                },
-                child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  color: Theme.of(context).scaffoldBackgroundColor, //cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: data['type'] == 'Checklist'
-                          ? context.primaryColor
-                          : Theme.of(context).colorScheme.secondary,
-                      width: 2,
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 85),
+            child: ListView.builder(
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final data = docs[index].data() as Map<String, dynamic>;
+                final docId = docs[index].id;
+                // if (index == docs.length) {
+                //   return const SizedBox(height: 100.0);
+                // }
+                return InkWell(
+                  onLongPress: () async {
+                    confirmArchive(context, docId, data['name']);
+                  },
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
                     ),
-                  ),
-                  child: ListTile(
-                    leading: data['type'] == 'Table'
-                        ? Icon(Icons.table_chart, color: context.primaryColor)
-                        : Icon(
-                            Icons.checklist,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
+                    color: Theme.of(
+                      context,
+                    ).scaffoldBackgroundColor, //cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: data['type'] == 'Checklist'
+                            ? context.primaryColor
+                            : Theme.of(context).colorScheme.secondary,
+                        width: 2,
+                      ),
+                    ),
+                    child: ListTile(
+                      leading: data['type'] == 'Table'
+                          ? Icon(Icons.table_chart, color: context.primaryColor)
+                          : Icon(
+                              Icons.checklist,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
 
-                    // leading: SvgPicture.asset(
-                    //   'assets/icons/table.svg',
-                    //   width: 24,
-                    //   height: 24,
-                    //   // colorFilter: ColorFilter.mode(Colors.blue, BoxType.srcIn), // เปลี่ยนสีได้ด้วย!
-                    // ),
-                    title: Text(data['name'] ?? 'ว่าง'),
-                    subtitle: Text(
-                      data['createdAt'] != null
-                          // ? (data['createdAt'] as Timestamp).toDate().toString()
-                          ? DateFormat(
-                              'dd/MM/yyyy HH:mm',
-                            ).format((data['createdAt'] as Timestamp).toDate())
-                          : '',
-                      style: const TextStyle(fontSize: 12),
+                      // leading: SvgPicture.asset(
+                      //   'assets/icons/table.svg',
+                      //   width: 24,
+                      //   height: 24,
+                      //   // colorFilter: ColorFilter.mode(Colors.blue, BoxType.srcIn), // เปลี่ยนสีได้ด้วย!
+                      // ),
+                      title: Text(data['name'] ?? 'ว่าง'),
+                      subtitle: Text(
+                        data['createdAt'] != null
+                            // ? (data['createdAt'] as Timestamp).toDate().toString()
+                            ? DateFormat('dd/MM/yyyy HH:mm').format(
+                                (data['createdAt'] as Timestamp).toDate(),
+                              )
+                            : '',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onTap: () {
+                        String itemName = data['name'] ?? 'Unnamed';
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DetailPage(title: itemName, docId: docId),
+                          ),
+                        );
+                      },
                     ),
-                    onTap: () {
-                      String itemName = data['name'] ?? 'Unnamed';
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DetailPage(title: itemName, docId: docId),
-                        ),
-                      );
-                    },
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),
 
-      // ใน Flutter นิยมใช้ FloatingActionButton วางไว้มุมขวาล่างครับ
       floatingActionButton: FloatingActionButton(
-        // onPressed: _showAddDialog,
         backgroundColor: context.primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
-          // 1. ไปหน้าสร้าง
           final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateListPage()),

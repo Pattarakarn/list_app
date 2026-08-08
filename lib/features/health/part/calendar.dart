@@ -7,12 +7,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 
 class MoodCalendarWidget extends StatefulWidget {
-  //  final Map<String, dynamic> data;
-  final List<DocumentSnapshot> data; //array
+
+  final List<DocumentSnapshot> data; 
   final DateTime firstDayC;
   final DateTime lastDayC;
   final Function(DateTime, DateTime) setDates;
-  // final Map<DateTime, Map<String, dynamic>> data;
+
   const MoodCalendarWidget({
     super.key,
     required this.data,
@@ -42,34 +42,11 @@ class _MoodCalendarWidgetState extends State<MoodCalendarWidget> {
   void initState() {
     super.initState();
 
-    //   if (isLoading && dialogDrugList.isEmpty) {
-    //   FirebaseFirestore.instance
-    //       .collection('users')
-    //       .doc(user?.uid)
-    //       .collection('drugs')
-    //       .where('amount', isGreaterThan: 0)
-    //       .get()
-    //       .then((snapshot) {
-    //     // ⚠️ ต้องใช้ setDialogState ตรงนี้ หน้าจอ Dialog ถึงจะอัปเดตเลข/ข้อมูลใหม่
-    //     setDialogState(() {
-    //       dialogDrugList = snapshot.docs;
-    //       isLoading = false;
-    //     });
-    //   });
-    // }
   }
 
   @override
 void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
-  // super.didUpdateWidget(oldWidget);
-  // // ถ้าหน้าหลักส่งค่าวันใหม่มา ไม่เท่ากับค่าเดิม
-  // if (widget.firstDayC != oldWidget.firstDayC) {
-  //   setState(() {
-  //     // เอาตัวแปรภายในปฏิทินของคุณ (สมมติว่าชื่อ _selectedDay) มาเท่ากับค่าใหม่ที่ส่งมา
-  //     // _focusedDay = widget.firstDayC; 
-  //     // _selectedDay = widget.lastDayC; 
-  //   });
-  // }
+
 }
 
   List<Color> colors = [
@@ -80,40 +57,7 @@ void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
     Colors.green,
     Colors.grey,
   ];
-  // FirebaseFirestore.instance
-  //   .collection('users')
-  //   .doc(userId)
-  //   .collection('drugs')
-  //   .get() // ดึงข้อมูลทั้งหมดใน sub-collection ของคนนี้
-  //   .then((querySnapshot) {
-  //     for (var doc in querySnapshot.docs) {
-  //       print(doc.data());
-  //     }
-  //   });
 
-  // Widget _buildMedicationTile(String label, IconData icon, String key) {
-  //   // bool isSelected = selectedTimes[key] ?? false;
-
-  //   return Tooltip(
-  //     message: label,
-  //     child: IconButton(
-  //       icon: Icon(icon),
-  //       // ถ้าเลือกอยู่ให้เป็นสีหลัก (เช่น สีน้ำเงิน/ส้ม) ถ้าไม่เลือกให้เป็นสีเทา
-  //       color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400],
-  //       iconSize: 22,
-  //       constraints:
-  //           const BoxConstraints(), // ช่วยให้ปุ่มไม่กินพื้นที่กว้างเกินไป
-  //       padding: const EdgeInsets.symmetric(horizontal: 4),
-  //       onPressed: () {
-  //         setState(() {
-  //           selectedTimes[key] = !isSelected;
-  //         });
-  //         // ส่งค่า Map ชุดใหม่กลับไปให้ Widget หลักเพื่อเตรียมบันทึกลง Firestore
-  //         // widget.onTimeChanged(selectedTimes);
-  //       },
-  //     ),
-  //   );
-  // }
 
   void _showEditDialog(date) async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -783,7 +727,7 @@ void didUpdateWidget(covariant MoodCalendarWidget oldWidget) {
                                         try {
                                           for (Map<String, dynamic> data
                                               in record['medications']) {
-                                            print(data);
+                                            // print(data);
                                             if (data['skip'])
                                               continue; //skip: true จะข้ามข้างล่าง
                                             await medicationRef

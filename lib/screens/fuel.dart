@@ -7,11 +7,7 @@ import '../features/fuel/create.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../features/fuel/detail.dart';
 
-// class FuelScreen extends StatelessWidget {
-//   const FuelScreen({super.key});
 
-//   @override
-//   Widget build(BuildContext context) {
 class FuelScreen extends StatefulWidget {
   const FuelScreen({super.key});
 
@@ -192,7 +188,7 @@ class _FuelScreenState extends State<FuelScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Vehicles",
-          // style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -309,30 +305,25 @@ class _FuelScreenState extends State<FuelScreen> {
                                   Stack(
                                     alignment: Alignment.topCenter,
                                     children: [
-                                      // --- Card 3: Graph (อยู่หลังสุด) ---
+                                    
                                       // _buildSubCard(
-                                      //   index: 2,
+                                      //   index: index,
                                       //   isExpanded: _isExpanded,
-                                      //   child: _buildGraphContent(),
-                                      //   color: Colors.white.withOpacity(0.6),
+                                      //   child: _buildDetailCard(data: data),
+                                      //   // color: Colors.white.withOpacity(0.9),
                                       //   context: context,
                                       // ),
-                                      // // --- Card 2: Summary (อยู่กลาง) ---
-                                      // _buildSubCard(
-                                      //   index: 1,
-                                      //   isExpanded: _isExpanded,
-                                      //   child: _buildSummaryContent(),
-                                      //   color: Colors.white.withOpacity(0.9),
-                                      //   context: context,
-                                      // ),
-                                      _buildSubCard(
-                                        index: index,
-                                        isExpanded: _isExpanded,
-                                        child: _buildDetailCard(data: data),
-                                        // color: Colors.white.withOpacity(0.9),
-                                        context: context,
-                                      ),
                                       // --- Card 1: Main Car Info (อยู่หน้าสุด) ---
+                                                                                    GestureDetector(
+    onTap: () {
+      Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FuelLogPage(data: data,
+                      carId: data['id']),
+                    ),
+                  );
+    },child:
                                       Container(
                                         margin: const EdgeInsets.only(
                                           bottom: 15,
@@ -390,7 +381,7 @@ class _FuelScreenState extends State<FuelScreen> {
                                           ),
                                         ),
                                       ),
-
+                                      ),
                                       // SizedBox(height: _isExpanded ? 150 : 10),
                                     ],
                                   ),
@@ -539,9 +530,9 @@ Widget _buildSubCard({
   );
 }
 
-Widget _buildMainCarHeader({required Map<String, dynamic> data}) {
+Widget _buildMainCarHeader({required Map<String, dynamic> data, }) {
   print(data);
-  return Row(
+  return  Row(
     children: [
       CircleAvatar(
         radius: 25,

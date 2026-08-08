@@ -31,9 +31,7 @@ class _DetailPageState extends State<DetailPage> {
     text: "",
   );
 
-  final TextEditingController _checkController = TextEditingController(
-    text: "false",
-  );
+
   late String _title = widget.title;
 
   @override
@@ -243,9 +241,10 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    "ปรับแต่งการแสดงผล",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Text(
+                    // "ปรับแต่งการแสดงผล",
+                    type,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -462,15 +461,16 @@ class _DetailPageState extends State<DetailPage> {
                               {
                                 for (int i = 0; i < rows.length; i++)
                                   {
+                                    // if (type == "Table") {
                                     setState(() {
                                       rows[i] = {
                                         'col1': {
                                           'num': '',
                                           'text': rows[i]['text'],
                                         },
-                                        'date': rows[i]['due_date'] != null
+                                        'date': (rows[i]['due_date'].length > 0)
                                             ? DateFormat('dd/MM/yyyy').format(
-                                                (rows[i]['due_date']).toDate(),
+                                                (rows[i]['due_date'])?.toDate(),
                                               )
                                             : '',
                                         'note': rows[i]['isDone'] ? '/' : '',
@@ -479,13 +479,28 @@ class _DetailPageState extends State<DetailPage> {
                                   },
                               },
                           },
+                        if (type == "Checklist")
+                          {
+                            for (int i = 0; i < rows.length; i++)
+                              {
+                                setState(() {
+                                  rows[i] = {
+                                    // create_date:
+                                    'isDone': rows[i]['note'] == '/'
+                                        ? true
+                                        : false,
+                                    'due_date': rows[i]['date'],
+                                    'text': rows[i]['col1']['text'],
+                                  };
+                                }),
+                              },
+                          },
                         setState(() {
                           _type = type;
                           showRemark = showRemark;
                           isDateY = isDateY;
-                          _requireDate = rows[0]['due_date']
-                              ? false
-                              : requireDate;
+                          _requireDate =
+                              requireDate; //rows[0]['due_date'] ? false
                           _isHideBox = hideEmpty;
                         }),
                         Navigator.pop(context),

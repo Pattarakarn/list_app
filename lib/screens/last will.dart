@@ -64,13 +64,10 @@ class _WillPageState extends State<WillPage> {
   ];
 
   // 2. ข้อมูลลับ (Credentials) และระบบล็อก
-  final TextEditingController _appToolController = TextEditingController();
-  final TextEditingController _appPasswordController = TextEditingController();
   final List<Map<String, TextEditingController>> _credentialControllers = [];
   final TextEditingController _unlockPasswordController =
       TextEditingController();
   bool _isCredentialsUnlocked = false;
-  final String _correctPassword = "1234"; // รหัสผ่านเดา (สมมุติ)
 
   // --- ฟังก์ชันเพิ่ม/ลบ สำหรับ Dynamic Fields ---
   void _addEmail() =>
@@ -116,20 +113,6 @@ class _WillPageState extends State<WillPage> {
     }),
   );
 
-  // --- ฟังก์ชันตรวจสอบรหัสผ่านปลดล็อกข้อมูลลับ ---
-  void _checkUnlockPassword() {
-    if (_unlockPasswordController.text == _correctPassword) {
-      setState(() => _isCredentialsUnlocked = true);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('🔒 ปลดล็อกสำเร็จ!')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ รหัสผ่านไม่ถูกต้อง ลองใหม่นะ')),
-      );
-    }
-  }
-
   final List<Map<String, TextEditingController>> _phoneControllers = [];
   void _addPhone() {
     setState(() {
@@ -142,7 +125,6 @@ class _WillPageState extends State<WillPage> {
 
   Future<void> _saveToFirebase() async {
     try {
-      // ดึงค่าจาก Controllers แปลงเป็น Map/List เตรียมส่งให้ Firestore
       List<String> emails = _emailControllers
           .map((c) => c.text)
           .where((t) => t.isNotEmpty)
@@ -214,8 +196,6 @@ class _WillPageState extends State<WillPage> {
         'created_at': DateTime.now(),
       };
 
-      print(finalData);
-      //  return;
       if (_currentDocId == null) {
         await FirebaseFirestore.instance
             .collection('users')
@@ -233,7 +213,6 @@ class _WillPageState extends State<WillPage> {
               SetOptions(merge: true),
             ); // merge: true ป้องกันข้อมูลฟิลด์อื่นๆ ที่ไม่ได้แก้โดนลบหาย
       }
-      print('success');
 
       if (mounted) {
         ScaffoldMessenger.of(
@@ -260,7 +239,7 @@ class _WillPageState extends State<WillPage> {
 
     bool isMatched = _credentialControllers.any((cred) {
       final controller = cred['password'];
-      // เช็คก่อนว่ามี controller อยู่จริงไหม แล้วค่อยดึงข้อความภายในมาเทียบ
+
       return controller != null && controller.text == input;
     });
 
@@ -268,11 +247,7 @@ class _WillPageState extends State<WillPage> {
       setState(() {
         _isCredentialsUnlocked = true;
       });
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('🔒 ปลดล็อกข้อมูลลับสำเร็จ! (รหัสผ่านถูกต้อง)'),
-      //   ),
-      // );
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -380,7 +355,6 @@ class _WillPageState extends State<WillPage> {
 
           noteController.text = data['note'] ?? '';
 
-      print(data['banks'].any((d) => d['accName'] == 'กรุงไทย'));
           if (!_isDataInitialized) {
             initData(data);
             _isDataInitialized = true;
@@ -392,7 +366,7 @@ class _WillPageState extends State<WillPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= PHONE NUMBERS (NO COLOR) =================
+
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -427,7 +401,7 @@ class _WillPageState extends State<WillPage> {
                           child: TextFormField(
                             controller: phone['phoneNumber'],
                             keyboardType: TextInputType
-                                .phone, // แป้นพิมพ์ตัวเลขสำหรับเบอร์โทร
+                                .phone, 
                             decoration: InputDecoration(
                               // labelText: 'เบอร์โทรศัพท์ ที่ ${idx + 1}',
                               border: const OutlineInputBorder(),
@@ -484,7 +458,12 @@ class _WillPageState extends State<WillPage> {
                       ),
                       ..._bankControllers.map(
                         (bank) => Card(
-                          color: data['banks'].any((d) => d['accNo'] == bank['accNo']?.text)? Theme.of(context).scaffoldBackgroundColor : Colors.green.shade50,
+                          color:
+                              data['banks'].any(
+                                (d) => d['accNo'] == bank['accNo']?.text,
+                              )
+                              ? Theme.of(context).scaffoldBackgroundColor
+                              : Colors.green.shade50,
                           margin: const EdgeInsets.only(bottom: 12),
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -497,6 +476,18 @@ class _WillPageState extends State<WillPage> {
                                         controller: bank['accName'],
                                         decoration: const InputDecoration(
                                           labelText: 'ธ.',
+                                        ),
+                                        style: TextStyle(
+                                          color:
+                                              data['banks'].any(
+                                                (d) =>
+                                                    d['accNo'] ==
+                                                    bank['accNo']?.text,
+                                              )
+                                              ? Theme.of(
+                                                  context,
+                                                ).scaffoldBackgroundColor
+                                              : Colors.black,
                                         ),
                                       ),
                                     ),
@@ -541,7 +532,9 @@ class _WillPageState extends State<WillPage> {
 
                       // --- 3. ข้อมูลลับ (Credentials) ที่ต้องกรอกรหัสปลดล็อกก่อน ---
                       Card(
-                        color: Theme.of(context).scaffoldBackgroundColor, //Colors.amber.shade50,
+                        color: Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor, //Colors.amber.shade50,
                         shape: RoundedRectangleBorder(
                           side: BorderSide(
                             color: Colors.amber.shade600,
@@ -633,7 +626,6 @@ class _WillPageState extends State<WillPage> {
                                 //     ),
                                 //   ),
 
-                                // แก้ไขจุดบัควงเล็บ .map ตรงนี้เรียบร้อยแล้วครับ
                                 ..._credentialControllers.asMap().entries.map((
                                   entry,
                                 ) {
@@ -699,6 +691,7 @@ class _WillPageState extends State<WillPage> {
                                     decoration: const InputDecoration(
                                       labelText: 'ชื่อทรัพย์สิน',
                                     ),
+                                    style: TextStyle(color: Colors.black),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -709,6 +702,7 @@ class _WillPageState extends State<WillPage> {
                                     decoration: const InputDecoration(
                                       labelText: 'ยอดเต็ม',
                                     ),
+                                    style: TextStyle(color: Colors.black),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -719,6 +713,7 @@ class _WillPageState extends State<WillPage> {
                                     decoration: const InputDecoration(
                                       labelText: 'ยอดคงเหลือ',
                                     ),
+                                    style: TextStyle(color: Colors.black),
                                   ),
                                 ),
                               ],
@@ -747,6 +742,7 @@ class _WillPageState extends State<WillPage> {
                                   decoration: const InputDecoration(
                                     labelText: 'บริษัท / แผน',
                                   ),
+                                  style: TextStyle(color: Colors.black),
                                 ),
                                 Row(
                                   children: [
@@ -756,6 +752,7 @@ class _WillPageState extends State<WillPage> {
                                         decoration: const InputDecoration(
                                           labelText: 'เริ่ม',
                                         ),
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -765,6 +762,7 @@ class _WillPageState extends State<WillPage> {
                                         decoration: const InputDecoration(
                                           labelText: 'สิ้นสุด',
                                         ),
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ),
                                   ],
@@ -800,6 +798,7 @@ class _WillPageState extends State<WillPage> {
                                         decoration: const InputDecoration(
                                           labelText: 'จำนวน',
                                         ),
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -810,6 +809,7 @@ class _WillPageState extends State<WillPage> {
                                         decoration: const InputDecoration(
                                           labelText: 'กรณีเสียชีวิต',
                                         ),
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ),
                                   ],

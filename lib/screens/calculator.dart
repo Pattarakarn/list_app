@@ -218,6 +218,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                               ),
                               // ถ้าอยากให้มีคอมม่าด้วย ให้ใช้ Class ที่เราสร้างข้างบน (ต้องปรับจูนเพิ่มตามความซับซ้อน)
                             ],
+                            readOnly: true,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                             ),

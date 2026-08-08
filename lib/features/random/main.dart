@@ -27,6 +27,9 @@ class _RandomPState extends State<RandomP> {
         // decoration: _buildBackground(), // ใส่ Gradient เดิมของคุณ
         child: SafeArea(
           child: Column(
+            //  Padding(
+            //   padding: const EdgeInsets.only(bottom: 85),
+            //   child:
             children: [
               RandomQuick(
                 onCallBack: () {
@@ -118,6 +121,7 @@ class _RandomPState extends State<RandomP> {
                   },
                 ),
               ),
+              const SizedBox(height: 80),
             ],
           ),
         ),

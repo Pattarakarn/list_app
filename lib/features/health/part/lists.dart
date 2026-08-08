@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:list_app/app_colors.dart'; //
 import 'package:intl/intl.dart';
-// import 'package:list_app/utils/constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SymptomHistoryList extends StatelessWidget {
@@ -26,14 +25,12 @@ class SymptomHistoryList extends StatelessWidget {
       Colors.green,
       Colors.grey,
     ];
-    // String type = _type;
-    // bool hideEmpty = _isHideBox;
-    // bool requireDate = _requireDate;
+
     String formattedDate = DateFormat(
       'dd MMMM yyyy',
     ).format(data['date'].toDate());
     Map<String, dynamic> record = data['data'];
-    // print(data);
+
     final TextEditingController _controller = TextEditingController();
     final TextEditingController _amountController = TextEditingController(
       text: record['minExercise']?.toString() ?? '',
@@ -275,7 +272,7 @@ class SymptomHistoryList extends StatelessWidget {
                             shrinkWrap: true,
                             itemCount: dataDrug.length,
                             itemBuilder: (context, index) {
-                              // var doc = snapshot.data!.docs[index];
+
                               var doc = dataDrug[index];
                               Map<String, dynamic> data =
                                   doc.data() as Map<String, dynamic>;
@@ -283,6 +280,7 @@ class SymptomHistoryList extends StatelessWidget {
 
                               List<String> activeTimes = [];
                               bool hasActiveItem = false;
+                              if(record['medications'].any((item) => item['id'] == doc.id)) return null;
                               data['schedule'].forEach((timeName, isActive) {
                                 if (isActive == true) {
                                   activeTimes.add(timeName);
@@ -523,7 +521,6 @@ class SymptomHistoryList extends StatelessWidget {
                                 ],
                               ),
 
-                              // _buildCircleButton(icon: Icons.add, onPressed: () {}),
                             ],
                           ),
 
@@ -602,9 +599,24 @@ class SymptomHistoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isLightMode =
         MediaQuery.of(context).platformBrightness == Brightness.light;
-    datas.sort((a, b) {
-      Timestamp dateA = a['date'];
-      Timestamp dateB = b['date'];
+    // datas.sort((a, b) {
+    //   Timestamp dateA = a['date'];
+    //   Timestamp dateB = b['date'];
+    //   return dateB.compareTo(dateA);
+    // });
+    List filteredDatas = datas.where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      DateTime date = (data['date'] as Timestamp).toDate();
+
+      return date.year == lastDayC.year && date.month == lastDayC.month-1;
+    }).toList();
+    filteredDatas.sort((a, b) {
+      final dataA = a.data() as Map<String, dynamic>;
+      final dataB = b.data() as Map<String, dynamic>;
+
+      DateTime dateA = (dataA['date'] as Timestamp).toDate();
+      DateTime dateB = (dataB['date'] as Timestamp).toDate();
+
       return dateB.compareTo(dateA);
     });
     List<Color> colors = [
@@ -635,10 +647,11 @@ class SymptomHistoryList extends StatelessWidget {
                   shrinkWrap:
                       true, // สำคัญ! เพื่อให้อยู่ใน SingleChildScrollView ได้
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: datas.length,
+                  itemCount: filteredDatas.length,
                   itemBuilder: (context, index) {
-                    final data = (datas[index].data()) as Map<String, dynamic>;
-                    data['id'] = datas[index].id;
+                    final data =
+                        (filteredDatas[index].data()) as Map<String, dynamic>;
+                    data['id'] = filteredDatas[index].id;
 
                     final mentallevel = data['data']['mental_level'] ?? -1;
                     DateTime thirtyDaysAgo = DateTime.now().subtract(

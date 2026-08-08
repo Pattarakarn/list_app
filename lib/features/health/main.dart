@@ -23,12 +23,12 @@ class _HealthPageState extends State<HealthPage> {
   DateTime _focusedDay = DateTime.now();
   late DateTime _firstDayC = DateTime(
     DateTime.now().year,
-    DateTime.now().month,
+    DateTime.now().month-1,
     1,
   );
   late DateTime _lastDayC = DateTime(
     DateTime.now().year,
-    DateTime.now().month + 3,
+    DateTime.now().month + 2,
     0,
   );
 
@@ -61,7 +61,6 @@ class _HealthPageState extends State<HealthPage> {
     // });
   }
 
-  // สีตามระดับความมากน้อย (4 ระดับ)
   final List<Color> flowColors = [
     Colors.pink[100]!,
     Colors.pink[300]!,
@@ -69,11 +68,6 @@ class _HealthPageState extends State<HealthPage> {
     Colors.red[900]!,
   ];
 
-  // ฟังก์ชันหา "วันจันทร์" ของสัปดาห์ปัจจุบัน
-  DateTime _getStartOfWeek() {
-    DateTime now = DateTime.now();
-    return now.subtract(Duration(days: now.weekday - 1));
-  }
 
   Color _getDayColor(int weekday) {
     switch (weekday) {
@@ -99,7 +93,6 @@ class _HealthPageState extends State<HealthPage> {
   @override
   Widget build(BuildContext context) {
     double headerHeight = MediaQuery.of(context).size.height * 0.31; // 30vh
-    // print(user);
 
     return Scaffold(
       backgroundColor: Theme.of(context).cardColor,
@@ -148,6 +141,7 @@ class _HealthPageState extends State<HealthPage> {
                 //   // ใส่ข้อมูลอื่นๆ ที่คุณต้องการ
                 // };
               }
+              
               if (snapshot.hasData) {
                 return Scaffold(
                   // backgroundColor: Colors.grey[50],
@@ -180,12 +174,11 @@ class _HealthPageState extends State<HealthPage> {
                           child: Column(
                             children: [
                               const SizedBox(height: 15),
-                              // --- ส่วนที่ 1: Period Tracker ---
+
                               PeriodSummaryCard(datas: documents),
 
                               const SizedBox(height: 10),
 
-                              // MoodCalendarWidget(data: _calendar),
                               MoodCalendarWidget(
                                 data: documents,
                                 firstDayC: _firstDayC,
@@ -200,7 +193,7 @@ class _HealthPageState extends State<HealthPage> {
                                 },
                               ),
                               const SizedBox(height: 25),
-                              // --- ส่วนที่ 3: Recent Symptoms ---
+
                               SymptomHistoryList(
                                 datas: documents,
                                 firstDayC: _firstDayC,
@@ -228,29 +221,6 @@ class _HealthPageState extends State<HealthPage> {
   }
 
   // --- Widget ย่อยๆ ---
-  Widget _buildHeaderCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.pink[50],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          const Text("รอบเดือนล่าสุด", style: TextStyle(color: Colors.pink)),
-          Text(
-            "- (x วัน)",
-            style: TextStyle(
-              // fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.pink[900],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildWeeklyBloodSelector() {
     return Row(

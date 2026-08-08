@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:list_app/utils/constant.dart';
+import 'create.dart';
 
 class FuelLogPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -14,15 +16,32 @@ class FuelLogPage extends StatefulWidget {
 class _FuelLogPageState extends State<FuelLogPage> {
   final user = FirebaseAuth.instance.currentUser;
   String _filterMode = '12_months';
+  bool showDel = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.data['car_name'])),
+      appBar: AppBar(
+        title: Text(widget.data['car_name']),
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                showDel = !showDel;
+              });
+            },
+            label: const Text("จัดการ"),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+              foregroundColor: Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // _buildFilterSegment(),
-
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -58,14 +77,33 @@ class _FuelLogPageState extends State<FuelLogPage> {
                 final validAvgList = allData
                     .where((item) => item['avg'] != null)
                     .map((item) => item['avg'] as double);
-                final totalAvg = validAvgList.isNotEmpty
-                    ? validAvgList.reduce((a, b) => a + b) / validAvgList.length
-                    : 0.0;
-
+                // final totalAvg = validAvgList.isNotEmpty
+                //     ? validAvgList.reduce((a, b) => a + b) / validAvgList.length
+                //     : 0.0;
+                var kilo =
+                    widget.data['last_mileage'] - widget.data['first_mileage'];
+                final totalAvg = (kilo / widget.data['allLites']);
                 return Column(
                   children: [
-                    // ส่วนแสดงสรุปผลรวม (Summary Card)
                     _buildSummaryCard(totalCount, totalAvg),
+
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('Add'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CreateListFuel(data: widget.data),
+                          ),
+                        );
+                      },
+                    ),
 
                     Expanded(
                       child: ListView.builder(
@@ -122,7 +160,6 @@ class _FuelLogPageState extends State<FuelLogPage> {
 
     for (int i = 0; i < docs.length; i++) {
       final data = docs[i].data() as Map<String, dynamic>;
-    print(data);
 
       DateTime date = (data['date_time'] as Timestamp).toDate();
       double mile =
@@ -161,8 +198,11 @@ class _FuelLogPageState extends State<FuelLogPage> {
           'mile': mile,
           'price': price,
           'avg': avg, // ครั้งแรกสุดของระบบจะเป็น null
-          'total_price':   (data['amount'] ?? 0 as num).toDouble()
+          'total_price': (data['amount'] ?? 0 as num).toDouble(),
           // 'total_price':   double.tryParse(data['total_price']) ?? 0
+          'liters': liters,
+          'carId': data['carId'],
+          'id': docs[i].id,
         });
       }
     }
@@ -182,12 +222,12 @@ class _FuelLogPageState extends State<FuelLogPage> {
           children: [
             Column(
               children: [
-              
                 Text(
                   '$totalCount ครั้ง',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -221,55 +261,105 @@ class _FuelLogPageState extends State<FuelLogPage> {
     double mile = item['mile'];
     double price = item['price'];
     double? avg = item['avg'];
+    return Column(
+      children: [
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: InkWell(
+            // onTap: () {
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formattedDate,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Text('เลขไมล์: ${mile.toStringAsFixed(0)} กม.'),
-              ],
-            ),
-            const Divider(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                  Text(
-                  // '฿${price.toStringAsFixed(0)}',
-                  '฿${item['total_price'].toStringAsFixed(0)}',
-                  style: const TextStyle(fontSize: 16, color: Colors.orange ),
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      'เฉลี่ย: ',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    Text(
-                      avg != null ? '${avg.toStringAsFixed(2)} km/l' : '-',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: avg == null ? Colors.black : Colors.blue,
+            // },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Text('เลขไมล์: ${formatNumber(mile)} กม.'),
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        // '฿${price.toStringAsFixed(0)}',
+                        '฿${formatNumber(item['total_price'])}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'เฉลี่ย: ',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            avg != null
+                                ? '${avg.toStringAsFixed(2)} km/l'
+                                : '-',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: avg == null ? Colors.black : Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+        if (showDel)
+          ElevatedButton.icon(
+            icon: const Icon(Icons.remove_circle_outline),
+            label: const Text('ลบ'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey.shade100,
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () {
+              // print(item);
+              WriteBatch batch = FirebaseFirestore.instance.batch();
+
+              DocumentReference fillRef = FirebaseFirestore.instance
+                  .collection('cars')
+                  .doc(item['carId'])
+                  .collection('fill-ups')
+                  .doc(item['id']);
+              batch.delete(fillRef);
+
+              DocumentReference carRef = FirebaseFirestore.instance
+                  .collection('cars')
+                  .doc(item['carId']);
+
+              batch.update(carRef, {
+                'total_spent': FieldValue.increment(-(item['total_price'])),
+                // 'last_mileage': m (  mile,  item['allMiles'],  ),
+                // 'last_mileage' ต้องไปหาอันดับสอง
+                'refuel_count': FieldValue.increment(-1),
+                'allLites': FieldValue.increment(-(item['liters'])),
+                // 'first_mileage':
+                'last_update': FieldValue.serverTimestamp(),
+              });
+               setState(() {
+                showDel = !showDel;
+              });
+            },
+          ),
+      ],
     );
   }
 }
